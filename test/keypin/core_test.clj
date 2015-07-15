@@ -48,7 +48,11 @@
   foo ["foo"]
   bar ["bar" string? "Expected string"]
   baz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
-  qux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}])
+  qux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}]
+  esr ["qux" {:pred bool?
+              :desc "Flag: Whether enable runtime tracing?"
+              :parser str->bool
+              :default true}])
 
 
 (defn props
@@ -78,21 +82,26 @@
       (is (thrown? IllegalArgumentException (foo no-props)))
       (is (thrown? IllegalArgumentException (baz bad-props)))
       (is (thrown? IllegalArgumentException (baz bad-props2)))
-      (is (thrown? IllegalArgumentException (qux bad-props))))
+      (is (thrown? IllegalArgumentException (qux bad-props)))
+      (is (thrown? IllegalArgumentException (esr bad-props))))
     (testing "Minimal definition"
       (is (= "hello" (foo  min-props))))
     (testing "Definition with validator/description"
       (is (= 34     (baz max-props)))
       (is (= "hola" (bar mod-props)))
       (is (true?    (qux min-props)))
-      (is (false?   (qux max-props))))))
+      (is (false?   (qux max-props)))
+      (is (true?    (esr min-props)))
+      (is (false?   (esr max-props))))))
 
 
 (defkey
   kfoo ["foo"]
   kbar ["bar" string? "Expected string"]
   kbaz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
-  kqux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}])
+  kqux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}]
+  kesr ["qux" {:pred bool? :desc "Flag: Whether enable runtime tracing?"
+               :parser str->bool :default true}])
 
 
 (deftest test-defkey-map
@@ -116,21 +125,26 @@
       (is (thrown? IllegalArgumentException (kfoo no-keys)))
       (is (thrown? IllegalArgumentException (kbaz bad-keys)))
       (is (thrown? IllegalArgumentException (kbaz bad-keys2)))
-      (is (thrown? IllegalArgumentException (kqux bad-keys))))
+      (is (thrown? IllegalArgumentException (kqux bad-keys)))
+      (is (thrown? IllegalArgumentException (kesr bad-keys))))
     (testing "Minimal definition"
       (is (= "hello" (kfoo  min-keys))))
     (testing "Definition with validator/description"
-      (is (= 34 (kbaz max-keys)))
+      (is (= 34     (kbaz max-keys)))
       (is (= "hola" (kbar mod-keys)))
-      (is (true? (kqux min-keys)))
-      (is (false? (kqux max-keys))))))
+      (is (true?    (kqux min-keys)))
+      (is (false?   (kqux max-keys)))
+      (is (true?    (kesr min-keys)))
+      (is (false?   (kesr max-keys))))))
 
 
 (defkey
   vfoo [0]
   vbar [1 string? "Expected string"]
   vbaz [2 #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
-  vqux [3 bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}])
+  vqux [3 bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}]
+  vesr [3 {:pred bool? :desc "Flag: Whether enable runtime tracing?"
+           :parser str->bool :default true}])
 
 
 (deftest test-defkey-vec
@@ -144,14 +158,17 @@
      (is (thrown? IllegalArgumentException (vfoo no-keys)))
      (is (thrown? IllegalArgumentException (vbaz bad-keys)))
      (is (thrown? IllegalArgumentException (vbaz bad-keys2)))
-     (is (thrown? IllegalArgumentException (vqux bad-keys))))
+     (is (thrown? IllegalArgumentException (vqux bad-keys)))
+     (is (thrown? IllegalArgumentException (vesr bad-keys))))
    (testing "Minimal definition"
      (is (= "hello" (vfoo  min-keys))))
    (testing "Definition with validator/description"
      (is (= 34     (vbaz max-keys)))
      (is (= "hola" (vbar mod-keys)))
      (is (true?  (vqux min-keys)))
-     (is (false? (vqux max-keys))))))
+     (is (false? (vqux max-keys)))
+     (is (true?  (vesr min-keys)))
+     (is (false? (vesr max-keys))))))
 
 
 (deftest test-parsers

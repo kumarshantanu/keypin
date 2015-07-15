@@ -59,6 +59,7 @@ Defining property finders is quite straightforward. The argument vector format i
 
 ```clojure
 [key]
+[key options]
 [key validator description]
 [key validator description options]
 ```
@@ -69,6 +70,8 @@ Defining property finders is quite straightforward. The argument vector format i
 | `validator`   | predicate fn to validate parsed value | `k/any?`           |
 | `description` | key description                       | `"No description"` |
 | `options`     | option map with following keys        | `{}`               |
+|               | `:pred` (validator, in arity-2 only)  | `k/any?`           |
+|               | `:desc` (description, in arity-2 only)| `"No description"` |
 |               | `:parser`  (value parser fn, arity-2) | Identity parser    |
 |               | `:default` (value when key not found) | No default         |
 |               | `:lookup`  (lookup function)          | `k/lookup-key`     |

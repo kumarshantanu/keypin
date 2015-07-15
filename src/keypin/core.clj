@@ -148,8 +148,9 @@
 
 
 (defmacro defkey
-  "Define one or more keys as vars using argument vectors. Every argument vector must have one of the following formats:
+  "Define one or more keys as vars using argument vectors. Every argument vector must have one of the following arities:
   [key]
+  [key options]
   [key validator description]
   [key validator description options]
   See `make-key` for details. First argument to `defkey` can optionally be a base option-map for all argument vectors.
@@ -174,13 +175,23 @@
                        (i/expect-arg each-vec vector? ["Expected a vector to create key, found" (pr-str each-vec)])
                        [each-sym (case (count each-vec)
                                    1 (conj each-vec any? "No description" options)
+                                   2 (let [{:keys [pred desc]
+                                            :or {pred any?
+                                                 desc "No description"}
+                                            :as spec-opts} (let [each-opts (get each-vec 1)]
+                                                             (i/expect-arg each-opts map?
+                                                               ["Expected an option map for defkey, but found"
+                                                                (pr-str each-opts)])
+                                                             (merge options each-opts))]
+                                       (-> (pop each-vec) ; remove options first
+                                         (conj pred desc spec-opts)))
                                    3 (conj each-vec options)
                                    4 (update-in each-vec [3] (fn [each-opts]
                                                                (i/expect-arg each-opts map?
                                                                  ["Expected an option map for defkey, but found"
                                                                   (pr-str each-opts)])
                                                                (merge options each-opts)))
-                                   (i/illegal-arg ["Expected 1, 3 or 4 elements as arguments for defkey, but found"
+                                   (i/illegal-arg ["Expected 1, 2, 3 or 4 elements as arguments for defkey, but found"
                                                    (pr-str each-vec)]))]))
                 (map (fn [[each-sym each-vec]]
                        `(def ~each-sym (make-key ~@each-vec)))))]
