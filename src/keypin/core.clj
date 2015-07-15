@@ -164,13 +164,23 @@
         (PropertyFile/resolveConfig config-filename logger)))))
 
 
-;; ===== value parsers =====
+;; ===== validators =====
 
 
 (defn bool?
-  "Return is x is a boolean, false otherwise."
+  "Return true if argument is of boolean type, false otherwise."
   [x]
   (instance? Boolean x))
+
+
+(defn deref?
+  "Wrap a predicate such that it derefs the argument before applying the predicate."
+  [pred]
+  (fn [x]
+    (pred (deref x))))
+
+
+;; ===== value parsers =====
 
 
 (defn str->bool
@@ -238,10 +248,3 @@
                                            ns-name var-name (pr-str the-key) (str fq-var-name))))]
     ;; return the var without deref'ing
     the-var))
-
-
-(defn deref?
-  "Wrap a predicate argument such that it derefs the argument before applying the predicate."
-  [pred]
-  (fn [x]
-    (pred (deref x))))
