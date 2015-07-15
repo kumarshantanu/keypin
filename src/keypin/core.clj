@@ -148,9 +148,11 @@
 
 
 (defmacro defkey
-  "Define one ore more keys as vars using argument vectors. See `make-key` for details - only the first argument
-  `the-key` is mandatory in each argument vector, rest are optional. First argument to defkey can optionally be an
-  option-map that applies to all argument vectors.
+  "Define one or more keys as vars using argument vectors. Every argument vector must have one of the following formats:
+  [key]
+  [key validator description]
+  [key validator description options]
+  See `make-key` for details. First argument to `defkey` can optionally be a base option-map for all argument vectors.
   Examples:
   (defkey
     ip   [:ip-address]
