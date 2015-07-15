@@ -4,7 +4,7 @@
 ## Requiring namespace
 
 ```clojure
-(require '[keypin.core :refer [defkey defmanykeys defprop defmanyprops] :as k])
+(require '[keypin.core :refer [defkey] :as k])
 ```
 
 
@@ -16,7 +16,7 @@ You define key finders with some meta data as follows:
 ### Simple key finder
 
 ```clojure
-(defkey foo :foo)
+(defkey foo [:foo])
 
 ;; lookup
 (foo {:foo 20 :bar 30})  ; returns 20
@@ -28,14 +28,14 @@ You define key finders with some meta data as follows:
 
 ```clojure
 ;; key with constraints
-(defkey port :port #(< 1023 % 65535) "Port number" k/str->int)
+(defkey port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
 
 ;; lookup
 (port {:ip "0.0.0.0" :port "5000"})  ; returns 5000
 (port {:ip "0.0.0.0"})               ; throws IllegalArgumentException
 
 ;; key with default value
-(defkey port-optional :port #(< 1023 % 65535) "Port number" k/str->int 3000)
+(defkey port-optional [:port #(< 1023 % 65535) "Port number" {:parser k/str->int :default 3000}])
 
 ;; lookup
 (port-optional {:ip "0.0.0.0" :port "5000"})  ; returns 5000
@@ -46,7 +46,7 @@ You define key finders with some meta data as follows:
 ### Accessing the key
 
 ```clojure
-(defkey port :port #(< 1023 % 65535) "Port number" k/str->int)
+(defkey port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
 
 ;; access the key
 (key port)  ; returns :port
@@ -55,24 +55,31 @@ You define key finders with some meta data as follows:
 
 ### Key finder meta data
 
-Defining property finders is quite straightforward. The argument format is:
-`key` `validator` `description` `value-parser` `default-value`
+Defining property finders is quite straightforward. The argument vector format is either of the following:
+
+```clojure
+[key]
+[key validator description]
+[key validator description options]
+```
 
 Only `key` is required, rest of the positional arguments are optional.
 
-| Argument         | Description                           | Default           |
-|------------------|---------------------------------------|-------------------|
-| `key` (required) | the key to look up                    | No default        |
-| `validator`      | predicate fn to validate parsed value | `identity`        |
-| `description`    | key description                       | "No description"  |
-| `value-parser`   | value parser function, takes two args | `identity` parser |
-| `default-value`  | default value for unspecified values  | No default        |
+| Argument         | Description                           | Default            |
+|------------------|---------------------------------------|--------------------|
+| `key` (required) | the key to look up                    | No default         |
+| `validator`      | predicate fn to validate parsed value | Fn returning `true`|
+| `description`    | key description                       | `"No description"` |
+| `options`        | option map with following keys        | `{}`               |
+|                  | `:parser` (value parser fn, arity-2)  | Identity parser    |
+|                  | `:default` (returned when not found)  | No default         |
+|                  | `:lookup` (lookup function)           | `lookup-key`       |
 
 
 ### Defining multiple keys at once
 
 ```clojure
-(defmanykeys
+(defkey
   ip-address    [:ip string? "Server IP"]
   port-optional [:port #(< 1023 % 65535) "Server port" k/str->int 3000]
   username      [:username string? "User name"]
@@ -85,18 +92,12 @@ Only `key` is required, rest of the positional arguments are optional.
 
 ### Defining property lookup
 
-You can define property lookup usinf `defprop` (very much like `defkey`):
-
 ```clojure
-(defprop app-name  "app.name"     string?      "Expected string")
-(defprop pool-size "pool.size"    #(< 0 % 100) "Thread-pool size (1-99)" k/str->int)
-(defprop trace?    "enable.trace" k/bool?      "Flag: Whether enable runtime tracing?" k/str->bool true)
-
-;; Alternatively, they can be defined as follows:
-(defmanyprops
+(defkey
+  {:lookup k/lookup-property}
   app-name  ["app.name"     string?      "Expected string"]
-  pool-size ["pool.size"    #(< 0 % 100) "Thread-pool size (1-99)" k/str->int]
-  trace?    ["enable.trace" k/bool?      "Flag: Whether enable runtime tracing?" k/str->bool true])
+  pool-size ["pool.size"    #(< 0 % 100) "Thread-pool size (1-99)" {:parser k/str->int}]
+  trace?    ["enable.trace" k/bool?      "Flag: Whether enable runtime tracing?" {:parser k/str->bool :default true}])
 
 ;; lookup
 (app-name ^java.util.Properties props)  ; returns whatever is defined in the properties file

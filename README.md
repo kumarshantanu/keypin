@@ -30,14 +30,19 @@ Leiningen coordinates: `[keypin "0.1.0-SNAPSHOT"]`
 (require '[keypin.core :refer [defkey] :as k])
 
 ;; key with constraints
-(defkey port :port #(< 1023 % 65535) "Port number" k/str->int)
+(defkey
+  ip   [:ip]
+  port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
 
 ;; lookup
+(ip   {:ip "0.0.0.0" :port "5000"})  ; returns "0.0.0.0"
 (port {:ip "0.0.0.0" :port "5000"})  ; returns 5000
 (port {:ip "0.0.0.0"})               ; throws IllegalArgumentException
 
 ;; key with default value
-(defkey port-optional :port #(< 1023 % 65535) "Port number" k/str->int 3000)
+(defkey
+  ip   [:ip]
+  port-optional [:port #(< 1023 % 65535) "Port number" {:parser k/str->int :default 3000}])
 
 ;; lookup
 (port-optional {:ip "0.0.0.0" :port "5000"})  ; returns 5000

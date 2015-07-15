@@ -27,9 +27,11 @@
           (read-properties "test-config/errconf.properties" {:parent-key "parent"})))))
 
 
-(defprop sample-prop "sample")
-(defkey sample-key :sample)
-(defkey sample-nkey 3)
+(defkey
+  {:lookup lookup-property}
+  sample-prop ["sample"]
+  sample-key  [:sample]
+  sample-nkey [3])
 
 
 (deftest test-key
@@ -41,17 +43,12 @@
   (is (= "3"       (str sample-nkey))))
 
 
-(defprop foo "foo")
-(defprop bar "bar" string? "Expected string")
-(defprop baz "baz" #(< 0 % 100) "Thread-pool size (1-99)" str->int)
-(defprop qux "qux" bool? "Flag: Whether enable runtime tracing?" str->bool true)
-
-
-(defmanyprops
-  mfoo ["foo"]
-  mbar ["bar" string? "Expected string"]
-  mbaz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" str->int]
-  mqux ["qux" bool? "Flag: Whether enable runtime tracing?" str->bool true])
+(defkey
+  {:lookup lookup-property}
+  foo ["foo"]
+  bar ["bar" string? "Expected string"]
+  baz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
+  qux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}])
 
 
 (defn props
@@ -79,38 +76,23 @@
                            "qux" "None"})]
     (testing "Failures"
       (is (thrown? IllegalArgumentException (foo no-props)))
-      (is (thrown? IllegalArgumentException (mfoo no-props)))
       (is (thrown? IllegalArgumentException (baz bad-props)))
-      (is (thrown? IllegalArgumentException (mbaz bad-props)))
       (is (thrown? IllegalArgumentException (baz bad-props2)))
-      (is (thrown? IllegalArgumentException (mbaz bad-props2)))
-      (is (thrown? IllegalArgumentException (qux bad-props)))
-      (is (thrown? IllegalArgumentException (mqux bad-props))))
+      (is (thrown? IllegalArgumentException (qux bad-props))))
     (testing "Minimal definition"
-      (is (= "hello" (foo  min-props)))
-      (is (= "hello" (mfoo  min-props))))
+      (is (= "hello" (foo  min-props))))
     (testing "Definition with validator/description"
-      (is (= 34 (baz max-props)))
-      (is (= 34 (mbaz max-props)))
+      (is (= 34     (baz max-props)))
       (is (= "hola" (bar mod-props)))
-      (is (= "hola" (mbar mod-props)))
-      (is (true? (qux min-props)))
-      (is (true? (mqux min-props)))
-      (is (false? (qux max-props)))
-      (is (false? (mqux max-props))))))
+      (is (true?    (qux min-props)))
+      (is (false?   (qux max-props))))))
 
 
-(defkey kfoo "foo")
-(defkey kbar "bar" string? "Expected string")
-(defkey kbaz "baz" #(< 0 % 100) "Thread-pool size (1-99)" str->int)
-(defkey kqux "qux" bool? "Flag: Whether enable runtime tracing?" str->bool true)
-
-
-(defmanykeys
-  mkfoo ["foo"]
-  mkbar ["bar" string? "Expected string"]
-  mkbaz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" str->int]
-  mkqux ["qux" bool? "Flag: Whether enable runtime tracing?" str->bool true])
+(defkey
+  kfoo ["foo"]
+  kbar ["bar" string? "Expected string"]
+  kbaz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
+  kqux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}])
 
 
 (deftest test-defkey-map
@@ -132,38 +114,23 @@
                     "qux" "None"}]
     (testing "Failures"
       (is (thrown? IllegalArgumentException (kfoo no-keys)))
-      (is (thrown? IllegalArgumentException (mkfoo no-keys)))
       (is (thrown? IllegalArgumentException (kbaz bad-keys)))
-      (is (thrown? IllegalArgumentException (mkbaz bad-keys)))
       (is (thrown? IllegalArgumentException (kbaz bad-keys2)))
-      (is (thrown? IllegalArgumentException (mkbaz bad-keys2)))
-      (is (thrown? IllegalArgumentException (kqux bad-keys)))
-      (is (thrown? IllegalArgumentException (mkqux bad-keys))))
+      (is (thrown? IllegalArgumentException (kqux bad-keys))))
     (testing "Minimal definition"
-      (is (= "hello" (kfoo  min-keys)))
-      (is (= "hello" (mkfoo  min-keys))))
+      (is (= "hello" (kfoo  min-keys))))
     (testing "Definition with validator/description"
       (is (= 34 (kbaz max-keys)))
-      (is (= 34 (mkbaz max-keys)))
       (is (= "hola" (kbar mod-keys)))
-      (is (= "hola" (mkbar mod-keys)))
       (is (true? (kqux min-keys)))
-      (is (true? (mkqux min-keys)))
-      (is (false? (kqux max-keys)))
-      (is (false? (mkqux max-keys))))))
+      (is (false? (kqux max-keys))))))
 
 
-(defkey vfoo 0)
-(defkey vbar 1 string? "Expected string")
-(defkey vbaz 2 #(< 0 % 100) "Thread-pool size (1-99)" str->int)
-(defkey vqux 3 bool? "Flag: Whether enable runtime tracing?" str->bool true)
-
-
-(defmanykeys
-  mvfoo [0]
-  mvbar [1 string? "Expected string"]
-  mvbaz [2 #(< 0 % 100) "Thread-pool size (1-99)" str->int]
-  mvqux [3 bool? "Flag: Whether enable runtime tracing?" str->bool true])
+(defkey
+  vfoo [0]
+  vbar [1 string? "Expected string"]
+  vbaz [2 #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
+  vqux [3 bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}])
 
 
 (deftest test-defkey-vec
@@ -175,25 +142,16 @@
        bad-keys2 ["hello" "hola" "150" "None"]]
    (testing "Failures"
      (is (thrown? IllegalArgumentException (vfoo no-keys)))
-     (is (thrown? IllegalArgumentException (mvfoo no-keys)))
      (is (thrown? IllegalArgumentException (vbaz bad-keys)))
-     (is (thrown? IllegalArgumentException (mvbaz bad-keys)))
      (is (thrown? IllegalArgumentException (vbaz bad-keys2)))
-     (is (thrown? IllegalArgumentException (mvbaz bad-keys2)))
-     (is (thrown? IllegalArgumentException (vqux bad-keys)))
-     (is (thrown? IllegalArgumentException (mvqux bad-keys))))
+     (is (thrown? IllegalArgumentException (vqux bad-keys))))
    (testing "Minimal definition"
-     (is (= "hello" (vfoo  min-keys)))
-     (is (= "hello" (mvfoo  min-keys))))
+     (is (= "hello" (vfoo  min-keys))))
    (testing "Definition with validator/description"
-     (is (= 34 (vbaz max-keys)))
-     (is (= 34 (mvbaz max-keys)))
+     (is (= 34     (vbaz max-keys)))
      (is (= "hola" (vbar mod-keys)))
-     (is (= "hola" (mvbar mod-keys)))
-     (is (true? (vqux min-keys)))
-     (is (true? (mvqux min-keys)))
-     (is (false? (vqux max-keys)))
-     (is (false? (mvqux max-keys))))))
+     (is (true?  (vqux min-keys)))
+     (is (false? (vqux max-keys))))))
 
 
 (deftest test-parsers

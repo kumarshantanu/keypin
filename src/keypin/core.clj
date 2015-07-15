@@ -3,12 +3,112 @@
     [clojure.string :as string]
     [keypin.internal :as i])
   (:import
+    [clojure.lang ILookup]
     [java.io FileNotFoundException]
-    [java.util Properties]
+    [java.util Map Properties]
     [keypin Logger PropertyFile]))
 
 
-;; ===== Key attributes primitive =====
+;; ===== validators =====
+
+
+(defn any?
+  "Dummy validator. Always return true."
+  [_]
+  true)
+
+
+(defn bool?
+  "Return true if argument is of boolean type, false otherwise."
+  [x]
+  (instance? Boolean x))
+
+
+(defn deref?
+  "Wrap a predicate such that it derefs the argument before applying the predicate."
+  [pred]
+  (fn [x]
+    (pred (deref x))))
+
+
+;; ===== lookup functions ====
+
+
+(defn lookup-key
+  "Look up a key in a map or something that implements clojure.lang.ILookup."
+  [the-map the-key validator description property-parser default-value? default-value]
+  (when-not (or (instance? Map the-map)
+              (instance? ILookup the-map))
+    (i/illegal-arg (format "Key %s looked up in a non map (or clojure.lang.ILookup) object: %s"
+                     (pr-str the-key) the-map)))
+  (let [value (if (contains? the-map the-key)
+                (->> (get the-map the-key)
+                  (property-parser the-key))
+                (if default-value?
+                  default-value
+                  (i/illegal-arg (str "No default value is defined for non-existent key " (pr-str the-key)))))]
+    (i/expect-arg value validator (format "Invalid value for key %s (description: '%s'): %s"
+                                    (pr-str the-key) description (pr-str value)))))
+
+
+(defn lookup-keypath
+  "Look up a key path in a map or something that implements clojure.lang.ILookup."
+  [the-map ks validator description property-parser default-value? default-value]
+  (let [value (loop [data the-map
+                     path ks]
+                (when-not (or (instance? Map data)
+                            (instance? ILookup data))
+                  (i/illegal-arg (format "Key path %s looked up in a non map (or clojure.lang.ILookup) object: %s"
+                                   (pr-str path) (pr-str data))))
+                (let [k (first path)]
+                  (if-not (contains? data k)
+                    (if default-value?   ; has a default value?
+                      default-value
+                      (i/illegal-arg (str "No default value is defined for non-existent key path " (pr-str ks))))
+                    (if-not (next path)  ; last key in key path?
+                      (get data k)
+                      (recur (get data k) (rest path))))))]
+    (i/expect-arg value validator (format "Invalid value for key path %s (description: '%s'): %s"
+                                    (pr-str ks) description (pr-str value)))))
+
+
+;; ===== properties files =====
+
+
+(defn read-properties
+  "Read properties file(s) returning a java.util.Properties instance."
+  (^Properties [^String config-filename]
+    (read-properties config-filename {:parent-key "parent"}))
+  (^Properties [^String config-filename {:keys [^String parent-key info-logger error-logger]
+                                         :or {info-logger  #(println "[keypin] [info]" %)
+                                              error-logger #(println "[keypin] [error]" %)}
+                                         :as options}]
+    (let [logger (reify Logger
+                   (info [this msg] (info-logger msg))
+                   (error [this msg] (error-logger msg)))]
+      (if parent-key
+        (PropertyFile/resolveConfig config-filename parent-key logger)
+        (PropertyFile/resolveConfig config-filename logger)))))
+
+
+(defn lookup-property
+  "Look up property name in a java.util.Properties instance."
+  [^Properties the-map ^String property-name validator description property-parser default-value? default-value]
+  (when-not (instance? Properties the-map)
+    (i/illegal-arg (format "Property '%s' looked up in a non java.util.Properties object: %s"
+                     property-name the-map)))
+  (let [value (if (.containsKey ^Properties the-map property-name)
+                (->> property-name
+                  (.getProperty ^Properties the-map)
+                  (property-parser property-name))
+                (if default-value?
+                  default-value
+                  (i/illegal-arg (format "No default value is defined for non-existent property '%s'" property-name))))]
+    (i/expect-arg value validator (format "Invalid value for property '%s' (description: '%s'): %s"
+                                    property-name description (pr-str value)))))
+
+
+;; ===== key attributes primitive =====
 
 
 (defrecord KeyAttributes
@@ -28,156 +128,61 @@
 ;; ===== key definition =====
 
 
+(defn make-key
+  "Create a key that can be looked up in a java.util.Map/Properties or clojure.lang.ILookup (map, vector) instance. The
+  following optional keys are supported:
+  :lookup  - The function to look the key up,
+             args: the-map, the-key, validator, description, value-parser, default-value?, default-value,
+             default: ordinary key look up
+  :parser  - The value parser function (args: key, value)
+  :default - Default value to return if key is not found"
+  [the-key validator description {:keys [lookup parser default]
+                                  :or {lookup lookup-key
+                                       parser i/identity-parser}
+                                  :as options}]
+  (->KeyAttributes
+    the-key validator description parser
+    (if   (contains? options :default) true false)
+    (when (contains? options :default) default)
+    lookup))
+
+
 (defmacro defkey
-  "Define a generic key that can be looked up in a map."
-  ([the-sym the-name]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name identity "No description"
-         i/identity-parser
-         false
-         nil
-         i/lookup-key)))
-  ([the-sym the-name validator]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) "No description"
-         i/identity-parser
-         false
-         nil
-         i/lookup-key)))
-  ([the-sym the-name validator description]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) ~description
-         i/identity-parser
-         false
-         nil
-         i/lookup-key)))
-  ([the-sym the-name validator description value-parser]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) ~description
-         (or ~value-parser i/identity-parser)
-         false
-         nil
-         i/lookup-key)))
-  ([the-sym the-name validator description value-parser default-value]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) ~description
-         (or ~value-parser i/identity-parser)
-         true
-         ~default-value
-         i/lookup-key))))
-
-
-(defmacro defmanykeys
-  "Define many keys at once using argument vectors. See `defkey` for details."
+  "Define one ore more keys as vars using argument vectors. See `make-key` for details - only the first argument
+  `the-key` is mandatory in each argument vector, rest are optional. First argument to defkey can optionally be an
+  option-map that applies to all argument vectors.
+  Examples:
+  (defkey
+    ip   [:ip-address]
+    port [:port #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])
+  (defkey
+    {:lookup lookup-property}
+    ip   [\"server.ip.address\"]
+    port [\"server.port\" #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])"
   [the-sym arg-vec & more]
-  (i/expect-arg (count more) even? ["Expected even number of var args, but found " more])
-  `(i/defmany defkey ~the-sym ~arg-vec ~@more))
-
-
-;; ===== properties files =====
-
-
-(defmacro defprop
-  "Define a property finder (key) that can be looked up in a java.util.Properties instance."
-  ([the-sym the-name]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    (i/expect-arg the-name string? ["Expected a string property name, but found " (pr-str the-name)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name identity "No description"
-         i/identity-parser
-         false
-         nil
-         i/lookup-property)))
-  ([the-sym the-name validator]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    (i/expect-arg the-name string? ["Expected a string property name, but found " (pr-str the-name)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) "No description"
-         i/identity-parser
-         false
-         nil
-         i/lookup-property)))
-  ([the-sym the-name validator description]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    (i/expect-arg the-name string? ["Expected a string property name, but found " (pr-str the-name)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) ~description
-         i/identity-parser
-         false
-         nil
-         i/lookup-property)))
-  ([the-sym the-name validator description property-parser]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    (i/expect-arg the-name string? ["Expected a string property name, but found " (pr-str the-name)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) ~description
-         (or ~property-parser i/identity-parser)
-         false
-         nil
-         i/lookup-property)))
-  ([the-sym the-name validator description property-parser default-value]
-    (i/expect-arg the-sym  symbol? ["Expected a symbol to define var, but found " (pr-str the-sym)])
-    (i/expect-arg the-name string? ["Expected a string property name, but found " (pr-str the-name)])
-    `(def ~the-sym
-       (->KeyAttributes
-         ~the-name (or ~validator identity) ~description
-         (or ~property-parser i/identity-parser)
-         true
-         ~default-value
-         i/lookup-property))))
-
-
-(defmacro defmanyprops
-  "Define many property keys at once using argument vectors. See `defprop` for details."
-  [the-sym arg-vec & more]
-  (i/expect-arg (count more) even? ["Expected even number of var args, but found " more])
-  `(i/defmany defprop ~the-sym ~arg-vec ~@more))
-
-
-(defn read-properties
-  "Read properties file(s) returning a java.util.Properties instance."
-  (^Properties [^String config-filename]
-    (read-properties config-filename {:parent-key "parent"}))
-  (^Properties [^String config-filename {:keys [^String parent-key info-logger error-logger]
-                                         :or {info-logger  #(println "[keypin] [info]" %)
-                                              error-logger #(println "[keypin] [error]" %)}
-                                         :as options}]
-    (let [logger (reify Logger
-                   (info [this msg] (info-logger msg))
-                   (error [this msg] (error-logger msg)))]
-      (if parent-key
-        (PropertyFile/resolveConfig config-filename parent-key logger)
-        (PropertyFile/resolveConfig config-filename logger)))))
-
-
-;; ===== validators =====
-
-
-(defn bool?
-  "Return true if argument is of boolean type, false otherwise."
-  [x]
-  (instance? Boolean x))
-
-
-(defn deref?
-  "Wrap a predicate such that it derefs the argument before applying the predicate."
-  [pred]
-  (fn [x]
-    (pred (deref x))))
+  (let [options (if (odd? (count more))
+                  (i/expect-arg the-sym map? ["Expected an option map, found" (pr-str the-sym)])
+                  {})
+        pairs (->> (if (odd? (count more))
+                     (cons arg-vec more)
+                     (cons the-sym (cons arg-vec more)))
+                (partition 2)
+                (map (fn [[each-sym each-vec]]
+                       (i/expect-arg each-sym symbol? ["Expected a symbol to define var, found" (pr-str each-sym)])
+                       (i/expect-arg each-vec vector? ["Expected a vector to create key, found" (pr-str each-vec)])
+                       [each-sym (case (count each-vec)
+                                   1 (conj each-vec any? "No description" options)
+                                   3 (conj each-vec options)
+                                   4 (update-in each-vec [3] (fn [each-opts]
+                                                               (i/expect-arg each-opts map?
+                                                                 ["Expected an option map for defkey, but found"
+                                                                  (pr-str each-opts)])
+                                                               (merge options each-opts)))
+                                   (i/illegal-arg ["Expected 1, 3 or 4 elements as arguments for defkey, but found"
+                                                   (pr-str each-vec)]))]))
+                (map (fn [[each-sym each-vec]]
+                       `(def ~each-sym (make-key ~@each-vec)))))]
+    `(do ~@pairs)))
 
 
 ;; ===== value parsers =====
