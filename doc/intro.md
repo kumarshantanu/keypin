@@ -63,20 +63,18 @@ Defining property finders is quite straightforward. The argument vector format i
 [key validator description options]
 ```
 
-Only `key` is required, rest of the positional arguments are optional.
-
-| Argument         | Description                           | Default            |
-|------------------|---------------------------------------|--------------------|
-| `key` (required) | the key to look up                    | No default         |
-| `validator`      | predicate fn to validate parsed value | Fn returning `true`|
-| `description`    | key description                       | `"No description"` |
-| `options`        | option map with following keys        | `{}`               |
-|                  | `:parser` (value parser fn, arity-2)  | Identity parser    |
-|                  | `:default` (returned when not found)  | No default         |
-|                  | `:lookup` (lookup function)           | `lookup-key`       |
+| Argument      | Description                           | Default            |
+|---------------|---------------------------------------|--------------------|
+| `key`         | the key to look up                    | No default         |
+| `validator`   | predicate fn to validate parsed value | `k/any?`           |
+| `description` | key description                       | `"No description"` |
+| `options`     | option map with following keys        | `{}`               |
+|               | `:parser`  (value parser fn, arity-2) | Identity parser    |
+|               | `:default` (value when key not found) | No default         |
+|               | `:lookup`  (lookup function)          | `k/lookup-key`     |
 
 
-### Defining multiple keys at once
+### Defining multiple keys
 
 ```clojure
 (defkey
@@ -97,7 +95,7 @@ Only `key` is required, rest of the positional arguments are optional.
   {:lookup k/lookup-property}
   app-name  ["app.name"     string?      "Expected string"]
   pool-size ["pool.size"    #(< 0 % 100) "Thread-pool size (1-99)" {:parser k/str->int}]
-  trace?    ["enable.trace" k/bool?      "Flag: Whether enable runtime tracing?" {:parser k/str->bool :default true}])
+  trace?    ["enable.trace" k/bool?      "Flag: Enable runtime tracing?" {:parser k/str->bool :default true}])
 
 ;; lookup
 (app-name ^java.util.Properties props)  ; returns whatever is defined in the properties file
