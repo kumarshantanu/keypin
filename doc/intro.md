@@ -79,7 +79,7 @@ Defining property finders is quite straightforward. The argument vector format i
 ```clojure
 (defkey
   ip-address    [:ip string? "Server IP"]
-  port-optional [:port #(< 1023 % 65535) "Server port" k/str->int 3000]
+  port-optional [:port #(< 1023 % 65535) "Server port" {:parser k/str->int :default 3000}]
   username      [:username string? "User name"]
   password      [:password string? "User password"])
 
