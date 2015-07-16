@@ -1,6 +1,6 @@
 # keypin
 
-Key lookup on steroids for Clojure.
+Key lookup on steroids in Clojure.
 
 Features include:
 
