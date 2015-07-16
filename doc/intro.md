@@ -4,7 +4,7 @@
 ## Requiring namespace
 
 ```clojure
-(require '[keypin.core :refer [defkey letkey] :as k])
+(require '[keypin.core :refer [defkey letval] :as k])
 ```
 
 
@@ -22,7 +22,7 @@ You define key finders with some meta data as follows:
 (foo {:foo 20 :bar 30})  ; returns 20
 (foo {:bar 30 :baz 40})  ; throws IllegalArgumentException
 
-(letkey [{x foo} {:foo 20 :bar 30}]
+(letval [{x foo} {:foo 20 :bar 30}]
   x)  ; returns 20
 ```
 
@@ -47,8 +47,21 @@ You define key finders with some meta data as follows:
 (port-optional {:ip "0.0.0.0"})               ; returns 3000
 
 ;; lookup form
-(letkey [{:defs [ip port-optional] :as m} {:ip "0.0.0.0"}]
+(letval [{:defs [ip port-optional] :as m} {:ip "0.0.0.0"}]
   [ip port-optional m])  ; returns ["0.0.0.0" 3000 {:ip "0.0.0.0"}]
+```
+
+Another example of multiple key finders:
+
+```clojure
+(defkey
+  ip-address    [:ip string? "Server IP"]
+  port-optional [:port #(< 1023 % 65535) "Server port" {:parser k/str->int :default 3000}]
+  username      [:username string? "User name"]
+  password      [:password string? "User password"])
+
+;; lookup
+(ip-address {:ip "12.34.56.78" :username "testbot" :password "s3cr3t"})
 ```
 
 
@@ -84,20 +97,6 @@ Defining property finders is quite straightforward. The argument vector format i
 |               | `:parser`  (value parser fn, arity-2) | Identity parser    |
 |               | `:default` (value when key not found) | No default         |
 |               | `:lookup`  (lookup function)          | `k/lookup-key`     |
-
-
-### Defining multiple keys - an example
-
-```clojure
-(defkey
-  ip-address    [:ip string? "Server IP"]
-  port-optional [:port #(< 1023 % 65535) "Server port" {:parser k/str->int :default 3000}]
-  username      [:username string? "User name"]
-  password      [:password string? "User password"])
-
-;; lookup
-(ip-address {:ip "12.34.56.78" :username "testbot" :password "s3cr3t"})
-```
 
 
 ### Defining property lookup

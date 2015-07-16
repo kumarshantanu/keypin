@@ -197,11 +197,11 @@
   rat [:rat])
 
 
-(deftest test-letkey
+(deftest test-letval
   (testing "Happy lookup"
     (let [ran? (atom false)
           data {:cat 20 :dog 30}]
-      (letkey [{x cat y dog :as m} data]
+      (letval [{x cat y dog :as m} data]
         (reset! ran? true)
         (is (= 20 x))
         (is (= 30 y))
@@ -210,7 +210,7 @@
   (testing "Happy :defs lookup"
     (let [ran? (atom false)
           data {:cat 20 :dog 30}]
-      (letkey [{:defs [cat dog] :as m} data]
+      (letval [{:defs [cat dog] :as m} data]
         (reset! ran? true)
         (is (= 20 cat))
         (is (= 30 dog))
@@ -219,7 +219,7 @@
   (testing "Happy :defs lookup with default"
     (let [ran? (atom false)
           data {:cat 20}]
-      (letkey [{:defs [cat dog] :as m} data]
+      (letval [{:defs [cat dog] :as m} data]
         (reset! ran? true)
         (is (= 100 dog))
         (is (= data m)))
@@ -228,6 +228,6 @@
     (let [ran? (atom false)
           data {:cat 20 :dog 30}]
       (is (thrown? IllegalArgumentException
-            (letkey [{z rat :as m} data]
+            (letval [{z rat :as m} data]
               (reset! ran? true))))
       (is (not @ran?)))))

@@ -198,11 +198,18 @@
     `(do ~@pairs)))
 
 
-;; ===== key destructuring =====
+;; ===== key lookup and value destructuring =====
 
 
-(defmacro letkey
-  "Destructure the bindings (left hand side must be a map) into locals and evaluate body in that context."
+(defmacro letval
+  "Like let, except in which the left hand side is a destructuring map, right hand side is the argument to key finder.
+  Beside symbols, the destructuring map optionally supports :defs (symbols bound to key finders) and :as keys.
+  Example:
+  (letval [{:defs [foo bar] ; foo, bar are key finders
+            baz baz-key     ; baz-key is a key finder
+            :as m} {:foo 10 :bar 20 :baz 30}]
+    ;; foo, bar and baz are now bound to values looked up in the map
+    ...)"
   [bindings & body]
   (i/expect-arg bindings vector? ["Expected a binding vector, but found" (pr-str bindings)])
   (i/expect-arg (count bindings) even? ["Expected even number of binding forms, but found" (pr-str bindings)])

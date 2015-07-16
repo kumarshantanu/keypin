@@ -27,7 +27,7 @@ Leiningen coordinates: `[keypin "0.1.0-SNAPSHOT"]`
 ### Quick start
 
 ```clojure
-(require '[keypin.core :refer [defkey letkey] :as k])
+(require '[keypin.core :refer [defkey letval] :as k])
 
 ;; key with constraints
 (defkey
@@ -49,7 +49,7 @@ Leiningen coordinates: `[keypin "0.1.0-SNAPSHOT"]`
 (port-optional {:ip "0.0.0.0"})               ; returns 3000
 
 ;; lookup form
-(letkey [{:defs [ip port-optional] :as m} {:ip "0.0.0.0"}]
+(letval [{:defs [ip port-optional] :as m} {:ip "0.0.0.0"}]
   [ip port-optional m])  ; returns ["0.0.0.0" 3000 {:ip "0.0.0.0"}]
 ```
 
