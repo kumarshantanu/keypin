@@ -215,23 +215,26 @@
   (i/expect-arg (count bindings) even? ["Expected even number of binding forms, but found" (pr-str bindings)])
   (let [forms (->> (partition 2 bindings)
                 (mapcat
-                  (fn [[lhs rhs]]
+                  (fn bind [[lhs rhs]]
                     (i/expect-arg lhs map? ["Expected a map to destructure keys, but found" (pr-str lhs)])
                     (let [local (gensym)]  ; bind it to a gensym, in case we have to handle :as
                       (->> (seq lhs)
                         (mapcat
                           (fn [[sym k]]
-                            (if (symbol? sym)
-                              [sym `(~k ~local)]
-                              (case sym
-                                :as   [k local]
-                                :defs (->> k
-                                        (mapcat (fn [s]
-                                                  (i/expect-arg s symbol?
-                                                    ["Expected a symbol under :defs, but found" (pr-str s)])
-                                                  [s `(~s ~local)])))
-                                (i/illegal-arg ["Expected a symbol or :as/:defs, but found" (pr-str sym)])))))
-                        (into [local rhs]))))))]
+                            (cond
+                              (symbol? sym) [sym `(~k ~local)]
+                              (map? sym)    (bind [sym `(~k ~local)])
+                              (= sym :as)   [k local]
+                              (= sym :defs) (->> k
+                                              (mapcat (fn [s]
+                                                        (if (symbol? s)
+                                                          [s `(~s ~local)]
+                                                          (i/illegal-arg ["Expected a symbol under :defs, but found"
+                                                                          (pr-str s)])))))
+                              :otherwise    (i/illegal-arg ["Expected a symbol, or a map or :as/:defs, but found"
+                                                            (pr-str sym)]))))
+                        (into [local rhs])))))
+                vec)]
     `(let [~@forms]
        ~@body)))
 

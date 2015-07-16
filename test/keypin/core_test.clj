@@ -192,6 +192,7 @@
 
 
 (defkey
+  bat [:bat]
   cat [:cat]
   dog [:dog {:default 100}]
   rat [:rat])
@@ -222,6 +223,16 @@
       (letval [{:defs [cat dog] :as m} data]
         (reset! ran? true)
         (is (= 100 dog))
+        (is (= data m)))
+      (is @ran?)))
+  (testing "Happy nested map lookup"
+    (let [ran? (atom false)
+          data {:bat 10 :cat {:dog 20 :rat 30}}]
+      (letval [{:defs [bat] {:defs [dog rat]} cat :as m} data]
+        (reset! ran? true)
+        (is (= 10 bat))
+        (is (= 20 dog))
+        (is (= 30 rat))
         (is (= data m)))
       (is @ran?)))
   (testing "Missing key"
