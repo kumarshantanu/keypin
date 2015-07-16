@@ -171,17 +171,17 @@
                      (cons the-sym (cons arg-vec more)))
                 (partition 2)
                 (map (fn [[each-sym each-vec]]
-                       (i/expect-arg each-sym symbol? ["Expected a symbol to define var, found" (pr-str each-sym)])
-                       (i/expect-arg each-vec vector? ["Expected a vector to create key, found" (pr-str each-vec)])
+                       (i/expect-arg each-sym symbol? ["Expected a symbol to define var, but found" (pr-str each-sym)])
+                       (i/expect-arg each-vec vector? ["Expected a vector to create key, but found" (pr-str each-vec)])
                        [each-sym (case (count each-vec)
                                    1 (conj each-vec any? "No description" options)
                                    2 (let [{:keys [pred desc]
                                             :or {pred any?
                                                  desc "No description"}
-                                            :as spec-opts} (let [each-opts (get each-vec 1)]
+                                            :as spec-opts} (let [[each-key each-opts] each-vec]
                                                              (i/expect-arg each-opts map?
-                                                               ["Expected an option map for defkey, but found"
-                                                                (pr-str each-opts)])
+                                                               (format "Expected an option map for key %s, but found %s"
+                                                                 (pr-str each-key) (pr-str each-opts)))
                                                              (merge options each-opts))]
                                        (-> (pop each-vec) ; remove options first
                                          (conj pred desc spec-opts)))
