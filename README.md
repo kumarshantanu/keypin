@@ -8,6 +8,7 @@ Features include:
   - Clojure maps
   - Clojure vectors
   - `java.util.Properties` instances
+  - Destructuring
 - Optional value parsing
 - Optional value validation
 - Fail-fast error reporting
