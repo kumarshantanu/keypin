@@ -189,3 +189,45 @@
         (str->var "foo" "keypin.test-samples/hellow")) "Bad ns")
   (is (thrown? IllegalArgumentException
         (str->var "foo" "keypin.test-sample/hellow")) "Bad var"))
+
+
+(defkey
+  cat [:cat]
+  dog [:dog {:default 100}]
+  rat [:rat])
+
+
+(deftest test-letkey
+  (testing "Happy lookup"
+    (let [ran? (atom false)
+          data {:cat 20 :dog 30}]
+      (letkey [{x cat y dog :as m} data]
+        (reset! ran? true)
+        (is (= 20 x))
+        (is (= 30 y))
+        (is (= data m)))
+      (is @ran?)))
+  (testing "Happy :defs lookup"
+    (let [ran? (atom false)
+          data {:cat 20 :dog 30}]
+      (letkey [{:defs [cat dog] :as m} data]
+        (reset! ran? true)
+        (is (= 20 cat))
+        (is (= 30 dog))
+        (is (= data m)))
+      (is @ran?)))
+  (testing "Happy :defs lookup with default"
+    (let [ran? (atom false)
+          data {:cat 20}]
+      (letkey [{:defs [cat dog] :as m} data]
+        (reset! ran? true)
+        (is (= 100 dog))
+        (is (= data m)))
+      (is @ran?)))
+  (testing "Missing key"
+    (let [ran? (atom false)
+          data {:cat 20 :dog 30}]
+      (is (thrown? IllegalArgumentException
+            (letkey [{z rat :as m} data]
+              (reset! ran? true))))
+      (is (not @ran?)))))

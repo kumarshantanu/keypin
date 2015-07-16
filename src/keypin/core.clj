@@ -198,6 +198,37 @@
     `(do ~@pairs)))
 
 
+;; ===== key destructuring =====
+
+
+(defmacro letkey
+  "Destructure the bindings (left hand side must be a map) into locals and evaluate body in that context."
+  [bindings & body]
+  (i/expect-arg bindings vector? ["Expected a binding vector, but found" (pr-str bindings)])
+  (i/expect-arg (count bindings) even? ["Expected even number of binding forms, but found" (pr-str bindings)])
+  (let [forms (->> (partition 2 bindings)
+                (mapcat
+                  (fn [[lhs rhs]]
+                    (i/expect-arg lhs map? ["Expected a map to destructure keys, but found" (pr-str lhs)])
+                    (let [local (gensym)]  ; bind it to a gensym, in case we have to handle :as
+                      (->> (seq lhs)
+                        (mapcat
+                          (fn [[sym k]]
+                            (if (symbol? sym)
+                              [sym `(~k ~local)]
+                              (case sym
+                                :as   [k local]
+                                :defs (->> k
+                                        (mapcat (fn [s]
+                                                  (i/expect-arg s symbol?
+                                                    ["Expected a symbol under :defs, but found" (pr-str s)])
+                                                  [s `(~s ~local)])))
+                                (i/illegal-arg ["Expected a symbol or :as/:defs, but found" (pr-str sym)])))))
+                        (into [local rhs]))))))]
+    `(let [~@forms]
+       ~@body)))
+
+
 ;; ===== value parsers =====
 
 

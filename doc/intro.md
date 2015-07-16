@@ -4,7 +4,7 @@
 ## Requiring namespace
 
 ```clojure
-(require '[keypin.core :refer [defkey] :as k])
+(require '[keypin.core :refer [defkey letkey] :as k])
 ```
 
 
@@ -21,6 +21,9 @@ You define key finders with some meta data as follows:
 ;; lookup
 (foo {:foo 20 :bar 30})  ; returns 20
 (foo {:bar 30 :baz 40})  ; throws IllegalArgumentException
+
+(letkey [{x foo} {:foo 20 :bar 30}]
+  x)  ; returns 20
 ```
 
 
@@ -28,7 +31,9 @@ You define key finders with some meta data as follows:
 
 ```clojure
 ;; key with constraints
-(defkey port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
+(defkey
+  ip   [:ip]
+  port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
 
 ;; lookup
 (port {:ip "0.0.0.0" :port "5000"})  ; returns 5000
@@ -40,6 +45,10 @@ You define key finders with some meta data as follows:
 ;; lookup
 (port-optional {:ip "0.0.0.0" :port "5000"})  ; returns 5000
 (port-optional {:ip "0.0.0.0"})               ; returns 3000
+
+;; lookup form
+(letkey [{:defs [ip port-optional] :as m} {:ip "0.0.0.0"}]
+  [ip port-optional m])  ; returns ["0.0.0.0" 3000 {:ip "0.0.0.0"}]
 ```
 
 
@@ -77,7 +86,7 @@ Defining property finders is quite straightforward. The argument vector format i
 |               | `:lookup`  (lookup function)          | `k/lookup-key`     |
 
 
-### Defining multiple keys
+### Defining multiple keys - an example
 
 ```clojure
 (defkey
