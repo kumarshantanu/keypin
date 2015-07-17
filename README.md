@@ -22,7 +22,7 @@ Features include:
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.1.0-SNAPSHOT"]`
+Leiningen coordinates: `[keypin "0.1.0"]`
 
 
 ### Quick start

@@ -1,8 +1,9 @@
-(defproject keypin "0.1.0-SNAPSHOT"
+(defproject keypin "0.1.0"
   :description "Key lookup on steroids in Clojure"
   :url "https://github.com/kumarshantanu/keypin"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :min-lein-version "2.0.0"
   :java-source-paths ["java-src"]
   :global-vars {*warn-on-reflection* true
                 *assert* true}
