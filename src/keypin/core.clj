@@ -308,3 +308,9 @@
                                            ns-name var-name (pr-str the-key) (str fq-var-name))))]
     ;; return the var without deref'ing
     the-var))
+
+
+(defn str->var->deref
+  "Given a fully qualified var name (eg. 'com.example.foo/bar'), resolve the var, deref it and return the value."
+  [the-key fq-var-name]
+  (deref (str->var the-key fq-var-name)))

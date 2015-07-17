@@ -189,7 +189,9 @@
   (is (thrown? IllegalArgumentException
         (str->var "foo" "keypin.test-samples/hellow")) "Bad ns")
   (is (thrown? IllegalArgumentException
-        (str->var "foo" "keypin.test-sample/hellow")) "Bad var"))
+        (str->var "foo" "keypin.test-sample/hellow")) "Bad var")
+  (is (string? (str->var->deref "foo" "keypin.test-sample/hello")))
+  (is (fn?     (str->var->deref "foo" "keypin.test-sample/hola"))))
 
 
 (defkey
