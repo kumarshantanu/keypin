@@ -1,7 +1,8 @@
 (ns keypin.core-test
   (:require
     [clojure.test :refer :all]
-    [keypin.core :refer :all])
+    [keypin.core :refer :all]
+    [keypin.test-helper :as th])
   (:import
     [java.util Map Properties]))
 
@@ -193,7 +194,7 @@
 
 (defkey
   bat [:bat]
-  cat [:cat]
+  cow [:cow]
   dog [:dog {:default 100}]
   rat [:rat])
 
@@ -201,34 +202,43 @@
 (deftest test-letval
   (testing "Happy lookup"
     (let [ran? (atom false)
-          data {:cat 20 :dog 30}]
-      (letval [{x cat y dog :as m} data]
+          data {:cow 20 :dog "canine"}]
+      (letval [{x cow ^String y dog :as m} data]
         (reset! ran? true)
         (is (= 20 x))
-        (is (= 30 y))
+        (is (= "canine" y))
+        (is (= \c (.charAt y 0)))  ; .charAt should NOT cause reflection warning
         (is (= data m)))
       (is @ran?)))
   (testing "Happy :defs lookup"
     (let [ran? (atom false)
-          data {:cat 20 :dog 30}]
-      (letval [{:defs [cat dog] :as m} data]
+          data {:cow 20 :dog 30}]
+      (letval [{:defs [cow dog] :as m} data]
         (reset! ran? true)
-        (is (= 20 cat))
+        (is (= 20 cow))
         (is (= 30 dog))
         (is (= data m)))
       (is @ran?)))
   (testing "Happy :defs lookup with default"
     (let [ran? (atom false)
-          data {:cat 20}]
-      (letval [{:defs [cat dog] :as m} data]
+          data {:cow 20}]
+      (letval [{:defs [cow dog] :as m} data]
         (reset! ran? true)
         (is (= 100 dog))
         (is (= data m)))
       (is @ran?)))
+  (testing "Happy :defs lookup with qualified symbol"
+    (let [ran? (atom false)
+          data {:namaste "hello"}]
+      (letval [{:defs [^String th/namaste] :as m} data]
+        (reset! ran? true)
+        (is (= "hello" namaste))
+        (is (= \h (.charAt namaste 0))))  ; .charAt should NOT cause reflection warning
+      (is @ran?)))
   (testing "Happy nested map lookup"
     (let [ran? (atom false)
-          data {:bat 10 :cat {:dog 20 :rat 30}}]
-      (letval [{:defs [bat] {:defs [dog rat]} cat :as m} data]
+          data {:bat 10 :cow {:dog 20 :rat 30}}]
+      (letval [{:defs [bat] {:defs [dog rat]} cow :as m} data]
         (reset! ran? true)
         (is (= 10 bat))
         (is (= 20 dog))
@@ -237,7 +247,7 @@
       (is @ran?)))
   (testing "Missing key"
     (let [ran? (atom false)
-          data {:cat 20 :dog 30}]
+          data {:cow 20 :dog 30}]
       (is (thrown? IllegalArgumentException
             (letval [{z rat :as m} data]
               (reset! ran? true))))

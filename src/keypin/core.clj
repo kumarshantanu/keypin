@@ -228,7 +228,8 @@
                               (= sym :defs) (->> k
                                               (mapcat (fn [s]
                                                         (if (symbol? s)
-                                                          [s `(~s ~local)]
+                                                          (let [u-sym (symbol (last (string/split (str s) #"/")))]
+                                                            [u-sym `(~s ~local)])  ; use unqualified symbol to bind
                                                           (i/illegal-arg ["Expected a symbol under :defs, but found"
                                                                           (pr-str s)])))))
                               :otherwise    (i/illegal-arg ["Expected a symbol, or a map or :as/:defs, but found"
