@@ -1,6 +1,6 @@
 # Changes and Todo
 
-## 0.1.1 / 2015-Oct-??
+## 0.1.1 / 2015-Oct-28
 
 - Compile Java source files in Java 7 bytecode format
 

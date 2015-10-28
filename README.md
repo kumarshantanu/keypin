@@ -24,7 +24,9 @@ Features include:
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.1.0"]`
+Leiningen coordinates: `[keypin "0.1.1"]`
+
+Requires Java 7 or higher.
 
 
 ### Quick start
