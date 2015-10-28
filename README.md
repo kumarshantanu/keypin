@@ -1,6 +1,6 @@
 # keypin
 
-[![Build Status](https://travis-ci.org/vigneshsarma/keypin.svg)](https://travis-ci.org/vigneshsarma/keypin)
+[![Build Status](https://travis-ci.org/kumarshantanu/keypin.svg)](https://travis-ci.org/kumarshantanu/keypin)
 
 Key lookup on steroids in Clojure.
 
