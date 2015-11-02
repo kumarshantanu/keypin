@@ -21,7 +21,8 @@
       (is (instance? Properties props))
       (is (= "new-version" (.getProperty props "service.version")))
       (is (= "2.3.6" (.getProperty props "app.version")))
-      (is (= "fooapp-new-version" (.getProperty props "service.name")) "overidden property in template")))
+      (is (= "fooapp-new-version" (.getProperty props "service.name")) "overidden property in template")
+      (is (= "unicorn" (.getProperty props "some.var")))))
   (testing "Hierarchical with missing parent"
     (println "----------")
     (is (thrown? IllegalArgumentException

@@ -3,7 +3,7 @@
 ## 0.2.0 / 2015-Nov-??
 
 - Reading property files
-  - [TODO] Template resolution looks up environment variables before property values
+  - Template resolution looks up environment variables before property values
 
 ## 0.1.1 / 2015-Oct-28
 

@@ -62,11 +62,12 @@ public class PropertyFile {
                     }
                 } else {
                     if (ch == '}' || !(ch == '.' || ch == '-' || Character.isJavaIdentifierPart(ch))) {
-                        if (props.containsKey(varName)) {
-                            sb.append(realize(props.getProperty(varName), props, logger));
-                        } else {
-                            exit(logger, "Error realizing template '%s', property '%s' not found: ", template, varName);
-                        }
+                        sb.append(realize(readValue(varName, template, props, logger), props, logger));
+//                        if (props.containsKey(varName)) {
+//                            sb.append(realize(props.getProperty(varName), props, logger));
+//                        } else {
+//                            exit(logger, "Error realizing template '%s', property '%s' not found: ", template, varName);
+//                        }
                         var = false;
                         varName = "";
                         // push back the index - do not throw away current char
@@ -89,13 +90,29 @@ public class PropertyFile {
             }
         }
         if (var) {
-            if (props.containsKey(varName)) {
-                sb.append(realize(props.getProperty(varName), props, logger));
-            } else {
-                throw new IllegalArgumentException("No such property found: " + varName);
-            }
+            sb.append(realize(readValue(varName, template, props, logger), props, logger));
+//            if (props.containsKey(varName)) {
+//                sb.append(realize(props.getProperty(varName), props, logger));
+//            } else {
+//                throw new IllegalArgumentException("No such property found: " + varName);
+//            }
         }
         return sb.toString();
+    }
+
+    private static String readValue(String varName, String template, Properties props, Logger logger) {
+        // try to read from environment variable
+        final String eValue = System.getenv(varName);
+        if (eValue != null) {
+            info(logger, "(Template '%s') Variable name '%s' resolved via environment variable", template, varName);
+            return eValue;
+        }
+        if (props.containsKey(varName)) {
+            info(logger, "(Template '%s') Variable name '%s' resolved via property value", template, varName);
+            return props.getProperty(varName);
+        }
+        exit(logger, "Error realizing template '%s', no value found for property '%s'", template, varName);
+        throw new IllegalStateException("Unreachable code");
     }
 
     /**
