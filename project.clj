@@ -1,4 +1,4 @@
-(defproject keypin "0.1.1"
+(defproject keypin "0.2.0-SNAPSHOT"
   :description "Key lookup on steroids in Clojure"
   :url "https://github.com/kumarshantanu/keypin"
   :license {:name "Eclipse Public License"

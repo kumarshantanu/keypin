@@ -1,8 +1,13 @@
 # Changes and Todo
 
+## 0.2.0 / 2015-Nov-??
+
+- Reading property files
+  - [TODO] Template resolution looks up environment variables before property values
+
 ## 0.1.1 / 2015-Oct-28
 
-- Compile Java source files in Java 7 bytecode format
+- Compile Java source files in Java 7 bytecode format ([Vignesh Sarma K](vigneshsarma))
 
 ## 0.1.0 / 2015-July-17
 
