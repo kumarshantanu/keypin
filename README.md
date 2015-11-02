@@ -19,12 +19,12 @@ Features include:
   - From filesystem and classpath (in that order)
   - Chained property files (via parent key, child properties override parent)
   - Multi-parent chaining
-  - Template value resolution in property values
+  - Template value resolution in property values (environment variables override others)
 
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.1.1"]`
+Leiningen coordinates: `[keypin "0.2.0"]`
 
 Requires Java 7 or higher.
 
