@@ -73,11 +73,6 @@ public class PropertyFile {
                 } else {
                     if (ch == '}' || !(ch == '.' || ch == '-' || Character.isJavaIdentifierPart(ch))) {
                         sb.append(realize(readValue(varName, template, props, logger), props, logger));
-//                        if (props.containsKey(varName)) {
-//                            sb.append(realize(props.getProperty(varName), props, logger));
-//                        } else {
-//                            exit(logger, "Error realizing template '%s', property '%s' not found: ", template, varName);
-//                        }
                         var = false;
                         varName = "";
                         // push back the index - do not throw away current char
@@ -101,11 +96,6 @@ public class PropertyFile {
         }
         if (var) {
             sb.append(realize(readValue(varName, template, props, logger), props, logger));
-//            if (props.containsKey(varName)) {
-//                sb.append(realize(props.getProperty(varName), props, logger));
-//            } else {
-//                throw new IllegalArgumentException("No such property found: " + varName);
-//            }
         }
         return sb.toString();
     }
