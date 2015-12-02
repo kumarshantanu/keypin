@@ -1,13 +1,22 @@
 # Changes and Todo
 
+
+## 0.2.1 / 2015-December-02
+
+- Reading property files
+  - Support for pipe-delimited cascading environment variables/properties: `${foo|bar|baz}`
+
+
 ## 0.2.0 / 2015-Nov-02
 
 - Reading property files
   - Template resolution looks up environment variables before other property values
 
+
 ## 0.1.1 / 2015-Oct-28
 
 - Compile Java source files in Java 7 bytecode format ([Vignesh Sarma K](vigneshsarma))
+
 
 ## 0.1.0 / 2015-July-17
 

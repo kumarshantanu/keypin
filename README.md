@@ -20,11 +20,12 @@ Features include:
   - Chained property files (via parent key, child properties override parent)
   - Multi-parent chaining
   - Template value resolution in property values (environment variables override others)
+  - Cascading lookup `${foo|bar|baz}` - `foo` is looked up, followed by `bar`, then `baz`
 
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.2.0"]`
+Leiningen coordinates: `[keypin "0.2.1"]`
 
 Requires Java 7 or higher.
 
