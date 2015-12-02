@@ -24,7 +24,7 @@
       (is (= "new-version" (.getProperty props "service.version")))
       (is (nil? (.getProperty props "app.version")))
       (is (nil? (.getProperty props "service.name")))
-      (is (= "fooapp" (.getProperty props "app.identity")))))
+      (is (= "identity-not-mentioned" (.getProperty props "app.identity")))))
   (testing "Hierarchical"
     (println "----------")
     (let [props (read-properties "test-config/myconf.properties" {:parent-key "parent-config"})]
