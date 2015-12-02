@@ -59,13 +59,18 @@ public class PropertyFile {
         }
         final StringBuilder sb = new StringBuilder();
         boolean var = false;
+        boolean varBracket = false;
         String varName = "";
         for (int i = 0; i < template.length(); i++) {
             final char ch = template.charAt(i);
             if (var) {
                 if (varName.isEmpty()) {
                     if (ch == '{') {
-                        // ignore
+                        if (!varBracket) {
+                            varBracket = true;
+                        } else {
+                            exit(logger, "Error realizing template '%s', found nested '{' char in variable", template);
+                        }
                     } else if (Character.isJavaIdentifierStart(ch)) {
                         varName += ch;
                     } else {
@@ -73,9 +78,11 @@ public class PropertyFile {
                                 template, template.substring(i));
                     }
                 } else {
-                    if (ch == '}' || !(ch == '.' || ch == '-' || Character.isJavaIdentifierPart(ch) || ch == '|')) {
+                    if ((varBracket && ch == '}') ||
+                            !(ch == '.' || ch == '-' || Character.isJavaIdentifierPart(ch) || ch == '|')) {
                         sb.append(realize(readValue(varName, template, props, logger), props, logger));
                         var = false;
+                        varBracket = false;
                         varName = "";
                         // push back the index - do not throw away current char
                         if (ch != '}') {
@@ -143,7 +150,7 @@ public class PropertyFile {
             if (in == null) {
                 exit(logger, "Config file '%s' not found in the filesystem or classpath", configFilename);
             }
-            info(logger, "Found in classpath");
+            info(logger, "Config file '%s' found in classpath", configFilename);
             return in;
         }
         if (!configFile.isFile()) {
@@ -152,7 +159,7 @@ public class PropertyFile {
         if (!configFile.canRead()) {
             exit(logger, "Config file '%s' is not readable", configFilename);
         }
-        info(logger, "Found in filesystem");
+        info(logger, "Config file '%s' found in filesystem", configFilename);
         return new FileInputStream(configFile);
     }
 
