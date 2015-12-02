@@ -14,8 +14,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class PropertyFile {
 
@@ -71,7 +73,7 @@ public class PropertyFile {
                                 template, template.substring(i));
                     }
                 } else {
-                    if (ch == '}' || !(ch == '.' || ch == '-' || Character.isJavaIdentifierPart(ch))) {
+                    if (ch == '}' || !(ch == '.' || ch == '-' || Character.isJavaIdentifierPart(ch) || ch == '|')) {
                         sb.append(realize(readValue(varName, template, props, logger), props, logger));
                         var = false;
                         varName = "";
@@ -101,15 +103,25 @@ public class PropertyFile {
     }
 
     private static String readValue(String varName, String template, Properties props, Logger logger) {
-        // try to read from environment variable
-        final String eValue = System.getenv(varName);
-        if (eValue != null) {
-            info(logger, "(Template '%s') Variable name '%s' resolved via environment variable", template, varName);
-            return eValue;
+        // there may be several variables separated by '|' character, so tokenize and check
+        final String[] tokens = varName.split(Pattern.quote("|"));
+        if (tokens.length > 1) {
+            info(logger, "(Template '%s', Expression '%s') Total %d variables found: %s",
+                    template, varName, tokens.length, Arrays.toString(tokens));
         }
-        if (props.containsKey(varName)) {
-            info(logger, "(Template '%s') Variable name '%s' resolved via property value", template, varName);
-            return props.getProperty(varName);
+        for (final String eachName: tokens) {
+            // try to read from environment variable
+            final String eValue = System.getenv(eachName);
+            if (eValue != null) {
+                info(logger, "(Template '%s', Expression '%s') Variable '%s' resolved via environment lookup",
+                        template, varName, eachName);
+                return eValue;
+            }
+            if (props.containsKey(eachName)) {
+                info(logger, "(Template '%s', Expression '%s') Variable '%s' resolved via property value",
+                        template, varName, eachName);
+                return props.getProperty(eachName);
+            }
         }
         exit(logger, "Error realizing template '%s', no value found for property '%s'", template, varName);
         throw new IllegalStateException("Unreachable code");
