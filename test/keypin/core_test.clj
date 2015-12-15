@@ -94,10 +94,12 @@
       (is (thrown? IllegalArgumentException (foo no-props)))
       (is (thrown? IllegalArgumentException (baz bad-props)))
       (is (thrown? IllegalArgumentException (baz bad-props2)))
+      (is (thrown? IllegalArgumentException (baz th/props)))
       (is (thrown? IllegalArgumentException (qux bad-props)))
       (is (thrown? IllegalArgumentException (esr bad-props))))
     (testing "Minimal definition"
-      (is (= "hello" (foo  min-props))))
+      (is (= "hello" (foo  min-props)))
+      (is (= "bar"   (foo  th/props))))
     (testing "Definition with validator/description"
       (is (= 34     (baz max-props)))
       (is (= "hola" (bar mod-props)))

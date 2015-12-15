@@ -9,8 +9,15 @@
 
 (ns keypin.test-helper
   (:require
-    [keypin.core :refer [defkey]]))
+    [keypin.core :refer [defkey]])
+  (:import
+    [java.util Properties]))
 
 
 (defkey
   namaste [:namaste])
+
+
+(def props (doto (Properties.)
+             (.setProperty "foo" "bar")
+             (.setProperty "baz" "quux")))
