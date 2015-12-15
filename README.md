@@ -4,7 +4,7 @@
 
 Key lookup on steroids in Clojure.
 
-Features include:
+#### Why Keypin?
 
 - Key lookup on any `clojure.lang.ILookup` or `java.util.Map` type
   - Clojure maps
@@ -25,7 +25,7 @@ Features include:
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.2.1"]`
+Leiningen coordinates: `[keypin "0.2.2"]`
 
 Requires Java 7 or higher.
 

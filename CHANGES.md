@@ -1,6 +1,12 @@
 # Changes and Todo
 
 
+## 0.2.2 / 2015-December-15
+
+- Key lookup
+  - Support for defining the target map as a var
+
+
 ## 0.2.1 / 2015-December-02
 
 - Reading property files
