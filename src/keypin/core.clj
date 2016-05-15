@@ -328,3 +328,76 @@
   "Given a fully qualified var name (eg. 'com.example.foo/bar'), resolve the var, deref it and return the value."
   [the-key fq-var-name]
   (deref (str->var the-key fq-var-name)))
+
+
+(defn regex->tokenizer
+  "Given a regex, return a fn that tokenizes a text."
+  ([token-processor regex]
+    (fn [text]
+      (let [tokens (string/split text regex)]
+        (mapv token-processor tokens))))
+  ([regex]
+    (regex->tokenizer string/trim regex)))
+
+
+(def comma-tokenizer (regex->tokenizer #","))
+(def colon-tokenizer (regex->tokenizer #":"))
+
+
+(defn str->coll
+  "Given a delimited text tokenize it as a collection and process it to return the result."
+  [entity-tokenizer entity-processor the-key text]
+  (entity-processor (entity-tokenizer text)))
+
+
+(defn str->vec
+  "Given a delimited text, tokenize it and return a vector of tokens. By default, the delimiter is a comma."
+  ([tokenizer the-key text]
+    (str->coll tokenizer identity the-key text))
+  ([the-key text]
+    (str->vec comma-tokenizer the-key text)))
+
+
+(defn str->map
+  "Given a delimted text, where each token is a delimited pair text, tokenize it and return a map of tokens. By default,
+  the pair delimiter is a comma and the key-value delimiter is a colon."
+  ([pair-tokenizer kv-tokenizer the-key text]
+    (str->coll
+      pair-tokenizer
+      (fn [pair-tokens]
+        (->> pair-tokens
+          (mapv kv-tokenizer)
+          (reduce (fn [m pair]
+                    (try
+                      (conj m pair)
+                      (catch Exception e
+                        (throw (IllegalArgumentException.
+                                 (str "Not a key/value pair: " (pr-str pair)) e)))))
+            {})))
+      the-key
+      text))
+  ([the-key text]
+    (str->map comma-tokenizer colon-tokenizer the-key text)))
+
+
+(defn str->nested
+  "Given a delimited text, where each token is again a delimited text, tokenize it and return a vector of nested
+  vectors of tokens. By default, the outer delimiter is a comma and the inner delimiter is a colon."
+  ([outer-tokenizer inner-tokenizer the-key text]
+    (str->coll
+      outer-tokenizer
+      #(mapv inner-tokenizer %)
+      the-key
+      text))
+  ([the-key text]
+    (str->nested comma-tokenizer colon-tokenizer the-key text)))
+
+
+(defn str->tuples
+  "Given a delimited text, where each token is again a delimited text, tokenize it and return a vector of maps. By
+  default, the outer delimiter is a comma and the inner delimiter is a colon."
+  ([outer-tokenizer inner-tokenizer ks the-key text]
+    (->> (str->nested outer-tokenizer inner-tokenizer the-key text)
+      (mapv #(zipmap ks %))))
+  ([ks the-key text]
+    (str->tuples comma-tokenizer colon-tokenizer ks the-key text)))

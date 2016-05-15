@@ -1,10 +1,17 @@
 # Changes and Todo
 
 
+## 0.3.0 / 2016-May-??
+
+- Collection parser functions
+- Reading property files
+  - [TODO] Support for resolving one or more (cascading) files instead of just one
+
+
 ## 0.2.2 / 2015-December-15
 
 - Key lookup
-  - Support for defining the target map as a var
+  - Support for defining the target map (lookup map) as a var
 
 
 ## 0.2.1 / 2015-December-02

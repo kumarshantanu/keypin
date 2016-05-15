@@ -204,7 +204,20 @@
   (is (thrown? IllegalArgumentException
         (str->var "foo" "keypin.test-sample/hellow")) "Bad var")
   (is (string? (str->var->deref "foo" "keypin.test-sample/hello")))
-  (is (fn?     (str->var->deref "foo" "keypin.test-sample/hola"))))
+  (is (fn?     (str->var->deref "foo" "keypin.test-sample/hola")))
+  ;; collection parsers
+  (is (= ["foo" "bar" "baz"]
+        (str->vec "foo" "foo, bar, baz")))
+  (is (= {"foo" "10" "bar" "20" "baz" "30"}
+        (str->map "foo" "foo: 10, bar: 20, baz: 30")))
+  (is (= [["foo" "10"]
+          ["bar" "20" "22"]
+          ["baz" "30" "32" "34" "36"]]
+        (str->nested "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36")))
+  (is (= [{:a "foo" :b "10"}
+          {:a "bar" :b "20" :c "22"}
+          {:a "baz" :b "30" :c "32" :d "34"}]
+        (str->tuples [:a :b :c :d] "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36"))))
 
 
 (defkey
