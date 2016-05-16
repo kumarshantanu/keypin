@@ -139,7 +139,10 @@
 
 
 (defn str->vec
-  "Given a delimited text, tokenize it and return a vector of tokens. By default, the delimiter is a comma."
+  "Given a delimited text, tokenize it and return a vector of tokens. By default, the delimiter is a comma.
+  Example:
+  => (str-vec :foo \"a, b, c\")
+  [\"a\" \"b\" \"c\"]"
   ([tokenizer the-key text]
     (str->coll tokenizer identity the-key text))
   ([the-key text]
@@ -148,7 +151,10 @@
 
 (defn str->map
   "Given a delimted text, where each token is a delimited pair text, tokenize it and return a map of tokens. By default,
-  the pair delimiter is a comma and the key-value delimiter is a colon."
+  the pair delimiter is a comma and the key-value delimiter is a colon.
+  Example:
+  => (str->map :foo \"a: 10, b: 20, c: 30\")
+  {\"a\" \"10\" \"b\" \"20\" \"c\" \"30\"}"
   ([pair-tokenizer kv-tokenizer the-key text]
     (str->coll
       pair-tokenizer
@@ -172,7 +178,12 @@
 
 (defn str->nested
   "Given a delimited text, where each token is again a delimited text, tokenize it and return a vector of nested
-  vectors of tokens. By default, the outer delimiter is a comma and the inner delimiter is a colon."
+  vectors of tokens. By default, the outer delimiter is a comma and the inner delimiter is a colon.
+  Example:
+  => (str->nested :foo \"joe: 30: male, sue: 35: female, max: 40: male\")
+  [[\"joe\" \"30\" \"male\"]
+   [\"sue\" \"35\" \"female\"]
+   [\"max\" \"40\" \"male\"]]"
   ([outer-tokenizer inner-tokenizer the-key text]
     (str->coll
       outer-tokenizer
@@ -185,7 +196,12 @@
 
 (defn str->tuples
   "Given a delimited text, where each token is again a delimited text, tokenize it and return a vector of maps. By
-  default, the outer delimiter is a comma and the inner delimiter is a colon."
+  default, the outer delimiter is a comma and the inner delimiter is a colon.
+  Example:
+  => (str->tuples [:name :age :gender] :foo \"joe: 30: male, sue: 35: female, max: 40: male\")
+  [{:name \"joe\" :age \"30\" :gender \"male\"}
+   {:name \"sue\" :age \"35\" :gender \"female\"}
+   {:name \"max\" :age \"40\" :gender \"male\"}]"
   ([outer-tokenizer inner-tokenizer ks the-key text]
     (->> (str->nested outer-tokenizer inner-tokenizer the-key text)
       (mapv #(zipmap ks %))))
