@@ -86,18 +86,18 @@
 
 (defn read-properties
   "Read properties file(s) returning a java.util.Properties instance."
-  (^Properties [^String config-filename]
-    (read-properties config-filename {:parent-key "parent"}))
-  (^Properties [^String config-filename {:keys [^String parent-key info-logger error-logger]
-                                         :or {info-logger  #(println "[keypin] [info]" %)
-                                              error-logger #(println "[keypin] [error]" %)}
-                                         :as options}]
+  (^Properties [config-filenames]
+    (read-properties config-filenames {:parent-key "parent"}))
+  (^Properties [config-filenames {:keys [^String parent-key info-logger error-logger]
+                                  :or {info-logger  #(println "[keypin] [info]" %)
+                                       error-logger #(println "[keypin] [error]" %)}
+                                  :as options}]
     (let [logger (reify Logger
                    (info [this msg] (info-logger msg))
                    (error [this msg] (error-logger msg)))]
       (if parent-key
-        (PropertyFile/resolveConfig config-filename parent-key logger)
-        (PropertyFile/resolveConfig config-filename logger)))))
+        (PropertyFile/resolveConfig config-filenames parent-key logger)
+        (PropertyFile/resolveConfig config-filenames logger)))))
 
 
 (defn lookup-property

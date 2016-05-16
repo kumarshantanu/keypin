@@ -19,7 +19,7 @@
 (deftest test-property-file-reader
   (testing "Non-hierarchical"
     (println "----------")
-    (let [props (read-properties "test-config/myconf.properties")]
+    (let [props (read-properties ["test-config/myconf.properties"])]
       (is (instance? Properties props))
       (is (= "new-version" (.getProperty props "service.version")))
       (is (nil? (.getProperty props "app.version")))
@@ -27,7 +27,7 @@
       (is (= "identity-not-mentioned" (.getProperty props "app.identity")))))
   (testing "Hierarchical"
     (println "----------")
-    (let [props (read-properties "test-config/myconf.properties" {:parent-key "parent-config"})]
+    (let [props (read-properties ["test-config/myconf.properties"] {:parent-key "parent-config"})]
       (is (instance? Properties props))
       (is (= "new-version" (.getProperty props "service.version")))
       (is (= "2.3.6" (.getProperty props "app.version")))
@@ -36,7 +36,7 @@
   (testing "Hierarchical with missing parent"
     (println "----------")
     (is (thrown? IllegalArgumentException
-          (read-properties "test-config/errconf.properties" {:parent-key "parent"})))))
+          (read-properties ["test-config/errconf.properties"] {:parent-key "parent"})))))
 
 
 (defkey

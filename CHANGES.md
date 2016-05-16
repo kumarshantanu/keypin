@@ -5,7 +5,7 @@
 
 - Collection parser functions
 - Reading property files
-  - [TODO] Support for resolving one or more (cascading) files instead of just one
+  - Support for resolving one or more property files instead of just one
 
 
 ## 0.2.2 / 2015-December-15
