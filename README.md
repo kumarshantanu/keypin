@@ -25,7 +25,7 @@ Key lookup on steroids in Clojure.
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.2.2"]`
+Leiningen coordinates: `[keypin "0.3.0"]`
 
 Requires Java 7 or higher.
 
@@ -34,11 +34,12 @@ Requires Java 7 or higher.
 
 ```clojure
 (require '[keypin.core :refer [defkey letval] :as k])
+(require '[keypin.util :as u])
 
 ;; key with constraints
 (defkey
   ip   [:ip]
-  port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
+  port [:port #(< 1023 % 65535) "Port number" {:parser u/str->int}])
 
 ;; lookup
 (ip   {:ip "0.0.0.0" :port "5000"})  ; returns "0.0.0.0"
@@ -48,7 +49,7 @@ Requires Java 7 or higher.
 ;; key with default value
 (defkey
   ip   [:ip]
-  port-optional [:port #(< 1023 % 65535) "Port number" {:parser k/str->int :default 3000}])
+  port-optional [:port #(< 1023 % 65535) "Port number" {:parser u/str->int :default 3000}])
 
 ;; lookup
 (port-optional {:ip "0.0.0.0" :port "5000"})  ; returns 5000
@@ -67,7 +68,7 @@ Requires Java 7 or higher.
 
 ## License
 
-Copyright © 2015 Shantanu Kumar (kumar.shantanu@gmail.com, shantanu.kumar@concur.com)
+Copyright © 2015-2016 Shantanu Kumar (kumar.shantanu@gmail.com, shantanu.kumar@concur.com)
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

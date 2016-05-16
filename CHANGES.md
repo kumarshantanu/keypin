@@ -1,7 +1,7 @@
 # Changes and Todo
 
 
-## 0.3.0 / 2016-May-??
+## 0.3.0 / 2016-May-16
 
 - Value parsers
   - Add collection parsers
