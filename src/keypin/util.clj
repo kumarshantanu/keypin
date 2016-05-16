@@ -191,3 +191,80 @@
       (mapv #(zipmap ks %))))
   ([ks the-key text]
     (str->tuples comma-tokenizer colon-tokenizer ks the-key text)))
+
+
+;; ----- optional (only when parsing needed) parsers -----
+
+
+(defn str->any
+  "Given a predicate fn and a string parser fn, return a parser fn that parses the value only when the predicate fn
+  return false and the value is a string."
+  [pred str-parser expected-msg]
+  (fn [the-key x]
+    (cond
+      (pred x) x
+      (string? x) (str-parser the-key ^String x)
+      :otherwise  (i/illegal-arg [(format "Expected %s for key %s but found %s"
+                                    expected-msg (pr-str the-key) (pr-str x))]))))
+
+
+(def any->bool
+  "Like str->bool, except parsing is avoided if value is already a boolean."
+  (str->any bool?    str->bool   "a boolean or a parseable string (as boolean)"))
+
+
+(def any->int
+  "Like str->int, except parsing is avoided if value is already an integer."
+  (str->any integer? str->int    "an integer or a parseable string (as integer)"))
+
+
+(def any->long
+  "Like str->long, except parsing is avoided if value is already a long integer."
+  (str->any integer? str->long   "a long int or a parseable string (as long int)"))
+
+
+(def any->float
+  "Like str->float, except parsing is avoided if value is already a floating point number."
+  (str->any float?   str->float  "a float or a parseable string (as float)"))
+
+
+(def any->double
+  "Like str->double, except parsing is avoided if value is already a double precision number."
+  (str->any float?   str->double "a double precision or a parseable string (as double precision)"))
+
+
+(def any->var
+  "Like str->var, except parsing is avoided if value is already a var."
+  (str->any var?     str->var    "a var or a fully qualified var name in format foo.bar/baz"))
+
+
+(def any->var->deref
+  "Like str->var->deref, except parsing is avoided if value is already a var (which is deref'ed before returning)."
+  (comp deref (str->any var? str->var "a var or a fully qualified var name in format foo.bar/baz")))
+
+
+(def any->vec
+  "Like str->vec, except parsing is avoided if value is already a vector."
+  (str->any vector?  str->vec    "a vector or a comma delimited string"))
+
+
+(def any->map
+  "Like str->map, except parsing is avoided if value is already a map."
+  (str->any map?     str->map "a map or a comma delimited string (each token colon-delimited pair)"))
+
+
+(def any->nested
+  "Like str->nested, except parsing is avoided if value is already a vector of nested vectors."
+  (str->any #(and (vector? %) (every? vector? %))
+    str->nested "a vector of vectors, or comma delimited string (each token colon-delimited text)"))
+
+
+(defn any->tuples
+  "Like str->tuples, except parsing is avoided if value is already tuples."
+  [ks the-key value]
+  (cond
+    (and (vector? value)
+      (every? map? value)) value
+    (string? value)        (str->tuples ks the-key value)
+    :otherwise         (i/illegal-arg [(format "Expected a valid or parseable-string value for key %s but found %s"
+                                         (pr-str the-key) (pr-str value))])))

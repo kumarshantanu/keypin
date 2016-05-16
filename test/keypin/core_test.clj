@@ -221,6 +221,64 @@
         (ku/str->tuples [:a :b :c :d] "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36"))))
 
 
+(deftest test-optional-parsers
+  (is (true? (ku/any->bool "foo" true)))
+  (is (true? (ku/any->bool "foo" "true")))
+  (is (thrown? IllegalArgumentException
+        (ku/str->bool "foo" "notboolean")))
+  (is (integer? (ku/any->int "foo" 10)))
+  (is (integer? (ku/any->int "foo" "10")))
+  (is (integer? (ku/any->long "foo" 10)))
+  (is (integer? (ku/any->long "foo" "10")))
+  (is (float?   (ku/any->float "foo" 10.23)))
+  (is (float?   (ku/any->float "foo" "10.23")))
+  (is (float?   (ku/any->double "foo" 10.23)))
+  (is (float?   (ku/any->double "foo" "10.23")))
+  (is (var?     (ku/any->var "foo" #'props)))
+  (is (var?     (ku/any->var "foo" "keypin.test-sample/hello"))) ; this also loads the namespace
+  (is ((ku/deref? fn?)     (ku/any->var "foo" #'props)))
+  (is ((ku/deref? string?) (ku/any->var "foo" "keypin.test-sample/hello"))) ; expects the namespace to be aliased
+  (is ((ku/deref? fn?)     (ku/any->var "foo" "keypin.test-sample/hola")))
+  (is (thrown? IllegalArgumentException
+        (ku/any->var "foo" "keypin.test-samplex")) "Bad var format")
+  (is (thrown? IllegalArgumentException
+        (ku/any->var "foo" "keypin.test-samples/hellow")) "Bad ns")
+  (is (thrown? IllegalArgumentException
+        (ku/any->var "foo" "keypin.test-sample/hellow")) "Bad var")
+  (is (fn?     (ku/any->var->deref "foo" #'props)))
+  (is (string? (ku/any->var->deref "foo" "keypin.test-sample/hello")))
+  (is (fn?     (ku/any->var->deref "foo" "keypin.test-sample/hola")))
+  ;; collection parsers
+  (is (= ["foo" "bar" "baz"]
+        (ku/any->vec "foo" ["foo" "bar" "baz"])))
+  (is (= ["foo" "bar" "baz"]
+        (ku/any->vec "foo" "foo, bar, baz")))
+  (is (= {"foo" "10" "bar" "20" "baz" "30"}
+        (ku/any->map "foo" {"foo" "10" "bar" "20" "baz" "30"})))
+  (is (= {"foo" "10" "bar" "20" "baz" "30"}
+        (ku/any->map "foo" "foo: 10, bar: 20, baz: 30")))
+  (is (= [["foo" "10"]
+          ["bar" "20" "22"]
+          ["baz" "30" "32" "34" "36"]]
+        (ku/any->nested "foo" [["foo" "10"]
+                               ["bar" "20" "22"]
+                               ["baz" "30" "32" "34" "36"]])))
+  (is (= [["foo" "10"]
+          ["bar" "20" "22"]
+          ["baz" "30" "32" "34" "36"]]
+        (ku/any->nested "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36")))
+  (is (= [{:a "foo" :b "10"}
+          {:a "bar" :b "20" :c "22"}
+          {:a "baz" :b "30" :c "32" :d "34"}]
+        (ku/any->tuples [:a :b :c :d] "foo" [{:a "foo" :b "10"}
+                                             {:a "bar" :b "20" :c "22"}
+                                             {:a "baz" :b "30" :c "32" :d "34"}])))
+  (is (= [{:a "foo" :b "10"}
+          {:a "bar" :b "20" :c "22"}
+          {:a "baz" :b "30" :c "32" :d "34"}]
+        (ku/any->tuples [:a :b :c :d] "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36"))))
+
+
 (defkey
   bat [:bat]
   cow [:cow]

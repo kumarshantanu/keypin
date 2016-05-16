@@ -3,7 +3,9 @@
 
 ## 0.3.0 / 2016-May-??
 
-- Add collection parser functions
+- Value parsers
+  - Add collection parsers
+  - Add optional parsers (useful for supporting EDN/other config file types)
 - Refactor validator and parser functions to `keypin.util` namespace
 - Reading property files
   - Support for resolving one or more property files instead of just one
