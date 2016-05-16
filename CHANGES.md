@@ -3,7 +3,8 @@
 
 ## 0.3.0 / 2016-May-??
 
-- Collection parser functions
+- Add collection parser functions
+- Refactor validator and parser functions to `keypin.util` namespace
 - Reading property files
   - Support for resolving one or more property files instead of just one
 

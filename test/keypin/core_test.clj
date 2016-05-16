@@ -11,6 +11,7 @@
   (:require
     [clojure.test :refer :all]
     [keypin.core :refer :all]
+    [keypin.util :as ku]
     [keypin.test-helper :as th])
   (:import
     [java.util Map Properties]))
@@ -59,11 +60,11 @@
   {:lookup lookup-property}
   foo ["foo"]
   bar ["bar" string? "Expected string"]
-  baz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
-  qux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}]
-  esr ["qux" {:pred bool?
+  baz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser ku/str->int}]
+  qux ["qux" ku/bool? "Flag: Whether enable runtime tracing?" {:parser ku/str->bool :default true}]
+  esr ["qux" {:pred ku/bool?
               :desc "Flag: Whether enable runtime tracing?"
-              :parser str->bool
+              :parser ku/str->bool
               :default true}])
 
 
@@ -112,10 +113,10 @@
 (defkey
   kfoo ["foo"]
   kbar ["bar" string? "Expected string"]
-  kbaz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
-  kqux ["qux" bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}]
-  kesr ["qux" {:pred bool? :desc "Flag: Whether enable runtime tracing?"
-               :parser str->bool :default true}])
+  kbaz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser ku/str->int}]
+  kqux ["qux" ku/bool? "Flag: Whether enable runtime tracing?" {:parser ku/str->bool :default true}]
+  kesr ["qux" {:pred ku/bool? :desc "Flag: Whether enable runtime tracing?"
+               :parser ku/str->bool :default true}])
 
 
 (deftest test-defkey-map
@@ -155,10 +156,10 @@
 (defkey
   vfoo [0]
   vbar [1 string? "Expected string"]
-  vbaz [2 #(< 0 % 100) "Thread-pool size (1-99)" {:parser str->int}]
-  vqux [3 bool? "Flag: Whether enable runtime tracing?" {:parser str->bool :default true}]
-  vesr [3 {:pred bool? :desc "Flag: Whether enable runtime tracing?"
-           :parser str->bool :default true}])
+  vbaz [2 #(< 0 % 100) "Thread-pool size (1-99)" {:parser ku/str->int}]
+  vqux [3 ku/bool? "Flag: Whether enable runtime tracing?" {:parser ku/str->bool :default true}]
+  vesr [3 {:pred ku/bool? :desc "Flag: Whether enable runtime tracing?"
+           :parser ku/str->bool :default true}])
 
 
 (deftest test-defkey-vec
@@ -186,38 +187,38 @@
 
 
 (deftest test-parsers
-  (is (true? (str->bool "foo" "true")))
+  (is (true? (ku/str->bool "foo" "true")))
   (is (thrown? IllegalArgumentException
-        (str->bool "foo" "notboolean")))
-  (is (integer? (str->int "foo" "10")))
-  (is (integer? (str->long "foo" "10")))
-  (is (float? (str->float "foo" "10.23")))
-  (is (float? (str->double "foo" "10.23")))
-  (is (var? (str->var "foo" "keypin.test-sample/hello")))
-  (is ((deref? string?) (str->var "foo" "keypin.test-sample/hello")))
-  (is (var? (str->var "foo" "keypin.test-sample/hola")))
-  (is ((deref? fn?) (str->var "foo" "keypin.test-sample/hola")))
+        (ku/str->bool "foo" "notboolean")))
+  (is (integer? (ku/str->int "foo" "10")))
+  (is (integer? (ku/str->long "foo" "10")))
+  (is (float? (ku/str->float "foo" "10.23")))
+  (is (float? (ku/str->double "foo" "10.23")))
+  (is (var? (ku/str->var "foo" "keypin.test-sample/hello")))
+  (is ((ku/deref? string?) (ku/str->var "foo" "keypin.test-sample/hello")))
+  (is (var? (ku/str->var "foo" "keypin.test-sample/hola")))
+  (is ((ku/deref? fn?) (ku/str->var "foo" "keypin.test-sample/hola")))
   (is (thrown? IllegalArgumentException
-        (str->var "foo" "keypin.test-samplex")) "Bad var format")
+        (ku/str->var "foo" "keypin.test-samplex")) "Bad var format")
   (is (thrown? IllegalArgumentException
-        (str->var "foo" "keypin.test-samples/hellow")) "Bad ns")
+        (ku/str->var "foo" "keypin.test-samples/hellow")) "Bad ns")
   (is (thrown? IllegalArgumentException
-        (str->var "foo" "keypin.test-sample/hellow")) "Bad var")
-  (is (string? (str->var->deref "foo" "keypin.test-sample/hello")))
-  (is (fn?     (str->var->deref "foo" "keypin.test-sample/hola")))
+        (ku/str->var "foo" "keypin.test-sample/hellow")) "Bad var")
+  (is (string? (ku/str->var->deref "foo" "keypin.test-sample/hello")))
+  (is (fn?     (ku/str->var->deref "foo" "keypin.test-sample/hola")))
   ;; collection parsers
   (is (= ["foo" "bar" "baz"]
-        (str->vec "foo" "foo, bar, baz")))
+        (ku/str->vec "foo" "foo, bar, baz")))
   (is (= {"foo" "10" "bar" "20" "baz" "30"}
-        (str->map "foo" "foo: 10, bar: 20, baz: 30")))
+        (ku/str->map "foo" "foo: 10, bar: 20, baz: 30")))
   (is (= [["foo" "10"]
           ["bar" "20" "22"]
           ["baz" "30" "32" "34" "36"]]
-        (str->nested "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36")))
+        (ku/str->nested "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36")))
   (is (= [{:a "foo" :b "10"}
           {:a "bar" :b "20" :c "22"}
           {:a "baz" :b "30" :c "32" :d "34"}]
-        (str->tuples [:a :b :c :d] "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36"))))
+        (ku/str->tuples [:a :b :c :d] "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36"))))
 
 
 (defkey
