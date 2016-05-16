@@ -119,7 +119,8 @@
 
 
 (defn regex->tokenizer
-  "Given a regex, return a fn that tokenizes a text."
+  "Given a regex, return a fn that tokenizes a text. Each token can be processed using an optional arity-1 fn, which
+  by default trims the tokens."
   ([token-processor regex]
     (fn [text]
       (let [tokens (string/split text regex)]
@@ -133,7 +134,8 @@
 
 
 (defn str->coll
-  "Given a delimited text tokenize it as a collection and process it to return the result."
+  "Given a delimited text tokenize it (using an arity-1 fn) as a collection and process it (using an arity-1 fn) to
+  return the result."
   [entity-tokenizer entity-processor the-key text]
   (entity-processor (entity-tokenizer text)))
 
