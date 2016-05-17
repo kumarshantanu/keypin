@@ -1,7 +1,7 @@
 # Changes and Todo
 
 
-## 0.3.1 / 2016-May-??
+## 0.3.1 / 2016-May-17
 
 - Value parsers
   - Add EDN value parser
