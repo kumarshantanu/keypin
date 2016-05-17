@@ -9,6 +9,7 @@
 
 (ns keypin.util
   (:require
+    [clojure.edn    :as edn]
     [clojure.string :as string]
     [keypin.internal :as i])
   (:import
@@ -211,6 +212,17 @@
     (str->tuples comma-tokenizer colon-tokenizer ks the-key text)))
 
 
+(defn str->edn
+  "Given a string representation of EDN, parse it as EDN and return it."
+  [the-key text]
+  (try
+    (edn/read-string text)
+    (catch Exception e
+      (throw (IllegalArgumentException.
+               (format "Expected a valid EDN string for key %s but found %s" (pr-str the-key) (pr-str text))
+               e)))))
+
+
 ;; ----- optional (only when parsing needed) parsers -----
 
 
@@ -286,3 +298,11 @@
     (string? value)        (str->tuples ks the-key value)
     :otherwise         (i/illegal-arg [(format "Expected a valid or parseable-string value for key %s but found %s"
                                          (pr-str the-key) (pr-str value))])))
+
+
+(defn any->edn
+  "Like str->edn, except parsing is avoided if value is already non-string."
+  [the-key value]
+  (if (string? value)
+    (str->edn the-key value)
+    value))

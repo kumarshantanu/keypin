@@ -4,7 +4,7 @@
 ## 0.3.1 / 2016-May-??
 
 - Value parsers
-  - [TODO] Add missing EDN value parser
+  - Add EDN value parser
 - Reading property files
   - Require property file names as `Iterable<String>` instead of `List<String>`
 
