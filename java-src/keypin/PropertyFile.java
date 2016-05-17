@@ -15,7 +15,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -204,8 +203,8 @@ public class PropertyFile {
         }
     }
 
-    public static Properties resolveConfig(final List<String> configFiles, final String parentKey, final Logger logger)
-            throws IOException {
+    public static Properties resolveConfig(final Iterable<String> configFiles, final String parentKey,
+            final Logger logger) throws IOException {
         final Properties result = new Properties();
         for (String eachFile: configFiles) {
             result.putAll(readCascadingConfig(eachFile, parentKey, logger));
@@ -213,7 +212,7 @@ public class PropertyFile {
         return realize(result, logger);
     }
 
-    public static Properties resolveConfig(final List<String> configFiles, final Logger logger)
+    public static Properties resolveConfig(final Iterable<String> configFiles, final Logger logger)
             throws IOException {
         final Properties result = new Properties();
         for (String eachFile: configFiles) {
