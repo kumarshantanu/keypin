@@ -7,7 +7,7 @@
 - [TODO] Hierarchical config resolution support for all types of config files
 
 
-## 0.3.2 / 2016-June-??
+## 0.3.2 / 2016-June-03
 
 - Reading property files
   - Remove parent config filename property after the hierarchical resolution is complete
