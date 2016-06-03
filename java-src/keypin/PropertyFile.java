@@ -209,6 +209,7 @@ public class PropertyFile {
         for (String eachFile: configFiles) {
             result.putAll(readCascadingConfig(eachFile, parentKey, logger));
         }
+        result.remove(parentKey);
         return realize(result, logger);
     }
 

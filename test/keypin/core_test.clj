@@ -28,8 +28,10 @@
       (is (= "identity-not-mentioned" (.getProperty props "app.identity")))))
   (testing "Hierarchical"
     (println "----------")
-    (let [props (read-properties ["test-config/myconf.properties"] {:parent-key "parent-config"})]
+    (let [parent-key "parent-config"
+          props (read-properties ["test-config/myconf.properties"] {:parent-key parent-key})]
       (is (instance? Properties props))
+      (is (not (.containsKey props parent-key)) "hierarchical config resolution should eliminate parent key")
       (is (= "new-version" (.getProperty props "service.version")))
       (is (= "2.3.6" (.getProperty props "app.version")))
       (is (= "fooapp-new-version" (.getProperty props "service.name")) "overidden property in template")

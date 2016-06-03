@@ -10,7 +10,7 @@
 ## 0.3.2 / 2016-June-??
 
 - Reading property files
-  - [TODO] Remove parent config filename property after the hierarchical resolution is complete
+  - Remove parent config filename property after the hierarchical resolution is complete
 
 
 ## 0.3.1 / 2016-May-17
