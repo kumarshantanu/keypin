@@ -199,6 +199,7 @@ public class PropertyFile {
             }
             // child overrides all parents
             result.putAll(props);
+            result.remove(parentKey);  // remove parent key from resolved properties
             return result;
         }
     }
@@ -209,7 +210,6 @@ public class PropertyFile {
         for (String eachFile: configFiles) {
             result.putAll(readCascadingConfig(eachFile, parentKey, logger));
         }
-        result.remove(parentKey);
         return realize(result, logger);
     }
 
