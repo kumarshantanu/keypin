@@ -5,6 +5,7 @@
 - [TODO] Support for reading config from EDN files
 - [TODO] Uniform interface for resolving config from various kinds of files (JSON, YAML etc.)
 - [TODO] Hierarchical config resolution support for all types of config files
+- [TODO] Export specified key/value pairs as system properties
 
 
 ## 0.3.2 / 2016-June-03
