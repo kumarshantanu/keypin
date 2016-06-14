@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+@Deprecated
 public class PropertyFile {
 
     private static void exit(final Logger logger, final String format, Object...args) {
