@@ -114,7 +114,9 @@
 
 
 (defn read-properties
-  "Read properties file(s) returning a java.util.Properties instance."
+  "DEPRECATED: Use 'read-config' instead.
+  Read properties file(s) returning a java.util.Properties instance."
+  {:deprecated "0.4.0"}
   (^Properties [config-filenames]
     (read-properties config-filenames {:parent-key "parent"}))
   (^Properties [config-filenames {:keys [^String parent-key info-logger error-logger]
@@ -130,7 +132,9 @@
 
 
 (defn lookup-property
-  "Look up property name in a java.util.Properties instance."
+  "DEPRECATED: Use 'lookup-key' instead.
+  Look up property name in a java.util.Properties instance."
+  {:deprecated "0.4.0"}
   [^Properties the-map ^String property-name validator description property-parser default-value? default-value]
   (when-not (instance? Properties the-map)
     (i/illegal-arg (format "Property '%s' looked up in a non java.util.Properties object: %s"

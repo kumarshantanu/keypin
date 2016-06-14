@@ -14,7 +14,7 @@
   - Support for writing config files
 - Deprecated API
   - Deprecate class `keypin.PropertyFile`
-  - [TODO] Deprecate `keypin.core/read-properties` and `keypin.core/lookup-property`
+  - Deprecate `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Dependency injection
   - [TODO] Helpers to partially apply annotated arguments in a function
 
