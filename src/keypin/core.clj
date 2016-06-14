@@ -9,12 +9,13 @@
 
 (ns keypin.core
   (:require
-    [clojure.string :as string]
+    [clojure.edn     :as edn]
+    [clojure.string  :as string]
     [keypin.internal :as i])
   (:import
     [clojure.lang ILookup]
     [java.util Map Properties]
-    [keypin Logger PropertyFile]))
+    [keypin Config ConfigIO Logger Mapper PropertyConfigIO PropertyFile]))
 
 
 ;; ===== lookup functions ====
@@ -56,6 +57,57 @@
                       (recur (get data k) (rest path))))))]
     (i/expect-arg value validator (format "Invalid value for key path %s (description: '%s'): %s"
                                     (pr-str ks) description (pr-str value)))))
+
+
+;; ===== reading config files =====
+
+
+(def property-file-io
+  "Reader/writer for properties files."
+  (PropertyConfigIO.))
+
+
+(def edn-file-io
+  "Reader/writer for EDN files."
+  (reify ConfigIO
+    (canRead     [this filename]   (.endsWith (string/lower-case filename) ".edn"))
+    (readConfig  [this in]         (edn/read-string (slurp in)))
+    (canWrite    [this filename]   (.endsWith (string/lower-case filename) ".edn"))
+    (writeConfig [this out config] (spit out (pr-str config)))))
+
+
+(defn read-config
+  "Read config file(s) returning a java.util.Map instance."
+  (^Map [config-filenames]
+    (read-config config-filenames {:parent-key "parent"}))
+  (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper]
+                           :or {info-logger    #(println "[keypin] [info]" %)
+                                error-logger   #(println "[keypin] [error]" %)
+                                config-readers [property-file-io edn-file-io]
+                                config-mapper  Mapper/DEFAULT}
+                           :as options}]
+    (let [logger (reify Logger
+                   (info [this msg] (info-logger msg))
+                   (error [this msg] (error-logger msg)))]
+      (-> (if parent-key
+            (Config/readCascadingConfig config-readers config-filenames parent-key logger)
+            (Config/readConfig config-readers config-filenames logger))
+        (Config/realize config-mapper logger)))))
+
+
+(defn write-config
+  "Write config to a specified file"
+  ([config-filename config]
+    (write-config config-filename config {}))
+  ([config-filename config {:keys [info-logger error-logger config-writers]
+                            :or {info-logger    #(println "[keypin] [info]" %)
+                                 error-logger   #(println "[keypin] [error]" %)
+                                 config-writers [property-file-io edn-file-io]}
+                            :as options}]
+    (let [logger (reify Logger
+                   (info [this msg] (info-logger msg))
+                   (error [this msg] (error-logger msg)))]
+      (Config/writeConfig config-writers config-filename config logger))))
 
 
 ;; ===== properties files =====
