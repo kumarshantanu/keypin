@@ -16,6 +16,7 @@
   - Deprecate class `keypin.PropertyFile`
   - Deprecate `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Dependency injection
+  - Helper fn `keypin.di/partial` to partially apply args to fn var without losing var association
   - [TODO] Helpers to partially apply annotated arguments in a function
 
 
