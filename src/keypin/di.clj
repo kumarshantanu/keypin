@@ -14,7 +14,7 @@
 
 
 (defmacro partial
-  "Same as clojure.core/partial, except it does not"
+  "Same as clojure.core/partial, except it does not lose associativity with the var."
   [f & args]
   `(fn [& args#]
      (apply ~f ~@args args#)))
