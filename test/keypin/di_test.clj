@@ -10,7 +10,9 @@
 (ns keypin.di-test
   (:require
     [clojure.test :refer :all]
-    [keypin.di :as di]))
+    [keypin.di :as di])
+  (:import
+    [clojure.lang ArityException]))
 
 
 (defn foo [a b c] [a b c])
@@ -22,3 +24,25 @@
     (with-redefs [foo (fn [a b c] {:data [a b c]})]
       (is (= (cc-p :second :third) [:first :second :third]))
       (is (= (di-p :second :third) {:data [:first :second :third]})))))
+
+
+(defn sample-1
+  ([^:inject a ^:inject b]
+    [a b]))
+
+
+(defn sample-2
+  ([^:inject a ^{:inject :b} {:keys [b d]} c]
+    [a [b d] c])
+  ([^:inject a ^:inject b c & more]
+    [a b c more]))
+
+
+(deftest test-inject
+  (let [f (di/inject sample-1 {:a 10 :b 20})
+        g (di/inject sample-2 {:a 10 :b {:b 20 :d 40}})]
+    (is (= (f) [10 20]))
+    (is (thrown? ArityException (f 30)))
+    (is (thrown? ArityException (g)))
+    (is (= (g 30) [10 [20 40] 30]))
+    (is (= (g 30 40) [10 {:b 20 :d 40} 30 '(40)]))))
