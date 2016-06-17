@@ -20,19 +20,23 @@
      (apply ~f ~@args args#)))
 
 
+(defn defn?
+  "Return true if argument is a var created using defn, false otherwise."
+  [df]
+  (and (var? df)
+    (contains? (meta df) :arglists)))
+
+
 (defn inject*
   "Given a var defined with defn and an argument map, look up the :inject metadata on arguments and return a partially
   applied function."
   ([v args {:keys [inject-meta-key]
             :or {inject-meta-key :inject}}]
-    (when-not (and (var? v)
-                (contains? (meta v) :arglists))
-      (i/expected "a var created with clojure.core/defn" v))
-    (when-not (map? args)
-      (i/expected "a map" args))
-    (let [{name-sym :name
-           arglists :arglists} (meta v)
-          prepared (map (partial i/inject-prepare inject-meta-key v) arglists)
+    (i/expected defn? "a var created with clojure.core/defn" v)
+    (i/expected map? "a map" args)
+    (let [prepared (->> (meta v)
+                     :arglists
+                     (map (partial i/inject-prepare inject-meta-key v)))
           bindings (->> prepared
                      (mapcat first)
                      (mapcat (fn [{:keys [sym inject-key]}]
