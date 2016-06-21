@@ -15,17 +15,20 @@ Key lookup on steroids in Clojure.
 - Optional value validation
 - Fail-fast error reporting
 - Optional default value (when key is missing)
-- Reading property files
-  - From filesystem and classpath (in that order)
-  - Chained property files (via parent key, child properties override parent)
+- Reading config files
+  - Out of the box support for `.edn` and `.properties` files
+  - Extensible design for other config file types (JSON, YAML etc.)
+  - Read config file from filesystem and classpath (in that order)
+  - Chained config files (via parent key, child properties override parent)
   - Multi-parent chaining
-  - Template value resolution in property values (environment variables override others)
+  - Template value resolution in string values (environment variables override others)
   - Cascading lookup `${foo|bar|baz}` - `foo` is looked up, followed by `bar`, then `baz`
+- Writing config files
 
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.3.2"]`
+Leiningen coordinates: `[keypin "0.4.0"]`
 
 Requires Java 7 or higher.
 

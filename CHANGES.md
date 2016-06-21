@@ -5,7 +5,7 @@
 - [TODO] Export specified key/value pairs as system properties
 
 
-## 0.4.0 / 2016-June-??
+## 0.4.0 / 2016-June-21
 
 - Config files support
   - Support for reading config from EDN files

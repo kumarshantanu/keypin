@@ -5,6 +5,7 @@
 
 ```clojure
 (require '[keypin.core :refer [defkey letval] :as k])
+(require '[keypin.util :as u])
 ```
 
 
@@ -33,14 +34,14 @@ You define key finders with some meta data as follows:
 ;; key with constraints
 (defkey
   ip   [:ip]
-  port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
+  port [:port #(< 1023 % 65535) "Port number" {:parser u/str->int}])
 
 ;; lookup
 (port {:ip "0.0.0.0" :port "5000"})  ; returns 5000
 (port {:ip "0.0.0.0"})               ; throws IllegalArgumentException
 
 ;; key with default value
-(defkey port-optional [:port #(< 1023 % 65535) "Port number" {:parser k/str->int :default 3000}])
+(defkey port-optional [:port #(< 1023 % 65535) "Port number" {:parser u/str->int :default 3000}])
 
 ;; lookup
 (port-optional {:ip "0.0.0.0" :port "5000"})  ; returns 5000
@@ -56,7 +57,7 @@ Another example of multiple key finders:
 ```clojure
 (defkey
   ip-address    [:ip string? "Server IP"]
-  port-optional [:port #(< 1023 % 65535) "Server port" {:parser k/str->int :default 3000}]
+  port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int :default 3000}]
   username      [:username string? "User name"]
   password      [:password string? "User password"])
 
@@ -68,7 +69,7 @@ Another example of multiple key finders:
 ### Accessing the key
 
 ```clojure
-(defkey port [:port #(< 1023 % 65535) "Port number" {:parser k/str->int}])
+(defkey port [:port #(< 1023 % 65535) "Port number" {:parser u/str->int}])
 
 ;; access the key
 (key port)  ; returns :port
@@ -89,10 +90,10 @@ Defining property finders is quite straightforward. The argument vector format i
 | Argument      | Description                           | Default            |
 |---------------|---------------------------------------|--------------------|
 | `key`         | the key to look up                    | No default         |
-| `validator`   | predicate fn to validate parsed value | `k/any?`           |
+| `validator`   | predicate fn to validate parsed value | `u/any?`           |
 | `description` | key description                       | `"No description"` |
 | `options`     | option map with following keys        | `{}`               |
-|               | `:pred` (validator, in arity-2 only)  | `k/any?`           |
+|               | `:pred` (validator, in arity-2 only)  | `u/any?`           |
 |               | `:desc` (description, in arity-2 only)| `"No description"` |
 |               | `:parser`  (value parser fn, arity-2) | Identity parser    |
 |               | `:default` (value when key not found) | No default         |
@@ -105,15 +106,15 @@ Defining property finders is quite straightforward. The argument vector format i
 (defkey
   {:lookup k/lookup-property}
   app-name  ["app.name"     string?      "Expected string"]
-  pool-size ["pool.size"    #(< 0 % 100) "Thread-pool size (1-99)" {:parser k/str->int}]
-  trace?    ["enable.trace" k/bool?      "Flag: Enable runtime tracing?" {:parser k/str->bool :default true}])
+  pool-size ["pool.size"    #(< 0 % 100) "Thread-pool size (1-99)" {:parser u/str->int}]
+  trace?    ["enable.trace" u/bool?      "Flag: Enable runtime tracing?" {:parser u/str->bool :default true}])
 
 ;; lookup
 (app-name ^java.util.Properties props)  ; returns whatever is defined in the properties file
 ```
 
 
-## Reading property files
+## Reading config files
 
 Given a simple property file:
 
@@ -123,16 +124,28 @@ service.version=v1
 uri.prefix=${service.name}-${service.version}
 ```
 
-A simple property file may be read simply like this:
+or
+
+a simple EDN file:
+
+```edn
+{"service.name" "login-service"
+ "service.version" "v1"
+ "uri.prefix" "${service.name}-${service.version}"}
+```
+
+A config file may be read simply like this:
 
 ```clojure
-(def ^java.util.Properties props (k/read-properties "config/my-conf.properties"))
+(def ^java.util.Map config (k/read-config ["config/my-conf.properties"]))
+;; or
+(def ^java.util.Map config (k/read-config ["config/my-conf.edn"]))
 ```
 
 
 ### Chained property files
 
-Chained property files need to mention a parent key (property name):
+Chained config files need to mention a parent key:
 
 In parent file `base.properties`
 
@@ -164,8 +177,8 @@ log.level=trace
 Now, read it:
 
 ```clojure
-(def ^java.util.Properties props (k/read-properties "config/my-conf.properties"
-                                   {:parent-key "parent-config"}))
+(def ^java.util.Map config (k/read-config ["config/my-conf.properties"]
+                             {:parent-key "parent-config"}))
 ```
 
 The files `base.properties` and `dev.properties` will  be looked up in file system first, then in classpath.
