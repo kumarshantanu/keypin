@@ -7,8 +7,6 @@
 
 ## 0.4.0 / 2016-June-??
 
-- Project
-  - [TODO] Change project description to encompass configuration handling
 - Config files support
   - Support for reading config from EDN files ([TODO] tests for EDN)
   - Unified interface for resolving config from various kinds of files (JSON, YAML etc.)
@@ -17,10 +15,6 @@
 - Deprecated API
   - Deprecate class `keypin.PropertyFile`
   - Deprecate `keypin.core/read-properties` and `keypin.core/lookup-property`
-- Dependency injection
-  - Helper `keypin.di/partial` to partially apply args to fn var without losing var association
-  - Helpers `keypin.di/inject*` and `keypin.di/inject` to partially apply annotated arguments in a function
-  - [TODO] Helpers to partially apply annotated defn arguments in a cascaded fashion
 
 
 ## 0.3.2 / 2016-June-03
