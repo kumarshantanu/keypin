@@ -20,39 +20,47 @@
 
 (deftest test-config-file-reader
   (testing "Non-hierarchical"
-    (println "----------")
-    (let [props (read-config ["test-config/myconf.properties"])]
-      (is (instance? Map props))
-      (is (= "new-version" (get props "service.version")))
-      (is (nil? (get props "app.version")))
-      (is (nil? (get props "service.name")))
-      (is (= "identity-not-mentioned" (get props "app.identity")))))
+    (doseq [config-fileset [["test-config/myconf.properties"]
+                            ["test-config/myconf.edn"]]]
+      (println "----------")
+      (let [props (read-config ["test-config/myconf.properties"])]
+        (is (instance? Map props))
+        (is (= "new-version" (get props "service.version")))
+        (is (nil? (get props "app.version")))
+        (is (nil? (get props "service.name")))
+        (is (= "identity-not-mentioned" (get props "app.identity"))))))
   (testing "Hierarchical"
-    (println "----------")
-    (let [parent-key "parent-config"
-          props (read-config ["test-config/myconf.properties"] {:parent-key parent-key})]
-      (is (instance? Map props))
-      (is (not (.containsKey props parent-key)) "hierarchical config resolution should eliminate parent key")
-      (is (= "new-version" (get props "service.version")))
-      (is (= "2.3.6" (get props "app.version")))
-      (is (= "fooapp-new-version" (get props "service.name")) "overidden property in template")
-      (is (= "unicorn" (get props "some.var")))))
+    (doseq [config-fileset [["test-config/myconf.properties"]
+                            ["test-config/myconf.edn"]]]
+      (println "----------")
+      (let [parent-key "parent-config"
+            props (read-config config-fileset {:parent-key parent-key})]
+        (is (instance? Map props))
+        (is (not (.containsKey props parent-key)) "hierarchical config resolution should eliminate parent key")
+        (is (= "new-version" (get props "service.version")))
+        (is (= "2.3.6" (get props "app.version")))
+        (is (= "fooapp-new-version" (get props "service.name")) "overidden property in template")
+        (is (= "unicorn" (get props "some.var"))))))
   (testing "Hierarchical with missing parent"
-    (println "----------")
-    (is (thrown? IllegalArgumentException
-          (read-config ["test-config/errconf.properties"] {:parent-key "parent"})))))
+    (doseq [config-fileset [["test-config/errconf.properties"]
+                            ["test-config/errconf.edn"]]]
+      (println "----------")
+      (is (thrown? IllegalArgumentException
+            (read-config config-fileset {:parent-key "parent"}))))))
 
 
 (deftest test-config-file-writer
-  (let [parent-key "parent-config"
-        props (read-config ["test-config/myconf.properties"] {:parent-key parent-key})
-        tfile (File/createTempFile "auto-generated-" ".properties")
-        tname (.getAbsolutePath tfile)]
-    (.deleteOnExit tfile)
-    (println "Writing properties to" tname)
-    (write-config tname props)
-    (let [fresh-props (read-config [tname])]
-      (is (= props fresh-props) "Generated properties should be the same as what we read afresh"))))
+  (doseq [[config-fileset output-extension] [[["test-config/myconf.properties"] ".properties"]
+                                             [["test-config/myconf.edn"] ".edn"]]]
+    (let [parent-key "parent-config"
+          props (read-config config-fileset {:parent-key parent-key})
+          tfile (File/createTempFile "auto-generated-" output-extension)
+          tname (.getAbsolutePath tfile)]
+      (.deleteOnExit tfile)
+      (println "Writing properties to" tname)
+      (write-config tname props)
+      (let [fresh-props (read-config [tname])]
+        (is (= props fresh-props) "Generated properties should be the same as what we read afresh")))))
 
 
 (deftest test-property-file-reader

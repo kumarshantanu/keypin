@@ -8,7 +8,7 @@
 ## 0.4.0 / 2016-June-??
 
 - Config files support
-  - Support for reading config from EDN files ([TODO] tests for EDN)
+  - Support for reading config from EDN files
   - Unified interface for resolving config from various kinds of files (JSON, YAML etc.)
     - Hierarchical config resolution support for all types of config files
   - Support for writing config files
