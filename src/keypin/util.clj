@@ -214,13 +214,18 @@
 
 (defn str->edn
   "Given a string representation of EDN, parse it as EDN and return it."
-  [the-key text]
-  (try
-    (edn/read-string text)
-    (catch Exception e
-      (throw (IllegalArgumentException.
-               (format "Expected a valid EDN string for key %s but found %s" (pr-str the-key) (pr-str text))
-               e)))))
+  ([the-key text]
+    (try
+      (edn/read-string text)
+      (catch Exception e
+        (throw (IllegalArgumentException.
+                 (format "Expected a valid EDN string for key %s but found %s" (pr-str the-key) (pr-str text))
+                 e)))))
+  ([pred expectation the-key text]
+    (let [v (str->edn the-key text)]
+      (when-not (pred v)
+        (i/expected pred (str expectation " for key " (pr-str the-key)) v))
+      v)))
 
 
 ;; ----- optional (only when parsing needed) parsers -----
@@ -302,7 +307,12 @@
 
 (defn any->edn
   "Like str->edn, except parsing is avoided if value is already non-string."
-  [the-key value]
-  (if (string? value)
-    (str->edn the-key value)
-    value))
+  ([the-key value]
+    (if (string? value)
+      (str->edn the-key value)
+      value))
+  ([pred expectation the-key value]
+    (let [v (any->edn the-key value)]
+      (when-not (pred v)
+        (i/expected pred (str expectation " for key " (pr-str the-key)) v))
+      v)))

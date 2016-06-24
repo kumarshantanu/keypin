@@ -268,7 +268,11 @@
           {:a "baz" :b "30" :c "32" :d "34"}]
         (ku/str->tuples [:a :b :c :d] "foo" "foo: 10, bar: 20: 22, baz: 30: 32: 34: 36")))
   (is (= [:foo 100]
-        (ku/str->edn "foo" "[:foo 100]"))))
+        (ku/str->edn "foo" "[:foo 100]")))
+  (is (thrown? IllegalArgumentException
+        (ku/str->edn map? "a map" "foo" "[:foo 100]")))
+  (is (= {:foo 100}
+        (ku/str->edn map? "a map" "foo" "{:foo 100}"))))
 
 
 (deftest test-optional-parsers
@@ -330,7 +334,11 @@
   (is (= [:foo 100]
         (ku/any->edn "foo" "[:foo 100]")))
   (is (= [:foo 100]
-        (ku/any->edn "foo" [:foo 100]))))
+        (ku/any->edn "foo" [:foo 100])))
+  (is (thrown? IllegalArgumentException
+        (ku/any->edn map? "a map" "foo" [:foo 100])))
+  (is (= {:foo 100}
+        (ku/any->edn map? "a map" "foo" "{:foo 100}"))))
 
 
 (defkey
