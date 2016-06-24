@@ -5,6 +5,12 @@
 - [TODO] Export specified key/value pairs as system properties
 
 
+## 0.4.1 / 2016-June-24
+
+- Value parsers
+  - Make EDN value parser optionally validate the EDN value
+
+
 ## 0.4.0 / 2016-June-21
 
 - Config files support
