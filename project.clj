@@ -1,4 +1,4 @@
-(defproject keypin "0.4.1"
+(defproject keypin "0.4.2-SNAPSHOT"
   :description "Key lookup on steroids in Clojure"
   :url "https://github.com/kumarshantanu/keypin"
   :license {:name "Eclipse Public License"
@@ -16,5 +16,5 @@
                    :global-vars {*unchecked-math* :warn-on-boxed}}
              :c18 {:dependencies [[org.clojure/clojure "1.8.0"]]
                    :global-vars {*unchecked-math* :warn-on-boxed}}
-             :c19 {:dependencies [[org.clojure/clojure "1.9.0-alpha7"]]
+             :c19 {:dependencies [[org.clojure/clojure "1.9.0-alpha9"]]
                    :global-vars {*unchecked-math* :warn-on-boxed}}})
