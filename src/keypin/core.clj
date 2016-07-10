@@ -71,7 +71,12 @@
   "Reader/writer for EDN files."
   (reify ConfigIO
     (canRead     [this filename]   (.endsWith (string/lower-case filename) ".edn"))
-    (readConfig  [this in]         (edn/read-string (slurp in)))
+    (readConfig  [this in]         (let [m (edn/read-string (slurp in))]
+                                     (if (map? m)
+                                       m
+                                       (throw (->> (pr-str (class m))
+                                                (str "Expected EDN content to be a map, but found ")
+                                                IllegalArgumentException.)))))
     (canWrite    [this filename]   (.endsWith (string/lower-case filename) ".edn"))
     (writeConfig [this out config] (spit out (pr-str config)))))
 

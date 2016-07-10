@@ -5,6 +5,12 @@
 - [TODO] Export specified key/value pairs as system properties
 
 
+## 0.4.2 / 2016-July-??
+
+- Config files support
+  - Throw exception with suitable message when EDN content being read is not a map
+
+
 ## 0.4.1 / 2016-June-24
 
 - Value parsers
