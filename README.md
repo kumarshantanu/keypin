@@ -28,7 +28,7 @@ Key lookup on steroids in Clojure.
 
 ## Usage
 
-Leiningen coordinates: `[keypin "0.4.1"]`
+Leiningen coordinates: `[keypin "0.4.2"]`
 
 Requires Java 7 or higher.
 
