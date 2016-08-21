@@ -8,12 +8,14 @@
 
 
 (ns keypin.util
+  (:refer-clojure :exclude [any?])
   (:require
-    [clojure.edn    :as edn]
-    [clojure.string :as string]
+    [clojure.edn     :as edn]
+    [clojure.string  :as string]
     [keypin.internal :as i])
   (:import
-    [java.io FileNotFoundException]))
+    [java.io              FileNotFoundException]
+    [java.util.concurrent TimeUnit]))
 
 
 ;; ===== validators =====
@@ -117,6 +119,55 @@
   "Given a fully qualified var name (eg. 'com.example.foo/bar'), resolve the var, deref it and return the value."
   [the-key fq-var-name]
   (deref (str->var the-key fq-var-name)))
+
+
+(defn str->time-unit
+  "Given a time unit string, resolve it as java.util.concurrent.TimeUnit instance."
+  ^TimeUnit [the-key unit-str]
+  (case (string/lower-case unit-str)
+    ;; days
+    "d"       TimeUnit/DAYS
+    "days"    TimeUnit/DAYS
+    ;; hours
+    "h"       TimeUnit/HOURS
+    "hr"      TimeUnit/HOURS
+    "hours"   TimeUnit/HOURS
+    ;; minutes
+    "m"       TimeUnit/MINUTES
+    "min"     TimeUnit/MINUTES
+    "minutes" TimeUnit/MINUTES
+    ;; seconds
+    "s"       TimeUnit/SECONDS
+    "sec"     TimeUnit/SECONDS
+    "seconds" TimeUnit/SECONDS
+    ;; milliseconds
+    "ms"      TimeUnit/MILLISECONDS
+    "millis"  TimeUnit/MILLISECONDS
+    ;; microseconds
+    "us"      TimeUnit/MICROSECONDS
+    "μs"      TimeUnit/MICROSECONDS
+    "micros"  TimeUnit/MICROSECONDS
+    ;; nanoseconds
+    "ns"      TimeUnit/NANOSECONDS
+    "nanos"   TimeUnit/NANOSECONDS
+    (i/expected
+      (format
+        (str "time unit to be either of "
+          ["days/d" "hours/h" "minutes/min/m" "seconds/sec/s" "millis/ms" "micros/μs/us" "nanos/ns"]
+          " for key %s")
+        (pr-str the-key))
+      unit-str)))
+
+
+(defn str->duration
+  "Given a duration string, parse it as a vector [long java.util.concurrent.TimeUnit] and return it."
+  [the-key duration-str]
+  (if-let [[_ strnum unit] (re-matches #"([0-9]+)([a-zA-Z]+)" duration-str)]
+    (try
+      [(Long/parseLong strnum) (str->time-unit the-key unit)]
+      (catch NumberFormatException e
+        (i/expected (format "duration to be a long int (followed by time unit) for key %s" (pr-str the-key)) strnum)))
+    (i/expected "duration expressed as <NNNss> (e.g. 83ns, 103us, 239ms, 4s, 2m, 1h, 6d, 13w etc.)" duration-str)))
 
 
 (defn regex->tokenizer
@@ -276,6 +327,35 @@
 (def any->var->deref
   "Like str->var->deref, except parsing is avoided if value is already a var (which is deref'ed before returning)."
   (comp deref (str->any var? str->var "a var or a fully qualified var name in format foo.bar/baz")))
+
+
+(defn any->time-unit
+  "Like str->time-unit, except it accepts java.util.concurrent.TimeUnit/string/keyword as time-unit."
+  [the-key time-unit]
+  (cond
+    (instance? TimeUnit
+      time-unit)         time-unit
+    (string? time-unit)  (str->time-unit the-key time-unit)
+    (keyword? time-unit) (str->time-unit the-key (name time-unit))
+    :otherwise           (i/expected
+                           (format "time unit as string, keyword, or java.util.concurrent.TimeUnit instance for key %s"
+                             (pr-str the-key))
+                           time-unit)))
+
+
+(defn any->duration
+  "Like str->duration, except it accepts [long-int java.util.concurrent.TimeUnit/string/keyword] too."
+  [the-key duration]
+  (if (string? duration)
+    (str->duration the-key duration)
+    (if (and (vector? duration)
+          (= (count duration) 2)
+          (integer? (first duration)))
+      [(first duration) (any->time-unit the-key (second duration))]
+      (i/expected
+        (format "duration as a vector [long-int java.util.concurrent.TimeUnit/string/keyword] for key %s"
+          (pr-str the-key))
+        duration))))
 
 
 (def any->vec

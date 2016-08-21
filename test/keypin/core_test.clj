@@ -15,7 +15,8 @@
     [keypin.test-helper :as th])
   (:import
     [java.io File]
-    [java.util Map Properties]))
+    [java.util Map Properties]
+    [java.util.concurrent TimeUnit]))
 
 
 (deftest test-config-file-reader
@@ -254,6 +255,9 @@
         (ku/str->var "foo" "keypin.test-sample/hellow")) "Bad var")
   (is (string? (ku/str->var->deref "foo" "keypin.test-sample/hello")))
   (is (fn?     (ku/str->var->deref "foo" "keypin.test-sample/hola")))
+  ;; duration parsers
+  (is (= TimeUnit/MILLISECONDS (ku/str->time-unit "foo" "millis")))
+  (is (= [34 TimeUnit/MILLISECONDS] (ku/str->duration "foo" "34ms")))
   ;; collection parsers
   (is (= ["foo" "bar" "baz"]
         (ku/str->vec "foo" "foo, bar, baz")))
@@ -302,6 +306,11 @@
   (is (fn?     (ku/any->var->deref "foo" #'props)))
   (is (string? (ku/any->var->deref "foo" "keypin.test-sample/hello")))
   (is (fn?     (ku/any->var->deref "foo" "keypin.test-sample/hola")))
+  ;; duration parsers
+  (is (= TimeUnit/MILLISECONDS (ku/any->time-unit "foo" "millis")))
+  (is (= TimeUnit/MILLISECONDS (ku/any->time-unit "foo" :millis)))
+  (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" "34ms")))
+  (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" [34 :ms])))
   ;; collection parsers
   (is (= ["foo" "bar" "baz"]
         (ku/any->vec "foo" ["foo" "bar" "baz"])))

@@ -3,6 +3,16 @@
 ## TODO
 
 - [TODO] Export specified key/value pairs as system properties
+- [TODO] EDN: Parse symbol with `/` as fully qualified varname
+
+
+## 0.5.0 / 2016-August-??
+
+- Application lifecycle
+  - [TODO] A bootstrap function based on config map
+  - [TODO] A shutdown hook processor based on dequeue of jobs
+- Value parsers
+  - Parser functions for time-unit and time-duration
 
 
 ## 0.4.2 / 2016-July-15
