@@ -11,7 +11,8 @@
   (:require
     [clojure.edn     :as edn]
     [clojure.string  :as string]
-    [keypin.internal :as i])
+    [keypin.internal :as i]
+    [keypin.type     :as t])
   (:import
     [clojure.lang ILookup]
     [java.util Map Properties]
@@ -155,28 +156,6 @@
                                     property-name description (pr-str value)))))
 
 
-;; ===== key attributes primitive =====
-
-
-(defrecord KeyAttributes
-  [the-key validator description value-parser default-value? default-value lookup-fn]
-  clojure.lang.IFn
-  (applyTo [this arglist]
-    (case (count arglist)
-      1 (.invoke this (first arglist))
-      2 (.invoke this (first arglist) (second arglist))
-      (i/expect-arg arglist #(<= 1 % 2) "Allowed arities: (the-map) (the-map default-value)")))
-  (invoke [this the-map]  ; behave as arity-1 fn
-    (lookup-fn the-map the-key validator description value-parser default-value? default-value))
-  (invoke [this the-map not-found]  ; behave as arity-2 fn (2nd arg is returned when key not found)
-    (lookup-fn the-map the-key identity description value-parser true not-found))
-  java.util.Map$Entry  ; key name is retrievable using clojure.core/key: (key foo)
-  (getKey [this] the-key)
-  ; not implementing methods (getValue [this] ..) and (setValue [this v] ..)
-  Object
-  (toString [this] (str the-key)))
-
-
 ;; ===== key definition =====
 
 
@@ -192,7 +171,7 @@
                                   :or {lookup lookup-key
                                        parser i/identity-parser}
                                   :as options}]
-  (->KeyAttributes
+  (t/->KeyAttributes
     the-key validator description parser
     (if   (contains? options :default) true false)
     (when (contains? options :default) default)
