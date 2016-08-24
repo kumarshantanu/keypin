@@ -177,7 +177,7 @@
 (defn str->duration
   "Given a duration string, parse it as a vector [long java.util.concurrent.TimeUnit] and return it."
   [the-key duration-str]
-  (if-let [[_ strnum unit] (re-matches #"([0-9]+)([a-zA-Z]+)" duration-str)]
+  (if-let [[_ strnum unit] (re-matches #"([0-9]+)\s*([a-zA-Z]+)" duration-str)]
     (try
       [(Long/parseLong strnum) (str->time-unit the-key unit)]
       (catch NumberFormatException e

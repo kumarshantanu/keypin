@@ -258,6 +258,7 @@
   ;; duration parsers
   (is (= TimeUnit/MILLISECONDS (ku/str->time-unit "foo" "millis")))
   (is (ku/duration? (ku/str->duration "foo" "34ms")))
+  (is (= [34 TimeUnit/MILLISECONDS] (ku/str->duration "foo" "34 millis")) "Optional whitespace between duration tokens")
   (is (= [34 TimeUnit/MILLISECONDS] (ku/str->duration "foo" "34ms")))
   ;; collection parsers
   (is (= ["foo" "bar" "baz"]
