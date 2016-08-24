@@ -9,7 +9,9 @@
 
 (ns keypin.type
   (:require
-    [keypin.internal :as i]))
+    [keypin.internal :as i])
+  (:import
+    [java.util.concurrent TimeUnit]))
 
 
 (defrecord KeyAttributes
@@ -29,3 +31,44 @@
   ; not implementing methods (getValue [this] ..) and (setValue [this v] ..)
   Object
   (toString [this] (str the-key)))
+
+
+(defprotocol IDuration
+  (days    [this] "Convert duration to number of days")
+  (hours   [this] "Convert duration to number of hours")
+  (minutes [this] "Convert duration to number of minutes")
+  (seconds [this] "Convert duration to number of seconds")
+  (millis  [this] "Convert duration to number of milliseconds")
+  (micros  [this] "Convert duration to number of micros")
+  (nanos   [this] "Convert duration to number of nanoseconds"))
+
+
+(defrecord Duration
+  [^long time ^TimeUnit unit]
+  IDuration
+  (days    [this] (.toDays    unit time))
+  (hours   [this] (.toHours   unit time))
+  (minutes [this] (.toMinutes unit time))
+  (seconds [this] (.toSeconds unit time))
+  (millis  [this] (.toMillis  unit time))
+  (micros  [this] (.toMicros  unit time))
+  (nanos   [this] (.toNanos   unit time)))
+
+
+(extend-protocol IDuration
+  java.util.List
+  (days    [this] (.toDays    ^TimeUnit (.get this 1) ^long (.get this 0)))
+  (hours   [this] (.toHours   ^TimeUnit (.get this 1) ^long (.get this 0)))
+  (minutes [this] (.toMinutes ^TimeUnit (.get this 1) ^long (.get this 0)))
+  (seconds [this] (.toSeconds ^TimeUnit (.get this 1) ^long (.get this 0)))
+  (millis  [this] (.toMillis  ^TimeUnit (.get this 1) ^long (.get this 0)))
+  (micros  [this] (.toMicros  ^TimeUnit (.get this 1) ^long (.get this 0)))
+  (nanos   [this] (.toNanos   ^TimeUnit (.get this 1) ^long (.get this 0)))
+  java.util.Map
+  (days    [this] (.toDays    ^TimeUnit (.get this :unit) ^long (.get this :time)))
+  (hours   [this] (.toHours   ^TimeUnit (.get this :unit) ^long (.get this :time)))
+  (minutes [this] (.toMinutes ^TimeUnit (.get this :unit) ^long (.get this :time)))
+  (seconds [this] (.toSeconds ^TimeUnit (.get this :unit) ^long (.get this :time)))
+  (millis  [this] (.toMillis  ^TimeUnit (.get this :unit) ^long (.get this :time)))
+  (micros  [this] (.toMicros  ^TimeUnit (.get this :unit) ^long (.get this :time)))
+  (nanos   [this] (.toNanos   ^TimeUnit (.get this :unit) ^long (.get this :time))))

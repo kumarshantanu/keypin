@@ -12,10 +12,12 @@
   (:require
     [clojure.edn     :as edn]
     [clojure.string  :as string]
-    [keypin.internal :as i])
+    [keypin.internal :as i]
+    [keypin.type     :as t])
   (:import
     [java.io              FileNotFoundException]
-    [java.util.concurrent TimeUnit]))
+    [java.util.concurrent TimeUnit]
+    [keypin.type          Duration]))
 
 
 ;; ===== validators =====
@@ -38,6 +40,19 @@
   [pred]
   (fn [x]
     (pred (deref x))))
+
+
+(defn duration?
+  "Return true if the argument is a duration, false otherwise."
+  [x]
+  (or
+    (instance? Duration x)
+    (and (vector? x)
+      (integer? (first x))
+      (instance? TimeUnit (second x)))
+    (and (map? x)
+      (integer? (get x :time))
+      (instance? TimeUnit (get x :unit)))))
 
 
 ;; ===== value parsers =====

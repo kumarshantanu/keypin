@@ -257,6 +257,7 @@
   (is (fn?     (ku/str->var->deref "foo" "keypin.test-sample/hola")))
   ;; duration parsers
   (is (= TimeUnit/MILLISECONDS (ku/str->time-unit "foo" "millis")))
+  (is (ku/duration? (ku/str->duration "foo" "34ms")))
   (is (= [34 TimeUnit/MILLISECONDS] (ku/str->duration "foo" "34ms")))
   ;; collection parsers
   (is (= ["foo" "bar" "baz"]
@@ -309,7 +310,9 @@
   ;; duration parsers
   (is (= TimeUnit/MILLISECONDS (ku/any->time-unit "foo" "millis")))
   (is (= TimeUnit/MILLISECONDS (ku/any->time-unit "foo" :millis)))
+  (is (ku/duration? (ku/any->duration "foo" "34ms")))
   (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" "34ms")))
+  (is (ku/duration? (ku/any->duration "foo" [34 :ms])))
   (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" [34 :ms])))
   ;; collection parsers
   (is (= ["foo" "bar" "baz"]

@@ -11,6 +11,8 @@
 - Application lifecycle
   - [TODO] A bootstrap function based on config map
   - [TODO] A shutdown hook processor based on dequeue of jobs
+- Utility
+  - Generic "duration" abstraction with conversion helpers
 - Value parsers
   - Parser functions for time-unit and time-duration
 
