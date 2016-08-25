@@ -8,9 +8,9 @@
 
 ## 0.5.0 / 2016-August-??
 
-- Application lifecycle
-  - [TODO] A bootstrap function based on config map
-  - [TODO] A shutdown hook processor based on dequeue of jobs
+- Deprecation
+  - [TODO] Remove deprecated class `keypin.PropertyFile`
+  - [TODO] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Utility
   - Generic "duration" abstraction with conversion helpers
 - Value parsers
