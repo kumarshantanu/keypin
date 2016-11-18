@@ -4,13 +4,15 @@
 
 - [TODO] Export specified key/value pairs as system properties
 - [TODO] EDN: Parse symbol with `/` as fully qualified varname
+- [TODO] Parser for finding list of vars
+- [TODO] EDN parser support for calling functions/constructors/methods with config args
 
 
 ## 0.5.0 / 2016-August-??
 
 - Deprecation
-  - [TODO] Remove deprecated class `keypin.PropertyFile`
-  - [TODO] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
+  - [TODO - BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
+  - [TODO - BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Utility
   - Generic "duration" abstraction with conversion helpers
 - Value parsers
