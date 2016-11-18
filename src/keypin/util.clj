@@ -58,6 +58,26 @@
 ;; ===== value parsers =====
 
 
+(defn identity-parser
+  "Return the value to be parsed without doing any actual parsing."
+  [the-key parseable-val]
+  parseable-val)
+
+
+(defn comp-parser
+  "Compose multiple parsers (where parser is arity-2 fn accepting key and parseable value) into one. Composition is
+  applied right-to-left, as in `clojure.core/comp`."
+  [& parsers]
+  (fn [the-key parseable-val]
+    (as-> (cons identity-parser parsers) $
+      (map partial $ (repeat the-key))
+      (apply comp $)
+      ($ parseable-val))))
+
+
+;; ----- string value parsers -----
+
+
 (defn str->bool
   "Given a boolean value in string form, parse and return the boolean value."
   [the-key ^String x]

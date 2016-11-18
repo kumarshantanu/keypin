@@ -236,6 +236,8 @@
 
 
 (deftest test-parsers
+  (is (= "bar" (ku/identity-parser "foo" "bar")))
+  (is (= [:bar] ((ku/comp-parser (fn [_ v] [v]) (fn [_ v] (keyword v))) "foo" "bar")))
   (is (true? (ku/str->bool "foo" "true")))
   (is (thrown? IllegalArgumentException
         (ku/str->bool "foo" "notboolean")))

@@ -14,6 +14,8 @@
 - Utility
   - Generic "duration" abstraction with conversion helpers
 - Value parsers
+  - Identity parser
+  - Function for parser composition
   - Parser functions for time-unit and time-duration
 
 
