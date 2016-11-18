@@ -210,7 +210,7 @@
 (defn str->vec
   "Given a delimited text, tokenize it and return a vector of tokens. By default, the delimiter is a comma.
   Example:
-  => (str-vec :foo \"a, b, c\")
+  => (str->vec :foo \"a, b, c\")
   [\"a\" \"b\" \"c\"]"
   ([tokenizer the-key text]
     (str->coll tokenizer identity the-key text))
