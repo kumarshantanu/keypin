@@ -68,11 +68,13 @@
   "Compose multiple parsers (where parser is arity-2 fn accepting key and parseable value) into one. Composition is
   applied right-to-left, as in `clojure.core/comp`."
   [& parsers]
-  (fn [the-key parseable-val]
-    (as-> (cons identity-parser parsers) $
-      (map partial $ (repeat the-key))
-      (apply comp $)
-      ($ parseable-val))))
+  (if (seq parsers)
+    (fn [the-key parseable-val]
+      (as-> parsers $
+        (map partial $ (repeat the-key))
+        (apply comp $)
+        ($ parseable-val)))
+    identity-parser))
 
 
 ;; ----- string value parsers -----
