@@ -3,9 +3,12 @@
 ## TODO
 
 - [TODO] Export specified key/value pairs as system properties
-- [TODO] EDN: Parse symbol with `/` as fully qualified varname
-- [TODO] Parser for finding list of vars
-- [TODO] EDN parser support for calling functions/constructors/methods with config args
+- [TODO] EDN parser support for invocation
+  - [TODO] Invoke fns/constructor/static-method: `(target arg1 arg2)`
+  - [TODO] Mechanism to reference config keys as invocation args
+  - [TODO] Built-in parser functions
+    - For parsing symbol with `/` as fully qualified varname
+    - For parsing a list of vars
 
 
 ## 0.5.0 / 2016-August-??
