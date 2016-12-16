@@ -55,6 +55,12 @@
       (instance? TimeUnit (get x :unit)))))
 
 
+(defn ifn?
+  "Return true if the argument can be invoked like a function, false otherwise."
+  [x]
+  (instance? clojure.lang.IFn x))
+
+
 ;; ===== value parsers =====
 
 

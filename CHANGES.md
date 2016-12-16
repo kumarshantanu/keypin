@@ -18,6 +18,7 @@
   - [TODO - BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Utility
   - Generic "duration" abstraction with conversion helpers
+  - Validator function `ifn?` to test invokable targets
 - Value parsers
   - Identity parser
   - Function for parser composition
