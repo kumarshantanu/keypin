@@ -12,6 +12,13 @@ package keypin;
 
 public interface Function {
 
+    public static final Function IDENTITY = new Function() {
+        @Override
+        public Object execute(Object value) {
+            return value;
+        }
+    };
+
     public Object execute(Object value);
 
 }
