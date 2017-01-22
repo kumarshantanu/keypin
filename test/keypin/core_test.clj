@@ -215,7 +215,7 @@
  (let [no-keys []
        min-keys ["hello"]
        mod-keys ["hello" "hola"]
-       max-keys ["hello" "hola" "34" "false"] 
+       max-keys ["hello" "hola" "34" "false"]
        bad-keys ["hello" "hola" "true" "78"]
        bad-keys2 ["hello" "hola" "150" "None"]]
    (testing "Failures"
