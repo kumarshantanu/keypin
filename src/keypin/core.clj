@@ -90,23 +90,40 @@
                                      (spit out)))))
 
 
+(defn realize-config
+  "Realize config by applying variable substitution, if any."
+  ([config]
+    (realize-config config {}))
+  ([config {:keys [info-logger error-logger config-mapper]
+            :or {info-logger   #(println "[keypin] [info]" %)
+                 error-logger  #(println "[keypin] [error]" %)
+                 config-mapper Mapper/DEFAULT}
+            :as options}]
+    (let [logger (reify Logger
+                   (info [this msg] (info-logger msg))
+                   (error [this msg] (error-logger msg)))]
+      (Config/realize config config-mapper logger))))
+
+
 (defn read-config
   "Read config file(s) returning a java.util.Map instance."
   (^Map [config-filenames]
     (read-config config-filenames {:parent-key "parent"}))
-  (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper]
+  (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper realize?]
                            :or {info-logger    #(println "[keypin] [info]" %)
                                 error-logger   #(println "[keypin] [error]" %)
                                 config-readers [property-file-io edn-file-io]
-                                config-mapper  Mapper/DEFAULT}
+                                realize?       true}
                            :as options}]
     (let [logger (reify Logger
                    (info [this msg] (info-logger msg))
-                   (error [this msg] (error-logger msg)))]
-      (-> (if parent-key
-            (Config/readCascadingConfig config-readers config-filenames parent-key logger)
-            (Config/readConfig config-readers config-filenames logger))
-        (Config/realize config-mapper logger)))))
+                   (error [this msg] (error-logger msg)))
+          config (if parent-key
+                   (Config/readCascadingConfig config-readers config-filenames parent-key logger)
+                   (Config/readConfig config-readers config-filenames logger))]
+      (if realize?
+        (realize-config config options)
+        config))))
 
 
 (defn write-config

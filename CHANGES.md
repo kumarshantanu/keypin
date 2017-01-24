@@ -19,6 +19,8 @@
   - [TODO - BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Support for variable escaping during reading and writing configuration
 - Generic "duration" abstraction with conversion helpers
+- Config reading `keypin.core/read-config` may now optionally skip variable substitution using kwarg `:realize?`
+- Additional fn `keypin.core/realize-config` for explicitly applying variable substitution
 - Value parsers
   - Identity parser
   - Function for parser composition
