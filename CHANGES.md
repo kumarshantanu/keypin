@@ -18,9 +18,7 @@
   - [TODO - BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
   - [TODO - BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Support for variable escaping during reading and writing configuration
-- Utility
-  - Generic "duration" abstraction with conversion helpers
-  - Validator function `ifn?` to test invokable targets
+- Generic "duration" abstraction with conversion helpers
 - Value parsers
   - Identity parser
   - Function for parser composition
