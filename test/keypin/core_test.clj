@@ -16,7 +16,8 @@
   (:import
     [java.io File]
     [java.util Map Properties]
-    [java.util.concurrent TimeUnit]))
+    [java.util.concurrent TimeUnit]
+    [keypin Config Logger Mapper]))
 
 
 (deftest test-config-file-reader
@@ -42,8 +43,21 @@
         (is (= "2.3.6" (get props "app.version")))
         (is (= "fooapp-new-version" (get props "service.name")) "overidden property in template")
         (is (= "identity-not-mentioned" (get props "app.identity")) "variable substitution")
-        (is (= "identity-\\${app.id|default.app.id}" (get props "app.non.identity")) "escaped variable")
+        (is (= "identity-${app.id|default.app.id}" (get props "app.non.identity")) "escaped variable")
         (is (= "unicorn" (get props "some.var"))))))
+  (testing "Injected variables"
+    (let [props  {"bar" "baz"}
+          logger (reify Logger
+                   (info  [this msg] (println "[keypin-test] [info]" msg))
+                   (error [this msg] (println "[keypin-test] [error]" msg)))]
+      (is (= "baz" (get (-> props
+                          (assoc "foo" "${bar}")
+                          (Config/realize Mapper/DEFAULT logger))
+                     "foo")) "injected variable substitution")
+      (is (= "${bar}" (get (-> props
+                             (assoc "foo" (Config/escape "${bar}"))
+                             (Config/realize Mapper/DEFAULT logger))
+                        "foo")) "injected escaped-variable")))
   (testing "Hierarchical with missing parent"
     (doseq [config-fileset [["test-config/errconf.properties"]
                             ["test-config/errconf.edn"]]]
@@ -60,7 +74,7 @@
           tfile (File/createTempFile "auto-generated-" output-extension)
           tname (.getAbsolutePath tfile)]
       (.deleteOnExit tfile)
-      (println "Writing properties to" tname)
+      (println "Writing config to" tname)
       (write-config tname props)
       (let [fresh-props (read-config [tname])]
         (is (= props fresh-props) "Generated properties should be the same as what we read afresh")))))

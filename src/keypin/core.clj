@@ -79,7 +79,15 @@
                                                 (str "Expected EDN content to be a map, but found ")
                                                 IllegalArgumentException.)))))
     (canWrite    [this filename]   (.endsWith (string/lower-case filename) ".edn"))
-    (writeConfig [this out config] (spit out (pr-str config)))))
+    (writeConfig [this out config
+                       escape?]    (->> config
+                                     pr-str
+                                     (i/process-recursively (if escape?
+                                                              (fn [x] (if (string? x)
+                                                                        (Config/escape (Config/escape x))
+                                                                        x))
+                                                              identity))
+                                     (spit out)))))
 
 
 (defn read-config
@@ -105,15 +113,16 @@
   "Write config to a specified file"
   ([config-filename config]
     (write-config config-filename config {}))
-  ([config-filename config {:keys [info-logger error-logger config-writers]
+  ([config-filename config {:keys [info-logger error-logger config-writers escape?]
                             :or {info-logger    #(println "[keypin] [info]" %)
                                  error-logger   #(println "[keypin] [error]" %)
-                                 config-writers [property-file-io edn-file-io]}
+                                 config-writers [property-file-io edn-file-io]
+                                 escape?        true}
                             :as options}]
     (let [logger (reify Logger
                    (info [this msg] (info-logger msg))
                    (error [this msg] (error-logger msg)))]
-      (Config/writeConfig config-writers config-filename config logger))))
+      (Config/writeConfig config-writers config-filename config escape? logger))))
 
 
 ;; ===== properties files =====

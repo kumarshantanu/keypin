@@ -22,6 +22,6 @@ public interface ConfigIO {
 
     public boolean canWrite(String filename);
 
-    public void writeConfig (OutputStream out, Map<?, ?> config) throws Exception;
+    public void writeConfig (OutputStream out, Map<?, ?> config, boolean escape) throws Exception;
 
 }

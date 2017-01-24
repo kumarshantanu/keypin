@@ -3,6 +3,7 @@
 ## TODO
 
 - [TODO] Export specified key/value pairs as system properties
+- [TODO] Mechamism to enforce EDN parsing on a string (possibly containing variable) in an EDN file
 - [TODO] EDN parser support for invocation
   - [TODO] Invoke fns/constructor/static-method: `(target arg1 arg2)`
   - [TODO] Mechanism to reference config keys as invocation args
@@ -16,10 +17,7 @@
 - Deprecation
   - [TODO - BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
   - [TODO - BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
-- Variable resolution
-  - Support variable escaping
-  - [TODO] Function to escape string against variable substitution
-  - [TODO] Reader macro to enforce EDN parsing on a string (possibly containing variable)
+- Support for variable escaping during reading and writing configuration
 - Utility
   - Generic "duration" abstraction with conversion helpers
   - Validator function `ifn?` to test invokable targets

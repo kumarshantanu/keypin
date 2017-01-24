@@ -59,12 +59,12 @@ public class Config {
         throw new IllegalStateException("Unreachable code");
     }
 
-    public static void writeConfig(Iterable<ConfigIO> writers, String filename, Map<?, ?> config,
+    public static void writeConfig(Iterable<ConfigIO> writers, String filename, Map<?, ?> config, boolean escape,
             Logger logger) throws Exception {
         for (ConfigIO eachWriter: writers) {
             if (eachWriter.canWrite(filename)) {
                 try (final OutputStream out = new FileOutputStream(filename)) {
-                    eachWriter.writeConfig(out, config);
+                    eachWriter.writeConfig(out, config, escape);
                 }
                 return;
             }
@@ -129,6 +129,28 @@ public class Config {
             result.put(key, realize(pair.getValue(), config, mapper, realizer, logger));
         }
         return Collections.unmodifiableMap(result);
+    }
+
+    /**
+     * Return a literal value string for the specified string. If the token contains any variable, it would not be
+     * evaluated after quoting.
+     * @param token string value to be literalized
+     * @return literal string replacement
+     */
+    public static String escape(String token) {
+        if (token == null) {
+            return null;
+        }
+        final int n = token.length();
+        StringBuilder sb = new StringBuilder(n);
+        for (int i = 0; i < n; i++) {
+            char ch = token.charAt(i);
+            if (ch == '$') {
+                sb.append('\\');
+            }
+            sb.append(ch);
+        }
+        return sb.toString();
     }
 
     // =============== helper functions =================
@@ -197,9 +219,15 @@ public class Config {
                     }
                 }
             } else {
-                if (ch == '$' && (i == 0 || template.charAt(i - 1) != '\\')) {
-                    var = true;
-                    varName = "";
+                if (ch == '$') {
+                    if (i > 0 && template.charAt(i - 1) == '\\') {  // escaped variable marker?
+                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\\') {
+                            sb.setCharAt(sb.length() - 1, '$');  // omit escape char in buffer, append variable marker
+                        }
+                    } else {
+                        var = true;
+                        varName = "";
+                    }
                 } else {
                     var = false;
                     varName = "";
