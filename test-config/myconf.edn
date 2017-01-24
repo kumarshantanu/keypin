@@ -4,4 +4,5 @@
  "defined_var" "unicorn"
 
  "default.app.id" "not-mentioned"
- "app.identity" "identity-${app.id|default.app.id}"}
+ "app.identity" "identity-${app.id|default.app.id}"
+ "app.non.identity" "identity-\\${app.id|default.app.id}"}

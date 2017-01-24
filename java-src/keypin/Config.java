@@ -123,8 +123,7 @@ public class Config {
             }
         };
         realizerHolder.set(realizer);
-        final Map<Object, Object> result = new LinkedHashMap<>();
-        result.putAll(config);
+        final Map<Object, Object> result = new LinkedHashMap<>(config);
         for (final Entry<Object, Object> pair: result.entrySet()) {
             final Object key = pair.getKey();
             result.put(key, realize(pair.getValue(), config, mapper, realizer, logger));
@@ -198,7 +197,7 @@ public class Config {
                     }
                 }
             } else {
-                if (ch == '$') {
+                if (ch == '$' && (i == 0 || template.charAt(i - 1) != '\\')) {
                     var = true;
                     varName = "";
                 } else {

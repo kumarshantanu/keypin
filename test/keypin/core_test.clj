@@ -42,6 +42,7 @@
         (is (= "2.3.6" (get props "app.version")))
         (is (= "fooapp-new-version" (get props "service.name")) "overidden property in template")
         (is (= "identity-not-mentioned" (get props "app.identity")) "variable substitution")
+        (is (= "identity-\\${app.id|default.app.id}" (get props "app.non.identity")) "escaped variable")
         (is (= "unicorn" (get props "some.var"))))))
   (testing "Hierarchical with missing parent"
     (doseq [config-fileset [["test-config/errconf.properties"]

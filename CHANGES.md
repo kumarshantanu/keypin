@@ -11,11 +11,15 @@
     - For parsing a list of vars
 
 
-## 0.5.0 / 2016-August-??
+## 0.5.0 / 2017-January-??
 
 - Deprecation
   - [TODO - BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
   - [TODO - BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
+- Variable resolution
+  - Support variable escaping
+  - [TODO] Function to escape string against variable substitution
+  - [TODO] Reader macro to enforce EDN parsing on a string (possibly containing variable)
 - Utility
   - Generic "duration" abstraction with conversion helpers
   - Validator function `ifn?` to test invokable targets
