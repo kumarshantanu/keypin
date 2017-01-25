@@ -115,7 +115,7 @@ public class Config {
         return Collections.unmodifiableMap(config);
     }
 
-    public static Map<?, ?> realize(final Map<Object, Object> config, final Mapper mapper,
+    public static Map<?, ?> realize(final Map<?, ?> config, final Mapper mapper,
             final Logger logger) {
         final AtomicReference<Function> realizerHolder = new AtomicReference<>();
         Function realizer = new Function() {
@@ -157,7 +157,7 @@ public class Config {
 
     // =============== helper functions =================
 
-    private static Object realize(Object value, Map<Object, Object> lookup, Mapper mapper, Function realizer,
+    private static Object realize(Object value, Map<?, ?> lookup, Mapper mapper, Function realizer,
             Logger logger) {
         if (value instanceof String) {
             return realize((String) value, lookup, logger);
