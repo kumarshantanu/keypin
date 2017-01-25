@@ -28,7 +28,8 @@ import java.util.regex.Pattern;
 
 public class Config {
 
-    public static Map<?, ?> readConfig(Iterable<ConfigIO> readers, String filename, Logger logger) throws Exception {
+    public static Map<?, ?> readConfig(Iterable<? extends ConfigIO> readers, String filename,
+            Logger logger) throws Exception {
         for (ConfigIO eachReader: readers) {
             if (eachReader.canRead(filename)) {
                 // try filesystem
@@ -46,7 +47,8 @@ public class Config {
                 // try classpath
                 do {
                     info(logger, "Not found in filesystem, now searching in classpath: %s", filename);
-                    final InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
+                    final InputStream resource =
+                            Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
                     if (resource != null) {
                         logger.info("Found in classpath, now reading config from: " + filename);
                         return Collections.unmodifiableMap(eachReader.readConfig(resource));
@@ -73,7 +75,7 @@ public class Config {
         throw new IllegalStateException("Unreachable code");
     }
 
-    public static Map<?, ?> readCascadingConfig(Iterable<ConfigIO> readers, Iterable<String> filenames,
+    public static Map<?, ?> readCascadingConfig(Iterable<? extends ConfigIO> readers, Iterable<String> filenames,
             Object parentKey, Logger logger) throws Exception {
         final Map<Object, Object> config = new LinkedHashMap<>();
         for (String eachFilename: filenames) {
