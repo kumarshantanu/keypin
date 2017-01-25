@@ -95,8 +95,8 @@
   ([config]
     (realize-config config {}))
   ([config {:keys [info-logger error-logger config-mapper]
-            :or {info-logger   #(println "[keypin] [info]" %)
-                 error-logger  #(println "[keypin] [error]" %)
+            :or {info-logger   #(binding [*out* *err*] (println "[keypin] [info]" %))
+                 error-logger  #(binding [*out* *err*] (println "[keypin] [error]" %))
                  config-mapper Mapper/DEFAULT}
             :as options}]
     (let [logger (reify Logger
@@ -110,8 +110,8 @@
   (^Map [config-filenames]
     (read-config config-filenames {:parent-key "parent"}))
   (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper realize?]
-                           :or {info-logger    #(println "[keypin] [info]" %)
-                                error-logger   #(println "[keypin] [error]" %)
+                           :or {info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
+                                error-logger   #(binding [*out* *err*] (println "[keypin] [error]" %))
                                 config-readers [property-file-io edn-file-io]
                                 realize?       true}
                            :as options}]
@@ -131,8 +131,8 @@
   ([config-filename config]
     (write-config config-filename config {}))
   ([config-filename config {:keys [info-logger error-logger config-writers escape?]
-                            :or {info-logger    #(println "[keypin] [info]" %)
-                                 error-logger   #(println "[keypin] [error]" %)
+                            :or {info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
+                                 error-logger   #(binding [*out* *err*] (println "[keypin] [error]" %))
                                  config-writers [property-file-io edn-file-io]
                                  escape?        true}
                             :as options}]
