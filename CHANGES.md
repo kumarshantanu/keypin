@@ -3,6 +3,7 @@
 ## TODO
 
 - [TODO] Export specified key/value pairs as system properties
+- [TODO] Mechanism for partial/delta/path override in child config files
 - [TODO] Mechamism to enforce EDN parsing on a string (possibly containing variable) in an EDN file
 - [TODO] EDN parser support for invocation
   - [TODO] Invoke fns/constructor/static-method: `(target arg1 arg2)`
