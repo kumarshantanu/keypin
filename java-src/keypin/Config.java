@@ -61,8 +61,8 @@ public class Config {
         throw new IllegalStateException("Unreachable code");
     }
 
-    public static void writeConfig(Iterable<ConfigIO> writers, String filename, Map<?, ?> config, boolean escape,
-            Logger logger) throws Exception {
+    public static void writeConfig(Iterable<? extends ConfigIO> writers, String filename, Map<?, ?> config,
+            boolean escape, Logger logger) throws Exception {
         for (ConfigIO eachWriter: writers) {
             if (eachWriter.canWrite(filename)) {
                 try (final OutputStream out = new FileOutputStream(filename)) {
