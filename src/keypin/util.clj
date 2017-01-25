@@ -24,7 +24,7 @@
 
 
 (defn any?
-  "Dummy validator. Always return true."
+  "Dummy validator. Always return true. Same as clojure.core/any? in Clojure 1.9+."
   [_]
   true)
 
