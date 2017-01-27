@@ -17,6 +17,8 @@ import java.util.Properties;
 
 public class PropertyConfigIO implements ConfigIO {
 
+    public static final PropertyConfigIO INSTANCE = new PropertyConfigIO();
+
     @Override
     public boolean canRead(String filename) {
         return null != filename && filename.toLowerCase().endsWith(".properties");
