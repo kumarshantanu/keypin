@@ -15,7 +15,7 @@
     [keypin.type     :as t])
   (:import
     [clojure.lang ILookup]
-    [java.util Map Properties]
+    [java.util Collection List Map Properties Set]
     [keypin Config ConfigIO Logger Mapper PropertyConfigIO PropertyFile]))
 
 
@@ -68,6 +68,29 @@
   (PropertyConfigIO.))
 
 
+(defn clojurize-config
+  "Process a data structure recursively passing each element through specified fn. Turn Java oriented data structures
+  into Clojure equivalent."
+  ([data]
+    (clojurize-config identity data))
+  ([f data]
+    (let [g (comp f (partial clojurize-config f))]
+      (cond
+        (map? data)        (zipmap (map g (keys data)) (map g (vals data)))
+        (instance?
+          Map data)        (zipmap (map g (keys data)) (map g (vals data)))
+        (set? data)        (set (map g data))
+        (instance?
+          Set data)        (set (map g data))
+        (vector? data)     (vec (map g data))
+        (instance?
+          List data)       (vec (map g data))
+        (coll? data)       (list* (map g data))
+        (instance?
+          Collection data) (list* (map g data))
+        :otherwise         (f data)))))
+
+
 (def edn-file-io
   "Reader/writer for EDN files."
   (reify ConfigIO
@@ -82,11 +105,11 @@
     (writeConfig [this out config
                        escape?]    (->> config
                                      pr-str
-                                     (i/process-recursively (if escape?
-                                                              (fn [x] (if (string? x)
-                                                                        (Config/escape (Config/escape x))
-                                                                        x))
-                                                              identity))
+                                     (clojurize-config (if escape?
+                                                         (fn [x] (if (string? x)
+                                                                   (Config/escape (Config/escape x))
+                                                                   x))
+                                                         identity))
                                      (spit out)))))
 
 

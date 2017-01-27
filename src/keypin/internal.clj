@@ -43,19 +43,3 @@
 (defn identity-parser
   [_ value]
   value)
-
-
-(defn process-recursively
-  "Process a data structure recursively passing each element through specified fn."
-  [f data]
-  (let [g (comp f (partial process-recursively f))]
-    (cond
-      (map? data)        (zipmap (map g (keys data)) (map g (vals data)))
-      (instance?
-        Map data)        (zipmap (map g (keys data)) (map g (vals data)))
-      (set? data)        (set (map g data))
-      (vector? data)     (vec (map g data))
-      (coll? data)       (list* (map g data))
-      (instance?
-        Collection data) (list* (map g data))
-      :otherwise         (f data))))
