@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -161,6 +162,10 @@ public class Config {
             Logger logger) {
         if (value instanceof String) {
             return realize((String) value, lookup, logger);
+        } else if (value instanceof List<?>) {
+            return mapper.processList((List<?>) value, realizer);
+        } else if (value instanceof Set<?>) {
+            return mapper.processSet((Set<?>) value, realizer);
         } else if (value instanceof Collection<?>) {
             return mapper.processCollection((Collection<?>) value, realizer);
         } else if (value instanceof Map<?, ?>) {

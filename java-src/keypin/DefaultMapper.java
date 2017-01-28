@@ -10,12 +10,15 @@
 
 package keypin;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.RandomAccess;
 import java.util.Set;
 
 public class DefaultMapper implements Mapper {
@@ -31,9 +34,28 @@ public class DefaultMapper implements Mapper {
     }
 
     @Override
+    public List<?> processList(List<?> list, Function itemProcessor) {
+    	List<Object> result = list instanceof RandomAccess? new ArrayList<>(): new LinkedList<>();
+    	for (Object item: list) {
+    	    result.add(itemProcessor.execute(item));
+    	}
+    	return Collections.unmodifiableList(result);
+    }
+
+    @Override
+    public Set<?> processSet(Set<?> set, Function itemProcessor) {
+    	Set<Object> result = new LinkedHashSet<>();
+    	for (Object item: set) {
+    	    result.add(itemProcessor.execute(item));
+    	}
+    	return Collections.unmodifiableSet(result);
+    }
+
+    @Override
     public Collection<?> processCollection(Collection<?> coll, Function itemProcessor) {
         // treat all non-sets like lists
-        final Collection<Object> result = (coll instanceof Set<?>)? new LinkedHashSet<>(): new LinkedList<>();
+        final Collection<Object> result = (coll instanceof Set<?>)? new LinkedHashSet<>():
+            (coll instanceof List<?> && coll instanceof RandomAccess? new ArrayList<>(): new LinkedList<>());
         for (Object item: coll) {
             result.add(itemProcessor.execute(item));
         }

@@ -22,10 +22,12 @@
 - Generic "duration" abstraction with conversion helpers
 - Config reading `keypin.core/read-config` may now optionally skip variable substitution using kwarg `:realize?`
 - Additional fn `keypin.core/realize-config` for explicitly applying variable substitution
+- Variable substitution now distinguishes between random-access-list, sequential-access-list, set and collection
 - Value parsers
   - Identity parser
   - Function for parser composition
   - Parser functions for time-unit and time-duration
+  - [TODO] EDN parser `any->edn` now additionally transforms Java-based data structures to Clojure equivalent
 
 
 ## 0.4.2 / 2016-July-15
@@ -115,4 +117,3 @@
   - Chained property files (via parent key, child properties override parent)
   - Multi-parent chaining
   - Template value resolution in property values
-

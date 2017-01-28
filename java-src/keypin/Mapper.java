@@ -11,13 +11,21 @@
 package keypin;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface Mapper {
 
     public static final Mapper NOP = new Mapper() {
         @Override
         public Map<?, ?> processMap(Map<?, ?> dict, Function keyProcessor, Function valueProcessor) { return dict; }
+
+        @Override
+        public List<?> processList(List<?> list, Function itemProcessor) { return list; }
+
+        @Override
+        public Set<?> processSet(Set<?> set, Function itemProcessor) { return set; }
 
         @Override
         public Collection<?> processCollection(Collection<?> coll, Function itemProcessor) { return coll; }
@@ -27,6 +35,10 @@ public interface Mapper {
     };
 
     public static final Mapper DEFAULT = new DefaultMapper();
+
+    List<?> processList(List<?> list, Function itemProcessor);
+
+    Set<?> processSet(Set<?> set, Function itemProcessor);
 
     Collection<?> processCollection(Collection<?> coll, Function itemProcessor);
 
