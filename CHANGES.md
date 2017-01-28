@@ -27,7 +27,8 @@
   - Identity parser
   - Function for parser composition
   - Parser functions for time-unit and time-duration
-  - [TODO] EDN parser `any->edn` now additionally transforms Java-based data structures to Clojure equivalent
+  - Parser helper `clojurize-data` to transform Java-based data structures to Clojure equivalent
+  - EDN parser `any->edn` now additionally transforms Java-based data structures to Clojure equivalent
 
 
 ## 0.4.2 / 2016-July-15

@@ -16,6 +16,7 @@
     [keypin.type     :as t])
   (:import
     [java.io              FileNotFoundException]
+    [java.util            Collection List Map Properties RandomAccess Set]
     [java.util.concurrent TimeUnit]
     [keypin.type          Duration]))
 
@@ -53,6 +54,34 @@
     (and (map? x)
       (integer? (get x :time))
       (instance? TimeUnit (get x :unit)))))
+
+
+;; ===== parsing helpers =====
+
+
+(defn clojurize-data
+  "Process a data structure recursively passing each element through specified fn. Turn Java oriented data structures
+  into Clojure equivalent."
+  ([data]
+    (clojurize-data identity data))
+  ([f data]
+    (let [g (comp f (partial clojurize-data f))]
+      (cond
+        (nil? data)                      nil
+        (= "us.bpsm.edn.Keyword"
+          (.getName (class data)))       (keyword (subs (str data) 1))  ; support for EDN Java implementation
+        (= "us.bpsm.edn.Symbol"
+          (.getName (class data)))       (symbol (str data))            ; support for EDN Java implementation
+        (map? data)                      (zipmap (map g (keys data)) (map g (vals data)))
+        (instance? Map data)             (zipmap (map g (keys data)) (map g (vals data)))
+        (set? data)                      (set (map g data))
+        (instance? Set data)             (set (map g data))
+        (vector? data)                   (vec (map g data))
+        (and (instance? List data)
+          (instance? RandomAccess data)) (vec (map g data))
+        (coll? data)                     (list* (map g data))
+        (instance? Collection data)      (list* (map g data))
+        :otherwise                       (f data)))))
 
 
 ;; ===== value parsers =====
@@ -427,7 +456,7 @@
   ([the-key value]
     (if (string? value)
       (str->edn the-key value)
-      value))
+      (clojurize-data value)))
   ([pred expectation the-key value]
     (let [v (any->edn the-key value)]
       (when-not (pred v)
