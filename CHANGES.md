@@ -17,7 +17,7 @@
 
 - Deprecation
   - [TODO - BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
-  - [TODO - BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
+  - [BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Support for variable escaping during reading and writing configuration
 - Generic "duration" abstraction with conversion helpers
 - Config reading `keypin.core/read-config` may now optionally skip variable substitution using kwarg `:realize?`

@@ -80,101 +80,6 @@
         (is (= props fresh-props) "Generated properties should be the same as what we read afresh")))))
 
 
-(deftest test-property-file-reader
-  (testing "Non-hierarchical"
-    (println "----------")
-    (let [props (read-properties ["test-config/myconf.properties"])]
-      (is (instance? Properties props))
-      (is (= "new-version" (.getProperty props "service.version")))
-      (is (nil? (.getProperty props "app.version")))
-      (is (nil? (.getProperty props "service.name")))
-      (is (= "identity-not-mentioned" (.getProperty props "app.identity")))))
-  (testing "Hierarchical"
-    (println "----------")
-    (let [parent-key "parent-config"
-          props (read-properties ["test-config/myconf.properties"] {:parent-key parent-key})]
-      (is (instance? Properties props))
-      (is (not (.containsKey props parent-key)) "hierarchical config resolution should eliminate parent key")
-      (is (= "new-version" (.getProperty props "service.version")))
-      (is (= "2.3.6" (.getProperty props "app.version")))
-      (is (= "fooapp-new-version" (.getProperty props "service.name")) "overidden property in template")
-      (is (= "unicorn" (.getProperty props "some.var")))))
-  (testing "Hierarchical with missing parent"
-    (println "----------")
-    (is (thrown? IllegalArgumentException
-          (read-properties ["test-config/errconf.properties"] {:parent-key "parent"})))))
-
-
-(defkey
-  {:lookup lookup-property}
-  sample-prop ["sample"]
-  sample-key  [:sample]
-  sample-nkey [3])
-
-
-(deftest test-key
-  (is (= "sample"  (key sample-prop)))
-  (is (= "sample"  (str sample-prop)))
-  (is (= :sample   (key sample-key)))
-  (is (= ":sample" (str sample-key)))
-  (is (= 3         (key sample-nkey)))
-  (is (= "3"       (str sample-nkey))))
-
-
-(defkey
-  {:lookup lookup-property}
-  foo ["foo"]
-  bar ["bar" string? "Expected string"]
-  baz ["baz" #(< 0 % 100) "Thread-pool size (1-99)" {:parser ku/str->int}]
-  qux ["qux" ku/bool? "Flag: Whether enable runtime tracing?" {:parser ku/str->bool :default true}]
-  esr ["qux" {:pred ku/bool?
-              :desc "Flag: Whether enable runtime tracing?"
-              :parser ku/str->bool
-              :default true}])
-
-
-(defn props
-  [^Map m]
-  (doto (Properties.)
-    (.putAll m)))
-
-
-(deftest test-defprop
-  (let [no-props (props {})
-        min-props (props {"foo" "hello"})
-        mod-props (props {"foo" "hello"
-                          "bar" "hola"})
-        max-props (props {"foo" "hello"
-                          "bar" "hola"
-                          "baz" "34"
-                          "qux" "false"})
-        bad-props (props {"foo" "hello"
-                          "bar" "hola"
-                          "baz" "true"
-                          "qux" "78"})
-        bad-props2 (props {"foo" "hello"
-                           "bar" "hola"
-                           "baz" "150"
-                           "qux" "None"})]
-    (testing "Failures"
-      (is (thrown? IllegalArgumentException (foo no-props)))
-      (is (thrown? IllegalArgumentException (baz bad-props)))
-      (is (thrown? IllegalArgumentException (baz bad-props2)))
-      (is (thrown? IllegalArgumentException (baz th/props)))
-      (is (thrown? IllegalArgumentException (qux bad-props)))
-      (is (thrown? IllegalArgumentException (esr bad-props))))
-    (testing "Minimal definition"
-      (is (= "hello" (foo  min-props)))
-      (is (= "bar"   (foo  th/props))))
-    (testing "Definition with validator/description"
-      (is (= 34     (baz max-props)))
-      (is (= "hola" (bar mod-props)))
-      (is (true?    (qux min-props)))
-      (is (false?   (qux max-props)))
-      (is (true?    (esr min-props)))
-      (is (false?   (esr max-props))))))
-
-
 (defkey
   kfoo ["foo"]
   kbar ["bar" string? "Expected string"]
@@ -299,6 +204,9 @@
         (ku/str->edn map? "a map" "foo" "{:foo 100}"))))
 
 
+(defn dummy-fn [])
+
+
 (deftest test-optional-parsers
   (is (true? (ku/any->bool "foo" true)))
   (is (true? (ku/any->bool "foo" "true")))
@@ -312,9 +220,9 @@
   (is (float?   (ku/any->float "foo" "10.23")))
   (is (float?   (ku/any->double "foo" 10.23)))
   (is (float?   (ku/any->double "foo" "10.23")))
-  (is (var?     (ku/any->var "foo" #'props)))
+  (is (var?     (ku/any->var "foo" #'dummy-fn)))
   (is (var?     (ku/any->var "foo" "keypin.test-sample/hello"))) ; this also loads the namespace
-  (is ((ku/deref? fn?)     (ku/any->var "foo" #'props)))
+  (is ((ku/deref? fn?)     (ku/any->var "foo" #'dummy-fn)))
   (is ((ku/deref? string?) (ku/any->var "foo" "keypin.test-sample/hello"))) ; expects the namespace to be aliased
   (is ((ku/deref? fn?)     (ku/any->var "foo" "keypin.test-sample/hola")))
   (is (thrown? IllegalArgumentException
@@ -323,7 +231,7 @@
         (ku/any->var "foo" "keypin.test-samples/hellow")) "Bad ns")
   (is (thrown? IllegalArgumentException
         (ku/any->var "foo" "keypin.test-sample/hellow")) "Bad var")
-  (is (fn?     (ku/any->var->deref "foo" #'props)))
+  (is (fn?     (ku/any->var->deref "foo" #'dummy-fn)))
   (is (string? (ku/any->var->deref "foo" "keypin.test-sample/hello")))
   (is (fn?     (ku/any->var->deref "foo" "keypin.test-sample/hola")))
   ;; duration parsers

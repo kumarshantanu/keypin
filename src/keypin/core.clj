@@ -143,46 +143,6 @@
       (Config/writeConfig config-writers config-filename config escape? logger))))
 
 
-;; ===== properties files =====
-
-
-(defn read-properties
-  "DEPRECATED: Use 'read-config' instead.
-  Read properties file(s) returning a java.util.Properties instance."
-  {:deprecated "0.4.0"}
-  (^Properties [config-filenames]
-    (read-properties config-filenames {:parent-key "parent"}))
-  (^Properties [config-filenames {:keys [^String parent-key info-logger error-logger]
-                                  :or {info-logger  #(println "[keypin] [info]" %)
-                                       error-logger #(println "[keypin] [error]" %)}
-                                  :as options}]
-    (let [logger (reify Logger
-                   (info [this msg] (info-logger msg))
-                   (error [this msg] (error-logger msg)))]
-      (if parent-key
-        (PropertyFile/resolveConfig config-filenames parent-key logger)
-        (PropertyFile/resolveConfig config-filenames logger)))))
-
-
-(defn lookup-property
-  "DEPRECATED: Use 'lookup-key' instead.
-  Look up property name in a java.util.Properties instance."
-  {:deprecated "0.4.0"}
-  [^Properties the-map ^String property-name validator description property-parser default-value? default-value]
-  (when-not (instance? Properties the-map)
-    (i/illegal-arg (format "Property '%s' looked up in a non java.util.Properties object: %s"
-                     property-name the-map)))
-  (let [value (if (.containsKey ^Properties the-map property-name)
-                (->> property-name
-                  (.getProperty ^Properties the-map)
-                  (property-parser property-name))
-                (if default-value?
-                  default-value
-                  (i/illegal-arg (format "No default value is defined for non-existent property '%s'" property-name))))]
-    (i/expect-arg value validator (format "Invalid value for property '%s' (description: '%s'): %s"
-                                    property-name description (pr-str value)))))
-
-
 ;; ===== key definition =====
 
 
