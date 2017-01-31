@@ -13,7 +13,7 @@
     - For parsing a list of vars
 
 
-## 0.5.0 / 2017-January-??
+## 0.5.0 / 2017-January-31
 
 - Deprecation
   - [BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
