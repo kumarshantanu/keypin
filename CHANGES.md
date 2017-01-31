@@ -16,7 +16,7 @@
 ## 0.5.0 / 2017-January-??
 
 - Deprecation
-  - [TODO - BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
+  - [BREAKING CHANGE] Remove deprecated class `keypin.PropertyFile`
   - [BREAKING CHANGE] Remove deprecated fns `keypin.core/read-properties` and `keypin.core/lookup-property`
 - Support for variable escaping during reading and writing configuration
 - Generic "duration" abstraction with conversion helpers

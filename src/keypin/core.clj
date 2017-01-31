@@ -17,7 +17,7 @@
   (:import
     [clojure.lang ILookup]
     [java.util Map Properties]
-    [keypin Config ConfigIO Logger Mapper PropertyConfigIO PropertyFile]))
+    [keypin Config ConfigIO Logger Mapper PropertyConfigIO]))
 
 
 ;; ===== lookup functions ====
