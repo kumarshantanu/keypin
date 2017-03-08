@@ -100,17 +100,17 @@ Defining property finders is quite straightforward. The argument vector format i
 |               | `:lookup`  (lookup function)          | `k/lookup-key`     |
 
 
-### Defining property lookup
+### Defining key-path lookup
 
 ```clojure
 (defkey
-  {:lookup k/lookup-property}
-  app-name  ["app.name"     string?      "Expected string"]
-  pool-size ["pool.size"    #(< 0 % 100) "Thread-pool size (1-99)" {:parser u/str->int}]
-  trace?    ["enable.trace" u/bool?      "Flag: Enable runtime tracing?" {:parser u/str->bool :default true}])
+  {:lookup k/lookup-keypath}
+  app-name  [[:app :name]     string?      "Expected string"]
+  pool-size [[:pool :size]    #(< 0 % 100) "Thread-pool size (1-99)" {:parser u/str->int}]
+  trace?    [["enable.trace"] u/bool?      "Flag: Enable runtime tracing?" {:parser u/str->bool :default true}])
 
 ;; lookup
-(app-name ^java.util.Properties props)  ; returns whatever is defined in the properties file
+(app-name config)  ; for config={:app {:name "the name"}} it returns "the name"
 ```
 
 
@@ -143,7 +143,7 @@ A config file may be read simply like this:
 ```
 
 
-### Chained property files
+### Chained config files
 
 Chained config files need to mention a parent key:
 
