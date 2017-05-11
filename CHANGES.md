@@ -2,15 +2,31 @@
 
 ## TODO
 
-- [TODO] Export specified key/value pairs as system properties
-- [TODO] Mechanism for partial/delta/path override in child config files
+- [TODO] API to read config files
+  - Only from classpath
+  - Only from filesystem
+- [TODO] Pre-lookup and post-lookup fallbacks for key definitions
+- [TODO] Mechanism for partial/delta/path override in child config files using type hints
+  - (Vec) `^insert`  - Insert before
+  - (Vec) `^append`  - Insert after
+  - (Any) `^replace` - Replace
+  - (Map) `^merge`   - Merge
 - [TODO] Mechamism to enforce EDN parsing on a string (possibly containing variable) in an EDN file
-- [TODO] EDN parser support for invocation
-  - [TODO] Invoke fns/constructor/static-method: `(target arg1 arg2)`
-  - [TODO] Mechanism to reference config keys as invocation args
-  - [TODO] Built-in parser functions
+- [Idea] EDN parser support for invocation
+  - [Idea] Invoke fns/constructor/static-method: `(target arg1 arg2)`
+  - [Idea] Mechanism to reference config keys as invocation args
+  - [Idea] Built-in parser functions
     - For parsing symbol with `/` as fully qualified varname
     - For parsing a list of vars
+
+
+## 0.6.0 / 2017-May-??
+
+- Config file
+  - [BREAKING CHANGE - TODO] Change default parent key to `"parent.filenames"`
+- Key definition
+  - [TODO] Allow system property override via key `:sysprop`
+  - [TODO] Allow environment variable override via key `:envvar`
 
 
 ## 0.5.0 / 2017-January-31
