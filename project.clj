@@ -9,13 +9,13 @@
                 *assert* true}
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.5.1"]]}
-             :dev {:dependencies [[org.clojure/tools.nrepl "0.2.10"]]}
+             :dev {:dependencies [[org.clojure/tools.nrepl "0.2.12"]]}
              :c15 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :c16 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :c17 {:dependencies [[org.clojure/clojure "1.7.0"]]
                    :global-vars {*unchecked-math* :warn-on-boxed}}
              :c18 {:dependencies [[org.clojure/clojure "1.8.0"]]
                    :global-vars {*unchecked-math* :warn-on-boxed}}
-             :c19 {:dependencies [[org.clojure/clojure "1.9.0-alpha14"]]
+             :c19 {:dependencies [[org.clojure/clojure "1.9.0-alpha16"]]
                    :global-vars {*unchecked-math* :warn-on-boxed}}
              :dln {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
