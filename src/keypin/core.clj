@@ -25,7 +25,7 @@
 
 (defn lookup-key
   "Look up a key in a map or something that implements clojure.lang.ILookup."
-  [the-map the-key validator description property-parser default-value? default-value]
+  [the-map the-key validator description property-parser default-value? default-value not-found]
   (when-not (or (instance? Map the-map)
               (instance? ILookup the-map))
     (i/illegal-arg (format "Key %s looked up in a non map (or clojure.lang.ILookup) object: %s"
@@ -35,14 +35,15 @@
                   (property-parser the-key))
                 (if default-value?
                   default-value
-                  (i/illegal-arg (str "No default value is defined for non-existent key " (pr-str the-key)))))]
+                  (i/illegal-arg (not-found
+                                   (str "No default value is defined for non-existent key " (pr-str the-key))))))]
     (i/expect-arg value validator (format "Invalid value for key %s (description: '%s'): %s"
                                     (pr-str the-key) description (pr-str value)))))
 
 
 (defn lookup-keypath
   "Look up a key path in a map or something that implements clojure.lang.ILookup."
-  [the-map ks validator description property-parser default-value? default-value]
+  [the-map ks validator description property-parser default-value? default-value not-found]
   (let [value (loop [data the-map
                      path ks]
                 (when-not (or (instance? Map data)
@@ -53,7 +54,8 @@
                   (if-not (contains? data k)
                     (if default-value?   ; has a default value?
                       default-value
-                      (i/illegal-arg (str "No default value is defined for non-existent key path " (pr-str ks))))
+                      (i/illegal-arg (not-found
+                                       (str "No default value is defined for non-existent key path " (pr-str ks)))))
                     (if-not (next path)  ; last key in key path?
                       (get data k)
                       (recur (get data k) (rest path))))))]
@@ -153,8 +155,10 @@
              args: the-map, the-key, validator, description, value-parser, default-value?, default-value,
              default: ordinary key look up
   :parser  - The value parser function (args: key, value)
-  :default - Default value to return if key is not found"
-  [the-key validator description {:keys [lookup parser default]
+  :default - Default value to return if key is not found
+  :sysprop - System property name that can override the config value (before parsing)
+  :envvar  - Environment variable that can override the config value and system property (before parsing)"
+  [the-key validator description {:keys [lookup parser default sysprop envvar]
                                   :or {lookup lookup-key
                                        parser i/identity-parser}
                                   :as options}]
@@ -162,7 +166,17 @@
     the-key validator description parser
     (if   (contains? options :default) true false)
     (when (contains? options :default) default)
-    lookup))
+    (fn [the-map the-key validator description value-parser default-value? default-value]
+      (cond
+        (and envvar  (System/getenv envvar))       (value-parser the-key (System/getenv envvar))
+        (and sysprop (System/getProperty sysprop)) (value-parser the-key (System/getProperty sysprop))
+        :otherwise (lookup the-map the-key validator description value-parser default-value? default-value
+                     (if (or envvar sysprop)
+                       (fn [message] (str
+                                       (when-not envvar  (format "Environment variable '%s' is not defined. " envvar))
+                                       (when-not sysprop (format "System property '%s' is not defined. " sysprop))
+                                       message))
+                       identity))))))
 
 
 (defmacro defkey

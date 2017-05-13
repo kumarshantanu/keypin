@@ -156,6 +156,27 @@
      (is (false? (vesr max-keys))))))
 
 
+(defkey
+  override ["override" string? "Override test" {:sysprop "override.sysprop"}])
+
+
+(deftest test-defkey-override
+  (let [^String sp "override.sysprop"
+        props (doto (Properties.)
+                (.setProperty "override" "val"))
+        edncf {"override" "val"}]
+    (testing "config values before override"
+      (is (= "val" (override props)))
+      (is (= "val" (override edncf))))
+    (testing "config values upon override"
+      (try
+        (System/setProperty sp "newval")
+        (is (= "newval" (override props)))
+        (is (= "newval" (override edncf)))
+        (finally
+          (System/clearProperty sp))))))
+
+
 (deftest test-parsers
   (is (= "bar" (ku/identity-parser "foo" "bar")))
   (is (= [:bar] ((ku/comp-parser (fn [_ v] [v]) (fn [_ v] (keyword v))) "foo" "bar")))

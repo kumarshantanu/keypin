@@ -20,13 +20,18 @@
     - For parsing a list of vars
 
 
-## 0.6.0 / 2017-May-??
+## [WIP] 0.6.0 / 2017-May-??
 
 - Config file
   - [BREAKING CHANGE - TODO] Change default parent key to `"parent.filenames"`
+- Lookup function
+  - [BREAKING CHANGE] Accept additional argument to handle not-found keys
 - Key definition
-  - [TODO] Allow system property override via key `:sysprop`
-  - [TODO] Allow environment variable override via key `:envvar`
+  - Allow value override via system property with key `:sysprop`
+  - Allow value override via environment variable with key `:envvar`
+- Predicate functions
+  - [TODO] Fully qualified var name
+  - [TODO] Vector of fully qualified var names
 
 
 ## 0.5.0 / 2017-January-31
