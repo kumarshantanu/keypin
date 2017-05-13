@@ -25,7 +25,7 @@
     (doseq [config-fileset [["test-config/myconf.properties"]
                             ["test-config/myconf.edn"]]]
       (println "----------")
-      (let [props (read-config ["test-config/myconf.properties"])]
+      (let [props (read-config config-fileset)]
         (is (instance? Map props))
         (is (= "new-version" (get props "service.version")))
         (is (nil? (get props "app.version")))
