@@ -11,6 +11,7 @@
   (:require
     [clojure.test :refer :all]
     [keypin.core :refer :all]
+    [keypin.type :as kt]
     [keypin.util :as ku]
     [keypin.test-helper :as th])
   (:import
@@ -18,6 +19,28 @@
     [java.util Map Properties]
     [java.util.concurrent TimeUnit]
     [keypin Config Logger Mapper]))
+
+
+(deftest test-predicate
+  (testing "bool?"
+    (is (ku/bool? true))
+    (is (ku/bool? false))
+    (is (not (ku/bool? nil)))
+    (is (not (ku/bool? "foo"))))
+  (testing "fqvn?"
+    (is (ku/fqvn? "foo/bar"))
+    (is (ku/fqvn? 'foo/bar))
+    (is (not (ku/fqvn? "foo")))
+    (is (not (ku/fqvn? "/foo"))))
+  (testing "vec?"
+    (is ((ku/vec? integer?) [10 20 30 40]))
+    (is (not ((ku/vec? integer?) "foo")))
+    (is (not ((ku/vec? integer?) '(10 20 30 40))))
+    (is (not ((ku/vec? integer?) [10 20 :foo :bar 30 40]))))
+  (testing "duration?"
+    (is (ku/duration? (kt/->Duration 10 TimeUnit/MILLISECONDS)))
+    (is (ku/duration? [10 TimeUnit/MILLISECONDS]))
+    (is (ku/duration? {:time 10 :unit TimeUnit/MILLISECONDS}))))
 
 
 (deftest test-config-file-reader

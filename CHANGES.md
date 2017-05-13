@@ -29,9 +29,9 @@
 - Key definition
   - Allow value override via system property with key `:sysprop`
   - Allow value override via environment variable with key `:envvar`
-- Predicate functions
-  - [TODO] Fully qualified var name
-  - [TODO] Vector of fully qualified var names
+- Predicate/validator functions
+  - `fqvn?` - Fully qualified var name
+  - `vec?`  - Vector of predicate-validated elements
 
 
 ## 0.5.0 / 2017-January-31

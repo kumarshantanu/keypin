@@ -31,9 +31,22 @@
 
 
 (defn bool?
-  "Return true if argument is of boolean type, false otherwise."
+  "Return true if the argument is of boolean type, false otherwise."
   [x]
   (instance? Boolean x))
+
+
+(defn fqvn?
+  "Return true if the argument has the 'syntax' of a fully qualified var name, false otherwise."
+  [x]
+  (and (or (symbol? x)
+         (string? x))
+    (as-> (str x) <>
+      (string/split <> #"/")
+      (map string/trim <>)
+      (remove empty? <>)
+      (count <>)
+      (= 2 <>))))
 
 
 (defn deref?
@@ -41,6 +54,14 @@
   [pred]
   (fn [x]
     (pred (deref x))))
+
+
+(defn vec?
+  "Wrap a predicate to verify the argument as a vector before applying the predicate to all elements in it."
+  [pred]
+  (fn [x]
+    (and (vector? x)
+      (every? pred x))))
 
 
 (defn duration?
