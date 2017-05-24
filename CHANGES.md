@@ -27,8 +27,8 @@
 - Lookup function
   - [BREAKING CHANGE] Accept additional argument to handle not-found keys
 - Key definition
-  - Allow value override via system property with key `:sysprop`
-  - Allow value override via environment variable with key `:envvar`
+  - Allow value override via system property with option `:sysprop`
+  - Allow value override via environment variable with option `:envvar`
 - Predicate/validator functions
   - `fqvn?` - Fully qualified var name
   - `vec?`  - Vector of predicate-validated elements
