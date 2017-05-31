@@ -24,6 +24,8 @@
 
 - Config file
   - [BREAKING CHANGE - TODO] Change default parent key to `"parent.filenames"`
+- Config I/O protocol
+  - [BREAKING CHANGE] ConfigIO support for writing to `java.io.Writer` (besides `java.io.OutputStream`)
 - Lookup function
   - [BREAKING CHANGE] Accept additional argument to handle not-found keys
 - Key definition

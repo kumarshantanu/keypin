@@ -12,6 +12,7 @@ package keypin;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.util.Map;
 
 public interface ConfigIO {
@@ -23,5 +24,7 @@ public interface ConfigIO {
     public boolean canWrite(String filename);
 
     public void writeConfig (OutputStream out, Map<?, ?> config, boolean escape) throws Exception;
+
+    public void writeConfig (Writer out, Map<?, ?> config, boolean escape) throws Exception;
 
 }

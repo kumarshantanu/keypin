@@ -16,6 +16,7 @@
     [keypin.util     :as ku])
   (:import
     [clojure.lang ILookup]
+    [java.io OutputStream Writer]
     [java.util Map Properties]
     [keypin Config ConfigIO Logger Mapper PropertyConfigIO]))
 
@@ -73,24 +74,31 @@
 
 (def edn-file-io
   "Reader/writer for EDN files."
-  (reify ConfigIO
-    (canRead     [this filename]   (.endsWith (string/lower-case filename) ".edn"))
-    (readConfig  [this in]         (let [m (edn/read-string (slurp in))]
-                                     (if (map? m)
-                                       m
-                                       (throw (->> (pr-str (class m))
-                                                (str "Expected EDN content to be a map, but found ")
-                                                IllegalArgumentException.)))))
-    (canWrite    [this filename]   (.endsWith (string/lower-case filename) ".edn"))
-    (writeConfig [this out config
-                       escape?]    (->> config
-                                     pr-str
-                                     (ku/clojurize-data (if escape?
-                                                          (fn [x] (if (string? x)
-                                                                    (Config/escape (Config/escape x))
-                                                                    x))
-                                                          identity))
-                                     (spit out)))))
+  (let [config-str (fn [config escape?] (->> config
+                                          pr-str
+                                          (ku/clojurize-data (if escape?
+                                                               (fn [x] (if (string? x)
+                                                                         (Config/escape (Config/escape x))
+                                                                         x))
+                                                               identity))))]
+    (reify ConfigIO
+      (canRead     [this filename]    (.endsWith (string/lower-case filename) ".edn"))
+      (readConfig  [this in]          (let [m (edn/read-string (slurp in))]
+                                        (if (map? m)
+                                          m
+                                          (throw (->> (pr-str (class m))
+                                                   (str "Expected EDN content to be a map, but found ")
+                                                   IllegalArgumentException.)))))
+      (canWrite    [this filename]    (.endsWith (string/lower-case filename) ".edn"))
+      (^void
+       writeConfig [this
+                    ^OutputStream out
+                    ^Map config
+                    ^boolean escape?] (spit out (config-str config escape?)))
+      (^void
+       writeConfig [this ^Writer out
+                    ^Map config
+                    ^boolean escape?] (spit out (config-str config escape?))))))
 
 
 (defn realize-config
