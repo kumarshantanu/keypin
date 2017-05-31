@@ -274,7 +274,7 @@ public class Config {
     }
 
     private static List<String> trimmedTokens(String token, String regex) {
-        String[] tokens = token.split(",");
+        String[] tokens = token.split(regex);
         for (int i = 0; i < tokens.length; i++) {
             tokens[i] = tokens[i].trim();
         }
