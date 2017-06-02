@@ -102,7 +102,11 @@
 
 
 (defn realize-config
-  "Realize config by applying variable substitution, if any."
+  "Realize config by applying variable substitution, if any.
+  Options:
+  :info-logger    (fn/1)     logger for info mesages, default: fn that prints to *err*
+  :error-logger   (fn/1)     logger for error messages, default: fn that prints to *err*
+  :config-mapper  (object)   instance of keypin.Mapper class, default: the keypin.Mapper/DEFAULT"
   ([config]
     (realize-config config {}))
   ([config {:keys [info-logger error-logger config-mapper]
@@ -117,7 +121,13 @@
 
 
 (defn read-config
-  "Read config file(s) returning a java.util.Map instance."
+  "Read config file(s) returning a java.util.Map instance.
+  Options:
+  :parent-key     (string)   key to identify the parent filenames having K/V pairs, default: \"parent.filenames\"
+  :info-logger    (fn/1)     logger for info mesages, default: fn that prints to *err*
+  :error-logger   (fn/1)     logger for error messages, default: fn that prints to *err*
+  :config-readers (list/vec) collection of keypin.ConfigIO instances, default: for Properties and EDN files
+  :realize?       (boolean)  whether realize the template variables in the string, default: true"
   (^Map [config-filenames]
     (read-config config-filenames {}))
   (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper realize?]
@@ -141,7 +151,12 @@
 
 
 (defn write-config
-  "Write config to a specified file"
+  "Write config to a specified file.
+  Options:
+  :info-logger    (fn/1)     logger for info mesages, default: fn that prints to *err*
+  :error-logger   (fn/1)     logger for error messages, default: fn that prints to *err*
+  :config-writers (list/vec) collection of keypin.ConfigIO instances, default: for Properties and EDN files
+  :escape?        (boolean)  whether escape values when writing, default: true"
   ([config-filename config]
     (write-config config-filename config {}))
   ([config-filename config {:keys [info-logger error-logger config-writers escape?]
