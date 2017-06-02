@@ -20,7 +20,7 @@
     - For parsing a list of vars
 
 
-## [WIP] 0.6.0 / 2017-May-??
+## 0.6.0 / 2017-June-02
 
 - Config file
   - [BREAKING CHANGE] Change default parent key to `"parent.filenames"`

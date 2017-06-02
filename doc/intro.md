@@ -57,7 +57,11 @@ Another example of multiple key finders:
 ```clojure
 (defkey
   ip-address    [:ip string? "Server IP"]
-  port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int :default 3000}]
+  port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int :default 3000
+                                                        ;; port can be overridden by environment variable "PORT"
+                                                        :envvar "PORT"
+                                                        ;; port can also be overridden by system property "server.port"
+                                                        :sysprop "server.port"}]
   username      [:username string? "User name"]
   password      [:password string? "User password"])
 
@@ -98,6 +102,11 @@ Defining property finders is quite straightforward. The argument vector format i
 |               | `:parser`  (value parser fn, arity-2) | Identity parser    |
 |               | `:default` (value when key not found) | No default         |
 |               | `:lookup`  (lookup function)          | `k/lookup-key`     |
+|               | `:envvar`  (environment var to lookup)| No default         |
+|               | `:sysprop` (system prop to lookup)    | No default         |
+
+**Note:** Resolution order for all lookups is `envvar` (when defined), `sysprop` (when defined), lookup map.
+Responsibility of parsing string value from environment variable or system property lies with the parser.
 
 
 ### Defining key-path lookup
