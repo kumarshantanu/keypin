@@ -25,6 +25,7 @@
 - Config file
   - [BREAKING CHANGE - TODO] Change default parent key to `"parent.filenames"`
   - Fix issue where when reading a config file without a parent leads to argument passing error
+  - Fix issue where the parent option key is lost in the second arity of `keypin.core/read-config`
 - Config I/O protocol
   - [BREAKING CHANGE] ConfigIO support for writing to `java.io.Writer` (besides `java.io.OutputStream`)
 - Lookup function

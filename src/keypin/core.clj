@@ -119,9 +119,10 @@
 (defn read-config
   "Read config file(s) returning a java.util.Map instance."
   (^Map [config-filenames]
-    (read-config config-filenames {:parent-key "parent"}))
+    (read-config config-filenames {}))
   (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper realize?]
-                           :or {info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
+                           :or {parent-key     "parent"
+                                info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
                                 error-logger   #(binding [*out* *err*] (println "[keypin] [error]" %))
                                 config-readers [property-file-io edn-file-io]
                                 realize?       true}
