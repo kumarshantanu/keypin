@@ -131,7 +131,9 @@
                    (error [this msg] (error-logger msg)))
           config (if parent-key
                    (Config/readCascadingConfig config-readers config-filenames parent-key logger)
-                   (Config/readConfig config-readers config-filenames logger))]
+                   (reduce (fn [m filename]
+                             (merge m (Config/readConfig config-readers filename logger)))
+                     {} config-filenames))]
       (if realize?
         (realize-config config options)
         config))))
