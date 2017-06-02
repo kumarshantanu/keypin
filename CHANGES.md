@@ -23,7 +23,7 @@
 ## [WIP] 0.6.0 / 2017-May-??
 
 - Config file
-  - [BREAKING CHANGE - TODO] Change default parent key to `"parent.filenames"`
+  - [BREAKING CHANGE] Change default parent key to `"parent.filenames"`
   - Fix issue where when reading a config file without a parent leads to argument passing error
   - Fix issue where the parent option key is lost in the second arity of `keypin.core/read-config`
 - Config I/O protocol

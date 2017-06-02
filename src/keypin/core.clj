@@ -121,7 +121,7 @@
   (^Map [config-filenames]
     (read-config config-filenames {}))
   (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper realize?]
-                           :or {parent-key     "parent"
+                           :or {parent-key     "parent.filenames"
                                 info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
                                 error-logger   #(binding [*out* *err*] (println "[keypin] [error]" %))
                                 config-readers [property-file-io edn-file-io]
