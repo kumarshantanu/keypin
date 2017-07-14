@@ -20,6 +20,15 @@
     - For parsing a list of vars
 
 
+## [WIP] 0.6.1 / 2017-July-??
+
+- [TODO] Media I/O
+  - Extensible via protocol
+  - Implementation for filesystem
+  - Implementation for classpath
+  - Update config reading API to use protocol
+
+
 ## 0.6.0 / 2017-June-02
 
 - Config file
