@@ -36,7 +36,7 @@
   - Allow runtime resolution of data-driven duration, eg. for `[1 :second]`
   - Update `duration?` to detect a duration dynamically
   - Fix silent wrong parsing by `any->duration` of the EDN form [time unit-keyword]
-- [TODO] Add `atom?` validator function
+- Add `atom?` validator function
 
 
 ## 0.6.0 / 2017-June-02

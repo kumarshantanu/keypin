@@ -47,7 +47,10 @@
           (kt/millis [10 TimeUnit/MILLISECONDS])
           (kt/millis [10 :millis])
           (kt/millis {:time 10 :unit TimeUnit/MILLISECONDS})
-          (kt/millis {:time 10 :unit :millis})))))
+          (kt/millis {:time 10 :unit :millis}))))
+  (testing "atom?"
+    (is (ku/atom? (atom nil)))
+    (is (ku/atom? (atom :re)))))
 
 
 (deftest test-config-file-reader

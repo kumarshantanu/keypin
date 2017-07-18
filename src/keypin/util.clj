@@ -19,6 +19,7 @@
     [java.io              FileNotFoundException]
     [java.util            Collection List Map Properties RandomAccess Set]
     [java.util.concurrent TimeUnit]
+    [clojure.lang         Atom]
     [keypin               Logger]))
 
 
@@ -86,6 +87,12 @@
   [x]
   (and (satisfies? t/IDuration x)
     (t/isDuration x)))
+
+
+(defn atom?
+  "Return true if argument is a Clojure atom, false otherwise."
+  [x]
+  (instance? Atom x))
 
 
 ;; ===== parsing helpers =====
