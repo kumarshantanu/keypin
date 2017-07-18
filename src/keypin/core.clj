@@ -13,7 +13,7 @@
     [clojure.string  :as string]
     [keypin.internal :as i]
     [keypin.type     :as t]
-    [keypin.util     :as ku])
+    [keypin.util     :as u])
   (:import
     [clojure.lang ILookup]
     [java.io OutputStream Writer]
@@ -76,11 +76,11 @@
   "Reader/writer for EDN files."
   (let [config-str (fn [config escape?] (->> config
                                           pr-str
-                                          (ku/clojurize-data (if escape?
-                                                               (fn [x] (if (string? x)
-                                                                         (Config/escape (Config/escape x))
-                                                                         x))
-                                                               identity))))]
+                                          (u/clojurize-data (if escape?
+                                                              (fn [x] (if (string? x)
+                                                                        (Config/escape (Config/escape x))
+                                                                        x))
+                                                              identity))))]
     (reify ConfigIO
       (getName     [this]             "EDN")
       (canRead     [this filename]    (.endsWith (string/lower-case filename) ".edn"))
