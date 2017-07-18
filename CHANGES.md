@@ -26,7 +26,12 @@
   - Extensible via protocol (Java interface `keypin.MediaReader`)
   - Implementation for filesystem
   - Implementation for classpath
-  - [BREAKING CHANGE] Update config reading API to use the protocol
+  - [BREAKING CHANGE] Update Java config reading API to use the protocol
+- Refactor logger argument passing
+  - For `keypin.core` functions: `read-config`, `realize-config` and `write-config`
+  - [BREAKING CHANGE] Drop optional arguments `:info-logger` and `:error-logger`
+  - Accept optional argument `:logger` that defaults to printing to `*err*`
+  - Utility functions in `keypin.util` ns: `make-logger` and `default-logger`
 - [TODO] Overhaul duration abstraction
   - [TODO] Allow runtime-resolution of duration, eg. for `[1 :second]`
   - [TODO] Change `duration?` as `(satisfies? IDuration x)`

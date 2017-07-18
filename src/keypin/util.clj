@@ -18,7 +18,24 @@
     [java.io              FileNotFoundException]
     [java.util            Collection List Map Properties RandomAccess Set]
     [java.util.concurrent TimeUnit]
+    [keypin               Logger]
     [keypin.type          Duration]))
+
+
+;; ===== logger helpers =====
+
+
+(defn make-logger
+  "Make a logger instance from info-logger (fn [info-msg]) and error-logger (fn [error-msg])."
+  [info-logger error-logger]
+  (reify Logger
+    (info [this msg] (info-logger msg))
+    (error [this msg] (error-logger msg))))
+
+
+(def default-logger (make-logger
+                      #(binding [*out* *err*] (println "[keypin] [info]" %))
+                      #(binding [*out* *err*] (println "[keypin] [error]" %))))
 
 
 ;; ===== validators =====

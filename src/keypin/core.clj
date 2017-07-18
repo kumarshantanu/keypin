@@ -105,44 +105,34 @@
 (defn realize-config
   "Realize config by applying variable substitution, if any.
   Options:
-  :info-logger    (fn/1)     logger for info mesages, default: fn that prints to *err*
-  :error-logger   (fn/1)     logger for error messages, default: fn that prints to *err*
-  :config-mapper  (object)   instance of keypin.Mapper class, default: the keypin.Mapper/DEFAULT"
+  :logger        (object) instance of keypin.Logger, defaults to printing to *err*
+  :config-mapper (object) instance of keypin.Mapper, default: keypin.Mapper/DEFAULT"
   ([config]
     (realize-config config {}))
-  ([config {:keys [info-logger error-logger config-mapper]
-            :or {info-logger   #(binding [*out* *err*] (println "[keypin] [info]" %))
-                 error-logger  #(binding [*out* *err*] (println "[keypin] [error]" %))
+  ([config {:keys [logger config-mapper]
+            :or {logger        u/default-logger
                  config-mapper Mapper/DEFAULT}
             :as options}]
-    (let [logger (reify Logger
-                   (info [this msg] (info-logger msg))
-                   (error [this msg] (error-logger msg)))]
-      (Config/realize config config-mapper logger))))
+    (Config/realize config config-mapper logger)))
 
 
 (defn read-config
   "Read config file(s) returning a java.util.Map instance.
   Options:
   :parent-key     (string)   key to identify the parent filenames having K/V pairs, default: \"parent.filenames\"
-  :info-logger    (fn/1)     logger for info mesages, default: fn that prints to *err*
-  :error-logger   (fn/1)     logger for error messages, default: fn that prints to *err*
+  :logger         (object)   instance of keypin.Logger, defaults to printing to *err*
   :config-readers (list/vec) collection of keypin.ConfigIO instances, default: for Properties and EDN files
   :media-readers  (list/vec) collection of keypin.MediaReader instances, default: for Filesystem and Classpath
   :realize?       (boolean)  whether realize the template variables in the string, default: true"
   (^Map [config-filenames]
     (read-config config-filenames {}))
-  (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers media-readers realize?]
+  (^Map [config-filenames {:keys [^String parent-key logger config-readers media-readers realize?]
                            :or {parent-key     "parent.filenames"
-                                info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
-                                error-logger   #(binding [*out* *err*] (println "[keypin] [error]" %))
+                                logger         u/default-logger
                                 config-readers [property-file-io edn-file-io]
                                 realize?       true}
                            :as options}]
-    (let [logger (reify Logger
-                   (info [this msg] (info-logger msg))
-                   (error [this msg] (error-logger msg)))
-          mediar (or media-readers [(Config/createFilesystemReader logger)
+    (let [mediar (or media-readers [(Config/createFilesystemReader logger)
                                     (Config/createClasspathReader  logger)])
           config (if parent-key
                    (Config/readCascadingConfig config-readers mediar config-filenames parent-key logger)
@@ -157,22 +147,17 @@
 (defn write-config
   "Write config to a specified file.
   Options:
-  :info-logger    (fn/1)     logger for info mesages, default: fn that prints to *err*
-  :error-logger   (fn/1)     logger for error messages, default: fn that prints to *err*
+  :logger         (object)   instance of keypin.Logger, defaults to printing to *err*
   :config-writers (list/vec) collection of keypin.ConfigIO instances, default: for Properties and EDN files
   :escape?        (boolean)  whether escape values when writing, default: true"
   ([config-filename config]
     (write-config config-filename config {}))
-  ([config-filename config {:keys [info-logger error-logger config-writers escape?]
-                            :or {info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
-                                 error-logger   #(binding [*out* *err*] (println "[keypin] [error]" %))
+  ([config-filename config {:keys [logger config-writers escape?]
+                            :or {logger         u/default-logger
                                  config-writers [property-file-io edn-file-io]
                                  escape?        true}
                             :as options}]
-    (let [logger (reify Logger
-                   (info [this msg] (info-logger msg))
-                   (error [this msg] (error-logger msg)))]
-      (Config/writeConfig config-writers config-filename config escape? logger))))
+    (Config/writeConfig config-writers config-filename config escape? logger)))
 
 
 ;; ===== key definition =====
