@@ -40,7 +40,14 @@
   (testing "duration?"
     (is (ku/duration? (kt/->Duration 10 TimeUnit/MILLISECONDS)))
     (is (ku/duration? [10 TimeUnit/MILLISECONDS]))
-    (is (ku/duration? {:time 10 :unit TimeUnit/MILLISECONDS}))))
+    (is (ku/duration? [10 :millis]))
+    (is (ku/duration? {:time 10 :unit TimeUnit/MILLISECONDS}))
+    (is (ku/duration? {:time 10 :unit :millis}))
+    (is (= (kt/millis (kt/->Duration 10 TimeUnit/MILLISECONDS))
+          (kt/millis [10 TimeUnit/MILLISECONDS])
+          (kt/millis [10 :millis])
+          (kt/millis {:time 10 :unit TimeUnit/MILLISECONDS})
+          (kt/millis {:time 10 :unit :millis})))))
 
 
 (deftest test-config-file-reader
@@ -285,6 +292,8 @@
   (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" "34ms")))
   (is (ku/duration? (ku/any->duration "foo" [34 :ms])))
   (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" [34 :ms])))
+  (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" [34 :milliseconds])))
+  (is (= [34 TimeUnit/MILLISECONDS] (ku/any->duration "foo" [34 :millis])))
   ;; collection parsers
   (is (= ["foo" "bar" "baz"]
         (ku/any->vec "foo" ["foo" "bar" "baz"])))

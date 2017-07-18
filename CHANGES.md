@@ -1,4 +1,4 @@
-# Changes and Todo
+# keypin Changes and Todo
 
 ## TODO
 
@@ -32,10 +32,10 @@
   - [BREAKING CHANGE] Drop optional arguments `:info-logger` and `:error-logger`
   - Accept optional argument `:logger` that defaults to printing to `*err*`
   - Utility functions in `keypin.util` ns: `make-logger` and `default-logger`
-- [TODO] Overhaul duration abstraction
-  - [TODO] Allow runtime-resolution of duration, eg. for `[1 :second]`
-  - [TODO] Change `duration?` as `(satisfies? IDuration x)`
-  - [TODO] Fix silent wrong parsing of `[1 :second]` using `any->duration`
+- Overhaul duration abstraction
+  - Allow runtime resolution of data-driven duration, eg. for `[1 :second]`
+  - Update `duration?` to detect a duration dynamically
+  - Fix silent wrong parsing by `any->duration` of the EDN form [time unit-keyword]
 - [TODO] Add `atom?` validator function
 
 
