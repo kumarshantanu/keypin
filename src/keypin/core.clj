@@ -82,6 +82,7 @@
                                                                          x))
                                                                identity))))]
     (reify ConfigIO
+      (getName     [this]             "EDN")
       (canRead     [this filename]    (.endsWith (string/lower-case filename) ".edn"))
       (readConfig  [this in]          (let [m (edn/read-string (slurp in))]
                                         (if (map? m)
@@ -127,10 +128,11 @@
   :info-logger    (fn/1)     logger for info mesages, default: fn that prints to *err*
   :error-logger   (fn/1)     logger for error messages, default: fn that prints to *err*
   :config-readers (list/vec) collection of keypin.ConfigIO instances, default: for Properties and EDN files
+  :media-readers  (list/vec) collection of keypin.MediaReader instances, default: for Filesystem and Classpath
   :realize?       (boolean)  whether realize the template variables in the string, default: true"
   (^Map [config-filenames]
     (read-config config-filenames {}))
-  (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers config-mapper realize?]
+  (^Map [config-filenames {:keys [^String parent-key info-logger error-logger config-readers media-readers realize?]
                            :or {parent-key     "parent.filenames"
                                 info-logger    #(binding [*out* *err*] (println "[keypin] [info]" %))
                                 error-logger   #(binding [*out* *err*] (println "[keypin] [error]" %))
@@ -140,10 +142,12 @@
     (let [logger (reify Logger
                    (info [this msg] (info-logger msg))
                    (error [this msg] (error-logger msg)))
+          mediar (or media-readers [(Config/createFilesystemReader logger)
+                                    (Config/createClasspathReader  logger)])
           config (if parent-key
-                   (Config/readCascadingConfig config-readers config-filenames parent-key logger)
+                   (Config/readCascadingConfig config-readers mediar config-filenames parent-key logger)
                    (reduce (fn [m filename]
-                             (merge m (Config/readConfig config-readers filename logger)))
+                             (merge m (Config/readConfig config-readers mediar filename logger)))
                      {} config-filenames))]
       (if realize?
         (realize-config config options)

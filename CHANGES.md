@@ -22,11 +22,16 @@
 
 ## [WIP] 0.6.1 / 2017-July-??
 
-- [TODO] Media I/O
-  - Extensible via protocol
+- Add media reader support
+  - Extensible via protocol (Java interface `keypin.MediaReader`)
   - Implementation for filesystem
   - Implementation for classpath
-  - Update config reading API to use protocol
+  - [BREAKING CHANGE] Update config reading API to use the protocol
+- [TODO] Overhaul duration abstraction
+  - [TODO] Allow runtime-resolution of duration, eg. for `[1 :second]`
+  - [TODO] Change `duration?` as `(satisfies? IDuration x)`
+  - [TODO] Fix silent wrong parsing of `[1 :second]` using `any->duration`
+- [TODO] Add `atom?` validator function
 
 
 ## 0.6.0 / 2017-June-02
