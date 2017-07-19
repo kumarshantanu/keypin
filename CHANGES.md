@@ -27,6 +27,8 @@
   - Implementation for filesystem
   - Implementation for classpath
   - [BREAKING CHANGE] Update Java config reading API to use the protocol
+- Config I/O protocol
+  - [BREAKING CHANGE] Add support for named config reader/writer
 - Refactor logger argument passing
   - For `keypin.core` functions: `read-config`, `realize-config` and `write-config`
   - [BREAKING CHANGE] Drop optional arguments `:info-logger` and `:error-logger`
@@ -36,7 +38,7 @@
   - Allow runtime resolution of data-driven duration, eg. for `[1 :second]`
   - Update `duration?` to detect a duration dynamically
   - Fix silent wrong parsing by `any->duration` of the EDN form [time unit-keyword]
-- Add `atom?` validator function
+- Add `atom?` validator function for Clojure atoms
 
 
 ## 0.6.0 / 2017-June-02
