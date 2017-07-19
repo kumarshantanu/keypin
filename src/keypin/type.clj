@@ -34,24 +34,28 @@
 
 
 (defprotocol IDuration
-  (isDuration [this] "Return true if valid duration, false otherwise")
-  (days       [this] "Convert duration to number of days")
-  (hours      [this] "Convert duration to number of hours")
-  (minutes    [this] "Convert duration to number of minutes")
-  (seconds    [this] "Convert duration to number of seconds")
-  (millis     [this] "Convert duration to number of milliseconds")
-  (micros     [this] "Convert duration to number of micros")
-  (nanos      [this] "Convert duration to number of nanoseconds"))
+  (^boolean  duration? [this] "Return true if valid duration, false otherwise")
+  (^long     dur-time  [this] "Return the duration time")
+  (^TimeUnit dur-unit  [this] "Return the duration time unit")
+  (^long     days      [this] "Convert duration to number of days")
+  (^long     hours     [this] "Convert duration to number of hours")
+  (^long     minutes   [this] "Convert duration to number of minutes")
+  (^long     seconds   [this] "Convert duration to number of seconds")
+  (^long     millis    [this] "Convert duration to number of milliseconds")
+  (^long     micros    [this] "Convert duration to number of micros")
+  (^long     nanos     [this] "Convert duration to number of nanoseconds"))
 
 
 (defrecord Duration
   [^long time ^TimeUnit unit]
   IDuration
-  (isDuration [this] true)
-  (days       [this] (.toDays    unit time))
-  (hours      [this] (.toHours   unit time))
-  (minutes    [this] (.toMinutes unit time))
-  (seconds    [this] (.toSeconds unit time))
-  (millis     [this] (.toMillis  unit time))
-  (micros     [this] (.toMicros  unit time))
-  (nanos      [this] (.toNanos   unit time)))
+  (duration? [this] true)
+  (dur-time  [this] time)
+  (dur-unit  [this] unit)
+  (days      [this] (.toDays    unit time))
+  (hours     [this] (.toHours   unit time))
+  (minutes   [this] (.toMinutes unit time))
+  (seconds   [this] (.toSeconds unit time))
+  (millis    [this] (.toMillis  unit time))
+  (micros    [this] (.toMicros  unit time))
+  (nanos     [this] (.toNanos   unit time)))

@@ -86,7 +86,7 @@
   "Return true if the argument is a duration, false otherwise."
   [x]
   (and (satisfies? t/IDuration x)
-    (t/isDuration x)))
+    (t/duration? x)))
 
 
 (defn atom?
