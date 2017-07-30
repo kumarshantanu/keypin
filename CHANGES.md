@@ -2,9 +2,6 @@
 
 ## TODO
 
-- [TODO] API to read config files
-  - Only from classpath
-  - Only from filesystem
 - [TODO] Pre-lookup and post-lookup fallbacks for key definitions
 - [TODO] Mechanism for partial/delta/path override in child config files using type hints
   - (Vec) `^insert`  - Insert before
@@ -38,7 +35,7 @@
   - Allow runtime resolution of data-driven duration, eg. for `[1 :second]`
   - Update `duration?` to detect a duration dynamically
   - Fix silent wrong parsing by `any->duration` of the EDN form [time unit-keyword]
-  - [BREAKING CHANGE] Add `duration?`, `dur-time` and `dur-unit` fns to the `keypin.type/IDuration` protocol
+  - [BREAKING CHANGE] Add `duration?`, `dur-time` and `dur-unit` fns to `keypin.type/IDuration` protocol
 - Add `atom?` validator function for Clojure atoms
 
 
