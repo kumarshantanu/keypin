@@ -60,7 +60,7 @@ Another example of multiple key finders:
   port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int :default 3000
                                                         ;; port can be overridden by environment variable "PORT"
                                                         :envvar "PORT"
-                                                        ;; port can also be overridden by system property "server.port"
+                                                        ;; port can be overridden by system property "server.port"
                                                         :sysprop "server.port"}]
   username      [:username string? "User name"]
   password      [:password string? "User password"])
