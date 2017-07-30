@@ -29,36 +29,71 @@ import java.util.regex.Pattern;
 
 public class Config {
 
-    public static Map<?, ?> readConfig(Iterable<? extends ConfigIO> readers, String filename,
-            Logger logger) throws Exception {
-        for (ConfigIO eachReader: readers) {
-            if (eachReader.canRead(filename)) {
-                // try filesystem
-                do {
-                    final File file = new File(filename);
-                    info(logger, "Searching in filesystem: %s", file.getAbsolutePath());
-                    if (file.isFile()) {
-                        if (!file.canRead()) {
-                            exit(logger, "File is not readable: %s", file.getAbsolutePath());
-                        }
-                        info(logger, "Found in filesystem, now reading config from: " + file.getAbsolutePath());
-                        return Collections.unmodifiableMap(eachReader.readConfig(new FileInputStream(file)));
-                    }
-                } while (false);
-                // try classpath
-                do {
-                    info(logger, "Not found in filesystem, now searching in classpath: %s", filename);
-                    final InputStream resource =
-                            Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
-                    if (resource != null) {
-                        logger.info("Found in classpath, now reading config from: " + filename);
-                        return Collections.unmodifiableMap(eachReader.readConfig(resource));
-                    }
-                } while (false);
-                exit(logger, "Found neither on the filesystem nor in classpath: %s", filename);
+    public static MediaReader createFilesystemReader(final Logger logger) {
+        return new MediaReader() {
+            @Override
+            public String getName() {
+                return "Filesystem";
             }
+            @Override
+            public Map<?, ?> readConfig(ConfigIO configReader, String filename) throws Exception {
+                final File file = new File(filename);
+                info(logger, "Searching in filesystem: %s", file.getAbsolutePath());
+                if (file.isFile()) {
+                    if (!file.canRead()) {
+                        exit(logger, "File is not readable: %s", file.getAbsolutePath());
+                    }
+                    info(logger, "Found in filesystem, now reading config from: " + file.getAbsolutePath());
+                    return Collections.unmodifiableMap(configReader.readConfig(new FileInputStream(file)));
+                } else {
+                    info(logger, "Not found in filesystem: " + file.getAbsolutePath());
+                    return null;
+                }
+            }
+        };
+    }
+
+    public static MediaReader createClasspathReader(final Logger logger) {
+        return new MediaReader() {
+            @Override
+            public String getName() {
+                return "Classpath";
+            }
+            @Override
+            public Map<?, ?> readConfig(ConfigIO configReader, String classpathResource) throws Exception {
+                info(logger, "Searching in classpath: %s", classpathResource);
+                final InputStream resource =
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream(classpathResource);
+                if (resource != null) {
+                    logger.info("Found in classpath, now reading config from: " + classpathResource);
+                    return Collections.unmodifiableMap(configReader.readConfig(resource));
+                } else {
+                    info(logger, "Not found in classpath: " + classpathResource);
+                    return null;
+                }
+            }
+        };
+    }
+
+    public static Map<?, ?> readConfig(Iterable<? extends ConfigIO> configReaders,
+            Iterable<? extends MediaReader> mediaReaders,
+            String filename, Logger logger) throws Exception {
+        final List<String> configReaderNames = new ArrayList<>();
+        for (ConfigIO eachConfigReader: configReaders) {
+            if (eachConfigReader.canRead(filename)) {
+                final List<String> mediaReaderNames = new ArrayList<>();
+                for (MediaReader eachMediaReader: mediaReaders) {
+                    Map<?, ?> config = eachMediaReader.readConfig(eachConfigReader, filename);
+                    if (config != null) {
+                        return config;
+                    }
+                    mediaReaderNames.add(eachMediaReader.getName());
+                }
+                exit(logger, "File '%s' not found on any available media: %s", filename, mediaReaderNames);
+            }
+            configReaderNames.add(eachConfigReader.getName());
         }
-        exit(logger, "File '%s' cannot be read by any available config reader", filename);
+        exit(logger, "File '%s' cannot be read by any available config reader: %s", filename, configReaderNames);
         throw new IllegalStateException("Unreachable code");
     }
 
@@ -76,12 +111,13 @@ public class Config {
         throw new IllegalStateException("Unreachable code");
     }
 
-    public static Map<?, ?> readCascadingConfig(Iterable<? extends ConfigIO> readers, Iterable<String> filenames,
+    public static Map<?, ?> readCascadingConfig(Iterable<? extends ConfigIO> configReaders,
+            Iterable<? extends MediaReader> mediaReaders, Iterable<String> filenames,
             Object parentKey, Logger logger) throws Exception {
         final Map<Object, Object> config = new LinkedHashMap<>();
         for (String eachFilename: filenames) {
             Map<Object, Object> eachResultConfig = new LinkedHashMap<>();
-            Map<?, ?> eachConfig = readConfig(readers, eachFilename, logger);
+            Map<?, ?> eachConfig = readConfig(configReaders, mediaReaders, eachFilename, logger);
             if (eachConfig.containsKey(parentKey)) {
                 Object parentValue = eachConfig.get(parentKey);
                 if (parentValue == null) {
@@ -104,7 +140,8 @@ public class Config {
                     expected(logger, "one or more filenames", parentValue);
                 }
                 // add parent config
-                eachResultConfig.putAll(readCascadingConfig(readers, parentFilenames, parentKey, logger));
+                eachResultConfig.putAll(readCascadingConfig(
+                        configReaders, mediaReaders, parentFilenames, parentKey, logger));
             }
             // add current config (after adding parent)
             eachResultConfig.putAll(eachConfig);

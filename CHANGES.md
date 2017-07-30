@@ -1,10 +1,7 @@
-# Changes and Todo
+# keypin Changes and Todo
 
 ## TODO
 
-- [TODO] API to read config files
-  - Only from classpath
-  - Only from filesystem
 - [TODO] Pre-lookup and post-lookup fallbacks for key definitions
 - [TODO] Mechanism for partial/delta/path override in child config files using type hints
   - (Vec) `^insert`  - Insert before
@@ -18,6 +15,28 @@
   - [Idea] Built-in parser functions
     - For parsing symbol with `/` as fully qualified varname
     - For parsing a list of vars
+
+
+## 0.7.0-alpha1 / 2017-July-20
+
+- Add media reader support
+  - Extensible via protocol (Java interface `keypin.MediaReader`)
+  - Implementation for filesystem
+  - Implementation for classpath
+  - [BREAKING CHANGE] Update Java config reading API to use the protocol
+- Config I/O protocol
+  - [BREAKING CHANGE] Add support for named config reader/writer
+- Refactor logger argument passing
+  - For `keypin.core` functions: `read-config`, `realize-config` and `write-config`
+  - [BREAKING CHANGE] Drop optional arguments `:info-logger` and `:error-logger`
+  - Accept optional argument `:logger` that defaults to printing to `*err*`
+  - Utility functions in `keypin.util` ns: `make-logger` and `default-logger`
+- Overhaul duration abstraction
+  - Allow runtime resolution of data-driven duration, eg. for `[1 :second]`
+  - Update `duration?` to detect a duration dynamically
+  - Fix silent wrong parsing by `any->duration` of the EDN form [time unit-keyword]
+  - [BREAKING CHANGE] Add `duration?`, `dur-time` and `dur-unit` fns to `keypin.type/IDuration` protocol
+- Add `atom?` validator function for Clojure atoms
 
 
 ## 0.6.0 / 2017-June-02

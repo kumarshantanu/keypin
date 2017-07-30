@@ -13,12 +13,30 @@
     [clojure.edn     :as edn]
     [clojure.string  :as string]
     [keypin.internal :as i]
+    [keypin.impl     :as impl]
     [keypin.type     :as t])
   (:import
     [java.io              FileNotFoundException]
     [java.util            Collection List Map Properties RandomAccess Set]
     [java.util.concurrent TimeUnit]
-    [keypin.type          Duration]))
+    [clojure.lang         Atom]
+    [keypin               Logger]))
+
+
+;; ===== logger helpers =====
+
+
+(defn make-logger
+  "Make a logger instance from info-logger (fn [info-msg]) and error-logger (fn [error-msg])."
+  [info-logger error-logger]
+  (reify Logger
+    (info [this msg] (info-logger msg))
+    (error [this msg] (error-logger msg))))
+
+
+(def default-logger (make-logger
+                      #(binding [*out* *err*] (println "[keypin] [info]" %))
+                      #(binding [*out* *err*] (println "[keypin] [error]" %))))
 
 
 ;; ===== validators =====
@@ -67,14 +85,14 @@
 (defn duration?
   "Return true if the argument is a duration, false otherwise."
   [x]
-  (or
-    (instance? Duration x)
-    (and (vector? x)
-      (integer? (first x))
-      (instance? TimeUnit (second x)))
-    (and (map? x)
-      (integer? (get x :time))
-      (instance? TimeUnit (get x :unit)))))
+  (and (satisfies? t/IDuration x)
+    (t/duration? x)))
+
+
+(defn atom?
+  "Return true if argument is a Clojure atom, false otherwise."
+  [x]
+  (instance? Atom x))
 
 
 ;; ===== parsing helpers =====
@@ -211,36 +229,11 @@
 (defn str->time-unit
   "Given a time unit string, resolve it as java.util.concurrent.TimeUnit instance."
   ^TimeUnit [the-key unit-str]
-  (case (string/lower-case unit-str)
-    ;; days
-    "d"       TimeUnit/DAYS
-    "days"    TimeUnit/DAYS
-    ;; hours
-    "h"       TimeUnit/HOURS
-    "hr"      TimeUnit/HOURS
-    "hours"   TimeUnit/HOURS
-    ;; minutes
-    "m"       TimeUnit/MINUTES
-    "min"     TimeUnit/MINUTES
-    "minutes" TimeUnit/MINUTES
-    ;; seconds
-    "s"       TimeUnit/SECONDS
-    "sec"     TimeUnit/SECONDS
-    "seconds" TimeUnit/SECONDS
-    ;; milliseconds
-    "ms"      TimeUnit/MILLISECONDS
-    "millis"  TimeUnit/MILLISECONDS
-    ;; microseconds
-    "us"      TimeUnit/MICROSECONDS
-    "μs"      TimeUnit/MICROSECONDS
-    "micros"  TimeUnit/MICROSECONDS
-    ;; nanoseconds
-    "ns"      TimeUnit/NANOSECONDS
-    "nanos"   TimeUnit/NANOSECONDS
+  (or (impl/resolve-time-unit unit-str)
     (i/expected
       (format
         (str "time unit to be either of "
-          ["days/d" "hours/h" "minutes/min/m" "seconds/sec/s" "millis/ms" "micros/μs/us" "nanos/ns"]
+          (vec (keys impl/time-units))
           " for key %s")
         (pr-str the-key))
       unit-str)))
