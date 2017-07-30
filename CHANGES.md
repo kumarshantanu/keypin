@@ -17,7 +17,7 @@
     - For parsing a list of vars
 
 
-## 0.7.0-alpha1 / 2017-July-20
+## 0.7.0 / 2017-July-30
 
 - Add media reader support
   - Extensible via protocol (Java interface `keypin.MediaReader`)
