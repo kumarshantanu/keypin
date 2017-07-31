@@ -25,7 +25,7 @@
   (invoke [this the-map]  ; behave as arity-1 fn
     (lookup-fn the-map the-key validator description value-parser default-value? default-value))
   (invoke [this the-map not-found]  ; behave as arity-2 fn (2nd arg is returned when key not found)
-    (lookup-fn the-map the-key identity description value-parser true not-found))
+    (lookup-fn the-map the-key validator description value-parser true not-found))
   java.util.Map$Entry  ; key name is retrievable using clojure.core/key: (key foo)
   (getKey [this] the-key)
   ; not implementing methods (getValue [this] ..) and (setValue [this v] ..)

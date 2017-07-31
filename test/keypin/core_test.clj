@@ -411,7 +411,11 @@
 
 
 (deftest test-keypath
-  (is (= 12345 (kp-foo-bar {:foo {:bar 12345}}))   "validator is applied")
-  (is (= 12345 (kp-foo-bar {:foo {:bar "12345"}})) "both parser and validator are applied")
+  (is (= 12345 (kp-foo-bar {:foo {:bar 12345}}))      "validator is applied")
+  (is (= 12345 (kp-foo-bar {:foo {:bar "12345"}}))    "both parser and validator are applied")
   (is (thrown? IllegalArgumentException
-        (kp-bar-baz {:bar {:baz -123}})) "validator is applied"))
+        (kp-foo-bar {:bar {:baz -123}}))              "validator is applied")
+  (is (= 12345 (kp-foo-bar {:foo {:bar 12345}} :zap)) "value exists")
+  (is (thrown? IllegalArgumentException
+        (kp-bar-baz {:bar {:baz -1234}} :zap))        "invalid value exists")
+  (is (= 2345  (kp-foo-bar {} 2345))                  "value absent, but default specified ar argument"))

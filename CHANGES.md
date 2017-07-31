@@ -19,7 +19,7 @@
 
 ## [WIP] 0.7.1 / 2017-July-??
 
-- [TODO] Fix issue: Validator is not applied when (k config not-found) arity is used
+- Fix issue: Validator is not applied when (keydef config not-found) arity is used
 - Fix issue: Value parser is not applied in `lookup-keypath`
 
 
