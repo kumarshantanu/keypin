@@ -206,9 +206,10 @@
     ip   [:ip-address]
     port [:port #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])
   (defkey
-    {:lookup lookup-property}
+    {:lookup lookup-key}
     ip   [\"server.ip.address\"]
-    port [\"server.port\" #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])"
+    port [\"server.port\" #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])
+  See: make-key"
   [the-sym arg-vec & more]
   (let [options (if (odd? (count more))
                   (i/expect-arg the-sym map? ["Expected an option map, found" (pr-str the-sym)])
