@@ -17,7 +17,7 @@
     - For parsing a list of vars
 
 
-## [WIP] 0.7.1 / 2017-July-??
+## 0.7.1 / 2017-July-31
 
 - Fix issue: Validator is not applied when (keydef config not-found) arity is used
 - Fix issue: Value parser is not applied in `lookup-keypath`

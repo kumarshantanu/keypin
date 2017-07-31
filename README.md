@@ -28,7 +28,7 @@ Key lookup on steroids in Clojure.
 
 ## Usage
 
-Clojars coordinates: `[keypin "0.7.0"]`
+Clojars coordinates: `[keypin "0.7.1"]`
 
 Requires Java 7 or higher.
 
