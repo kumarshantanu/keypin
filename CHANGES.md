@@ -17,6 +17,12 @@
     - For parsing a list of vars
 
 
+## [WIP] 0.7.1 / 2017-July-??
+
+- [TODO] Fix issue: Validator is not applied when (k config not-found) arity is used
+- [TODO] Fix issue: Validator is not applied in `lookup-keypath`
+
+
 ## 0.7.0 / 2017-July-30
 
 - Add media reader support
