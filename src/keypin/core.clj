@@ -167,8 +167,9 @@
 (defn make-key
   "Create a key that can be looked up in a java.util.Map/Properties or clojure.lang.ILookup (map, vector) instance. The
   following optional keys are supported:
-  :lookup  - The function to look the key up,
-             args: the-map, the-key, validator, description, value-parser, default-value?, default-value,
+  :lookup  - The function to look the key up:
+             (fn [the-map the-key validator description value-parser default-value? default-value
+                  (fn not-found-fn [not-found-message])])
              default: ordinary key look up
   :parser  - The value parser function (args: key, value)
   :default - Default value to return if key is not found
