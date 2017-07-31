@@ -26,14 +26,14 @@
 
 (defn lookup-key
   "Look up a key in a map or something that implements clojure.lang.ILookup."
-  [the-map the-key validator description property-parser default-value? default-value not-found]
+  [the-map the-key validator description value-parser default-value? default-value not-found]
   (when-not (or (instance? Map the-map)
               (instance? ILookup the-map))
     (i/illegal-arg (format "Key %s looked up in a non map (or clojure.lang.ILookup) object: %s"
                      (pr-str the-key) the-map)))
   (let [value (if (contains? the-map the-key)
                 (->> (get the-map the-key)
-                  (property-parser the-key))
+                  (value-parser the-key))
                 (if default-value?
                   default-value
                   (i/illegal-arg (not-found
@@ -44,7 +44,7 @@
 
 (defn lookup-keypath
   "Look up a key path in a map or something that implements clojure.lang.ILookup."
-  [the-map ks validator description property-parser default-value? default-value not-found]
+  [the-map ks validator description value-parser default-value? default-value not-found]
   (let [value (loop [data the-map
                      path ks]
                 (when-not (or (instance? Map data)
