@@ -402,3 +402,16 @@
             (letval [{z rat :as m} data]
               (reset! ran? true))))
       (is (not @ran?)))))
+
+
+(defkey
+  {:lookup lookup-keypath}
+  kp-foo-bar [[:foo :bar] integer? "Value at [:foo :bar]" {:parser ku/any->int}]
+  kp-bar-baz [[:bar :baz] pos?     "Value at [:bar :baz]" {:parser ku/any->int}])
+
+
+(deftest test-keypath
+  (is (= 12345 (kp-foo-bar {:foo {:bar 12345}}))   "validator is applied")
+  (is (= 12345 (kp-foo-bar {:foo {:bar "12345"}})) "both parser and validator are applied")
+  (is (thrown? IllegalArgumentException
+        (kp-bar-baz {:bar {:baz -123}})) "validator is applied"))

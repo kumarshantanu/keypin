@@ -58,7 +58,8 @@
                       (i/illegal-arg (not-found
                                        (str "No default value is defined for non-existent key path " (pr-str ks)))))
                     (if-not (next path)  ; last key in key path?
-                      (get data k)
+                      (->> (get data k)
+                        (value-parser ks))
                       (recur (get data k) (rest path))))))]
     (i/expect-arg value validator (format "Invalid value for key path %s (description: '%s'): %s"
                                     (pr-str ks) description (pr-str value)))))
