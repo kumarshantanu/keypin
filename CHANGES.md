@@ -2,19 +2,28 @@
 
 ## TODO
 
+- [TODO] Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
 - [TODO] Pre-lookup and post-lookup fallbacks for key definitions
-- [TODO] Mechanism for partial/delta/path override in child config files using type hints
-  - (Vec) `^insert`  - Insert before
-  - (Vec) `^append`  - Insert after
-  - (Any) `^replace` - Replace
-  - (Map) `^merge`   - Merge
-- [TODO] Mechamism to enforce EDN parsing on a string (possibly containing variable) in an EDN file
+- [TODO] Mechanism to enforce EDN parsing on a string (possibly containing variable) in an EDN file
 - [Idea] EDN parser support for invocation
   - [Idea] Invoke fns/constructor/static-method: `(target arg1 arg2)`
   - [Idea] Mechanism to reference config keys as invocation args
   - [Idea] Built-in parser functions
     - For parsing symbol with `/` as fully qualified varname
     - For parsing a list of vars
+- [Idea] Mechanism for partial/delta/path override in child config files using type hints
+  - (Lookup) `^refer` - Refer another key in config
+  - (Vec) `^insert` or `^precat` - Insert before
+  - (Vec) `^append` or `^concat` - Insert after
+  - (Any) `^replace` - Replace
+  - (Map) `^merge`   - Merge
+
+
+## [WIP] 0.7.2 / 2018-January-??
+
+- [TODO] Add utility fn `keypin.util/clojurize-subst` for symbol/keyword variable substitution in EDN data
+  - Symbol variable example: $foo   (looked up as string `"foo"`)
+  - Keyword variable example: :$bar (looked up as keyword `:bar`)
 
 
 ## 0.7.1 / 2017-July-31
