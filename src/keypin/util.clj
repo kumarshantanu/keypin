@@ -19,7 +19,7 @@
     [java.io              FileNotFoundException]
     [java.util            Collection List Map Properties RandomAccess Set]
     [java.util.concurrent TimeUnit]
-    [clojure.lang         Atom]
+    [clojure.lang         Atom Named]
     [keypin               Logger]))
 
 
@@ -121,6 +121,46 @@
         (coll? data)                     (list* (map g data))
         (instance? Collection data)      (list* (map g data))
         :otherwise                       (f data)))))
+
+
+(defn clojurize-subst
+  "Variable substitution for EDN. Symbols and keywords starting with '$' (e.g. $foo.bar or :$foo.bar) are looked up and
+  substituted by their respective values. Symbol variables are looked up as string keys (e.g. $foo.bar is replaced by
+  the value of key \"foo.bar\"), whereas keyword variables are looked up as keyword keys (e.g. :$foo.bar is replaced by
+  the value of key :foo.bar) - missing keys cause IllegalArgumentException to be thrown."
+  ([data]
+    (clojurize-subst data data))
+  ([lookup data]
+    (let [nname (fn [^Named named] (if-let [tns (namespace named)]
+                                     (str tns \/ (name named))
+                                     (name named)))
+          swapv (fn [needle named]
+                  (if (contains? lookup needle)
+                    (->> needle
+                      (get lookup)
+                      (clojurize-subst lookup))
+                    (throw (IllegalArgumentException. (format "Variable '%s' has no defined value" named)))))
+          subst (fn [named] (let [kname (nname named)]
+                              (cond
+                                ;; '$' as first character of name implies a variable
+                                (= "$" kname)    (i/expected "valid variable name starting with '$'" named)
+                                (= \$
+                                  (first kname)) (let [kname (subs kname 1)]
+                                                   (cond
+                                                     (symbol?  named) (swapv kname named)
+                                                     (keyword? named) (swapv (keyword kname) named)
+                                                     :otherwise       named))
+                                :otherwise       named)))]
+      (cond
+        (map?     data) (reduce-kv (fn [m k v] (assoc m
+                                                 (clojurize-subst lookup k)
+                                                 (clojurize-subst lookup v))) {} data)
+        (vector?  data) (mapv #(clojurize-subst lookup %) data)
+        (set?     data) (set   (map #(clojurize-subst lookup %) data))
+        (coll?    data) (list* (map #(clojurize-subst lookup %) data))
+        (symbol?  data) (subst data)
+        (keyword? data) (subst data)
+        :otherwise      data))))
 
 
 ;; ===== value parsers =====
