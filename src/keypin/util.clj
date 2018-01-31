@@ -127,7 +127,8 @@
   "Variable substitution for EDN. Symbols and keywords starting with '$' (e.g. $foo.bar or :$foo.bar) are looked up and
   substituted by their respective values. Symbol variables are looked up as string keys (e.g. $foo.bar is replaced by
   the value of key \"foo.bar\"), whereas keyword variables are looked up as keyword keys (e.g. :$foo.bar is replaced by
-  the value of key :foo.bar) - missing keys cause IllegalArgumentException to be thrown."
+  the value of key :foo.bar) - missing keys cause IllegalArgumentException to be thrown. You can escape the marker char
+  '$' using '$$' (interpreted as '$') to avoid lookup."
   ([data]
     (clojurize-subst data data))
   ([lookup data]
@@ -142,15 +143,24 @@
                     (throw (IllegalArgumentException. (format "Variable '%s' has no defined value" named)))))
           subst (fn [named] (let [kname (nname named)]
                               (cond
-                                ;; '$' as first character of name implies a variable
-                                (= "$" kname)    (i/expected "valid variable name starting with '$'" named)
-                                (= \$
-                                  (first kname)) (let [kname (subs kname 1)]
-                                                   (cond
-                                                     (symbol?  named) (swapv kname named)
-                                                     (keyword? named) (swapv (keyword kname) named)
-                                                     :otherwise       named))
-                                :otherwise       named)))]
+                                ;; '$' as first character of name implies a variable, '$$' is escaped '$'
+                                (= "$" kname)     (i/expected "valid variable name starting with '$'" named)
+                                (= "$$" kname)    '$  ; escape request for '$'
+                                (= [\$ \$]            ; escape request for entire named entity
+                                  (take 2 kname)) (condp apply [named]
+                                                    symbol?  (symbol (subs kname 1))
+                                                    keyword? (keyword (subs kname 1))
+                                                    named)
+                                (= \$ (first
+                                        kname))   (let [kname (subs kname 1)]
+                                                    (condp apply [named]
+                                                      symbol?  (swapv (if (= \: (first kname))   ; symbol of form $:foo
+                                                                        (keyword (subs kname 1)) ; treat as keyword
+                                                                        kname)
+                                                                 named)
+                                                      keyword? (swapv (keyword kname) named)
+                                                      named))
+                                :otherwise        named)))]
       (cond
         (map?     data) (reduce-kv (fn [m k v] (assoc m
                                                  (clojurize-subst lookup k)
