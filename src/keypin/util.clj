@@ -124,11 +124,19 @@
 
 
 (defn clojurize-subst
-  "Variable substitution for EDN. Symbols and keywords starting with '$' (e.g. $foo.bar or :$foo.bar) are looked up and
-  substituted by their respective values. Symbol variables are looked up as string keys (e.g. $foo.bar is replaced by
-  the value of key \"foo.bar\"), whereas keyword variables are looked up as keyword keys (e.g. :$foo.bar is replaced by
-  the value of key :foo.bar) - missing keys cause IllegalArgumentException to be thrown. You can escape the marker char
-  '$' using '$$' (interpreted as '$') to avoid lookup."
+  "Variable substitution for EDN data. Symbols and keywords starting with '$' (e.g. $foo.bar or :$foo.bar) are
+  looked up and substituted by their respective values as follows:
+  Variable   Description       Lookup as
+  --------   -----------       ---------
+  $foo.bar   Symbol variable   \"foo.bar\"
+  $:foo.bar  Keyword variable  :foo.bar
+  :$foo.bar  Keyword variable  :foo.bar
+  $$foo.bar  Escaped variable  -- (not substituted)
+  :$$foo.bar Escaped variable  -- (not substituted)
+
+  Note:
+  1. Missing variables cause IllegalArgumentException to be thrown.
+  2. You can escape the variable marker '$' using '$$' (interpreted as '$') to avoid substitution."
   ([data]
     (clojurize-subst data data))
   ([lookup data]
