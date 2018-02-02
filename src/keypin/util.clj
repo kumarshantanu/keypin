@@ -160,8 +160,8 @@
                                                     symbol?  (symbol (subs kname 1))
                                                     keyword? (keyword (subs kname 1))
                                                     named)
-                                (= \$ (first
-                                        kname))   (let [kname (subs kname 1)]
+                                (= \$
+                                  (first kname))  (let [kname (subs kname 1)]
                                                     (condp apply [named]
                                                       symbol?  (swapv (if (= \: (first kname))   ; symbol of form $:foo
                                                                         (keyword (subs kname 1)) ; treat as keyword
