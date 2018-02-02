@@ -153,7 +153,8 @@
                               (cond
                                 ;; '$' as first character of name implies a variable, '$$' is escaped '$'
                                 (= "$" kname)     (i/expected "valid variable name starting with '$'" named)
-                                (= "$$" kname)    '$  ; escape request for '$'
+                                (= '$$ named)     '$  ; escape request for '$
+                                (= :$$ named)     :$  ; escape request for :$
                                 (= [\$ \$]            ; escape request for entire named entity
                                   (take 2 kname)) (condp apply [named]
                                                     symbol?  (symbol (subs kname 1))
