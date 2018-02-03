@@ -259,24 +259,26 @@
 (defn str->var
   "Given a fully qualified var name (eg. 'com.example.foo/bar'), resolve the var and return it."
   [the-key fq-var-name]
-  (let [[ns-name var-name] (-> (string/split (str fq-var-name) #"/")
-                             (i/expect-arg #(= 2 (count %))  ["Var name" fq-var-name "must be in 'ns/var' format"])
-                             (i/expect-arg #(first (seq %))  ["Namespace is empty in" fq-var-name])
-                             (i/expect-arg #(second (seq %)) ["Value is empty in" fq-var-name]))
-        ;; the following step is required for `find-ns` to work
-        _       (try
-                  (require (symbol ns-name))
-                  (catch FileNotFoundException _
-                    (i/illegal-arg (format "Cannot find ns '%s' for key %s=%s"
-                                     ns-name (pr-str the-key) (str fq-var-name)))))
-        the-ns  (-> (find-ns (symbol ns-name))
-                  (i/expect-arg identity (format "Cannot find ns '%s' for key %s=%s"
-                                           ns-name (pr-str the-key) (str fq-var-name))))
-        the-var (-> (ns-resolve the-ns (symbol var-name))
-                  (i/expect-arg identity (format "Cannot find var '%s/%s' for key %s=%s"
-                                           ns-name var-name (pr-str the-key) (str fq-var-name))))]
-    ;; return the var without deref'ing
-    the-var))
+  (if (var? fq-var-name)
+    fq-var-name
+    (let [[ns-name var-name] (-> (string/split (str fq-var-name) #"/")
+                               (i/expect-arg #(= 2 (count %))  ["Var name" fq-var-name "must be in 'ns/var' format"])
+                               (i/expect-arg #(first (seq %))  ["Namespace is empty in" fq-var-name])
+                               (i/expect-arg #(second (seq %)) ["Value is empty in" fq-var-name]))
+          ;; the following step is required for `find-ns` to work
+          _       (try
+                    (require (symbol ns-name))
+                    (catch FileNotFoundException _
+                      (i/illegal-arg (format "Cannot find ns '%s' for key %s=%s"
+                                       ns-name (pr-str the-key) (str fq-var-name)))))
+          the-ns  (-> (find-ns (symbol ns-name))
+                    (i/expect-arg identity (format "Cannot find ns '%s' for key %s=%s"
+                                             ns-name (pr-str the-key) (str fq-var-name))))
+          the-var (-> (ns-resolve the-ns (symbol var-name))
+                    (i/expect-arg identity (format "Cannot find var '%s/%s' for key %s=%s"
+                                             ns-name var-name (pr-str the-key) (str fq-var-name))))]
+      ;; return the var without deref'ing
+      the-var)))
 
 
 (defn str->var->deref

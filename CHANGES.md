@@ -24,6 +24,7 @@
 - Add utility fn `keypin.util/clojurize-subst` for symbol/keyword variable substitution in EDN data
   - Symbol variable example: $foo   (looked up as string `"foo"`)
   - Keyword variable example: :$bar (looked up as keyword `:bar`)
+- Fix issue: If argument to `keypin.util/str->var` is a var, then return as it is
 
 
 ## 0.7.1 / 2017-July-31
