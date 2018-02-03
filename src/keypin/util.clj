@@ -435,6 +435,19 @@
                                     expected-msg (pr-str the-key) (pr-str x))]))))
 
 
+(defn symstr->any
+  "Given a predicate fn and a string parser fn, return a parser fn that parses the value only when the predicate fn
+  return false and the value is a string or symbol."
+  [pred str-parser expected-msg]
+  (fn [the-key x]
+    (cond
+      (pred x) x
+      (string? x) (str-parser the-key ^String x)
+      (symbol? x) (str-parser the-key ^String (str x))
+      :otherwise  (i/illegal-arg [(format "Expected %s for key %s but found %s"
+                                    expected-msg (pr-str the-key) (pr-str x))]))))
+
+
 (def any->bool
   "Like str->bool, except parsing is avoided if value is already a boolean."
   (str->any bool?    str->bool   "a boolean or a parseable string (as boolean)"))
@@ -462,12 +475,12 @@
 
 (def any->var
   "Like str->var, except parsing is avoided if value is already a var."
-  (str->any var?     str->var    "a var or a fully qualified var name in format foo.bar/baz"))
+  (symstr->any var?  str->var    "a var or a fully qualified var name in format foo.bar/baz"))
 
 
 (def any->var->deref
   "Like str->var->deref, except parsing is avoided if value is already a var (which is deref'ed before returning)."
-  (comp deref (str->any var? str->var "a var or a fully qualified var name in format foo.bar/baz")))
+  (comp deref (symstr->any var? str->var "a var or a fully qualified var name in format foo.bar/baz")))
 
 
 (defn any->time-unit

@@ -25,6 +25,8 @@
   - Symbol variable example: $foo   (looked up as string `"foo"`)
   - Keyword variable example: :$bar (looked up as keyword `:bar`)
 - Fix issue: If argument to `keypin.util/str->var` is a var, then return as it is
+- Add utility fn `keypin.util/symstr->any` to allow symbol or string interchangeably
+  - Fix issue: Allow symbols for specifying fully qualified var names in `any->var` and `any->var->deref`
 
 
 ## 0.7.1 / 2017-July-31
