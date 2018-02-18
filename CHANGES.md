@@ -19,7 +19,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.7.2 / 2018-January-??
+## 0.7.2 / 2018-February-18
 
 - Add utility fn `keypin.util/clojurize-subst` for symbol/keyword variable substitution in EDN data
   - Symbol variable example: $foo   (looked up as string `"foo"`)
