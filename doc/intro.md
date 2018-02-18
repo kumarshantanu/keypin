@@ -151,6 +151,38 @@ A config file may be read simply like this:
 (def ^java.util.Map config (k/read-config ["config/my-conf.edn"]))
 ```
 
+### EDN config files
+
+The config values read from the EDN files may not be Clojure data structures
+(e.g. vector, set etc.) It can be easily fixed as follows:
+
+```clojure
+(def config (-> ["config/my-conf.edn"]
+              k/read-config
+              u/clojurize-data))
+```
+
+Keypin also supports variable substitution for EDN config files, which must be
+explicitly used. Consider the following config file:
+
+```clojure
+{"foo" 10
+ :bar  20
+ "baz" [$foo :$bar]}
+```
+
+This config file may be read as follows to utilize variable substitution:
+
+```clojure
+(def config (-> ["config/my-conf.edn"]
+              k/read-config
+              u/clojurize-data
+              u/clojurize-subst))
+```
+
+Here, the value of `"baz"` becomes `[10 20]` by substituting the values of `$foo`
+(looks up key `"foo"`) and `:$bar` (looks up key `:bar`).
+
 
 ### Chained config files
 
@@ -186,6 +218,7 @@ log.level=trace
 Now, read it:
 
 ```clojure
+;; the default value for :parent-key is "parent.filenames"
 (def ^java.util.Map config (k/read-config ["config/my-conf.properties"]
                              {:parent-key "parent-config"}))
 ```
