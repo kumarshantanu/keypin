@@ -11,4 +11,5 @@ pom.xml.asc
 .hg/
 /.classpath
 /.project
+/.settings
 /bin
