@@ -19,6 +19,11 @@
   - (Map) `^merge`   - Merge
 
 
+## [WIP] 0.7.3 / 2018-March-??
+
+- [TODO] Add parser function `keypin.util/any->fn`
+
+
 ## 0.7.2 / 2018-February-18
 
 - Add utility fn `keypin.util/clojurize-subst` for symbol/keyword variable substitution in EDN data
