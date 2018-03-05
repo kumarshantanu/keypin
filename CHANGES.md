@@ -21,7 +21,10 @@
 
 ## [WIP] 0.7.3 / 2018-March-??
 
-- [TODO] Add parser function `keypin.util/any->fn`
+- Add parser functions
+  - `keypin.util/str->fn`
+  - `keypin.util/symstr->fn`
+  - `keypin.util/any->fn`
 
 
 ## 0.7.2 / 2018-February-18

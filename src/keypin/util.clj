@@ -287,6 +287,16 @@
   (deref (str->var the-key fq-var-name)))
 
 
+(defn str->fn
+  "Given a fully qualified var name (eg. 'com.example.foo/add-item'), resolve the var, deref it and return the value
+  assuming it is a function."
+  [the-key fq-var-name]
+  (cond
+    (fn? fq-var-name)  fq-var-name
+    (var? fq-var-name) (deref fq-var-name)
+    :otherwise         (str->var->deref the-key fq-var-name)))
+
+
 (defn str->time-unit
   "Given a time unit string, resolve it as java.util.concurrent.TimeUnit instance."
   ^TimeUnit [the-key unit-str]
@@ -481,6 +491,11 @@
 (def any->var->deref
   "Like str->var->deref, except parsing is avoided if value is already a var (which is deref'ed before returning)."
   (comp deref (symstr->any var? str->var "a var or a fully qualified var name in format foo.bar/baz")))
+
+
+(def any->fn
+  "Like str->fn, except parsing is avoided if value is already a fn."
+  (symstr->any fn?   str->fn     "a fn or a fully qualified var name in format foo.bar/baz"))
 
 
 (defn any->time-unit
