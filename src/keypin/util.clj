@@ -493,11 +493,6 @@
   (comp deref (symstr->any var? str->var "a var or a fully qualified var name in format foo.bar/baz")))
 
 
-(def any->fn
-  "Like str->fn, except parsing is avoided if value is already a fn."
-  (symstr->any fn?   str->fn     "a fn or a fully qualified var name in format foo.bar/baz"))
-
-
 (defn any->time-unit
   "Like str->time-unit, except it accepts java.util.concurrent.TimeUnit/string/keyword as time-unit."
   [the-key time-unit]
