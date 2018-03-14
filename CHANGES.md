@@ -19,7 +19,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.7.3 / 2018-March-??
+## 0.7.3 / 2018-March-14
 
 - Add parser functions
   - `keypin.util/str->fn`
