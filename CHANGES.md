@@ -21,7 +21,7 @@
 
 ## [WIP] 0.7.4 / 2018-March-??
 
-- [Todo] Report the config filename when access causes exception
+- Report the config filename when access causes exception
   - I/O issue during read/write
   - Malformed content
 

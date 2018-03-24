@@ -44,7 +44,13 @@ public class Config {
                         exit(logger, "File is not readable: %s", file.getAbsolutePath());
                     }
                     info(logger, "Found in filesystem, now reading config from: " + file.getAbsolutePath());
-                    return Collections.unmodifiableMap(configReader.readConfig(new FileInputStream(file)));
+                    try {
+                        final Map<?, ?> m = configReader.readConfig(new FileInputStream(file));
+                        return Collections.unmodifiableMap(m);
+                    } catch (RuntimeException e) {
+                        throw new RuntimeException(
+                            String.format("Error reading filesystem file '%s' as a map", filename), e);
+                    }
                 } else {
                     info(logger, "Not found in filesystem: " + file.getAbsolutePath());
                     return null;
@@ -66,7 +72,13 @@ public class Config {
                         Thread.currentThread().getContextClassLoader().getResourceAsStream(classpathResource);
                 if (resource != null) {
                     logger.info("Found in classpath, now reading config from: " + classpathResource);
-                    return Collections.unmodifiableMap(configReader.readConfig(resource));
+                    try {
+                        final Map<?, ?> m = configReader.readConfig(resource);
+                        return Collections.unmodifiableMap(m);
+                    } catch (RuntimeException e) {
+                        throw new RuntimeException(
+                            String.format("Error reading classpath resource '%s' as a map", classpathResource), e);
+                    }
                 } else {
                     info(logger, "Not found in classpath: " + classpathResource);
                     return null;
