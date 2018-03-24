@@ -19,7 +19,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.7.4 / 2018-March-??
+## 0.7.4 / 2018-March-24
 
 - Report the config filename when access causes exception
   - I/O issue during read/write
@@ -28,7 +28,7 @@
 
 ## 0.7.3 / 2018-March-14
 
-- Add parser functions
+- Add parser function
   - `keypin.util/str->fn`
 
 
