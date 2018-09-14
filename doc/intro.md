@@ -104,10 +104,30 @@ Defining property finders is quite straightforward. The argument vector format i
 |               | `:lookup`  (lookup function)          | `k/lookup-key`     |
 |               | `:envvar`  (environment var to lookup)| No default         |
 |               | `:sysprop` (system prop to lookup)    | No default         |
+|               | `:source`  (key/value source to deref)| No default         |
 
 **Note:** Resolution order for all lookups is `envvar` (when defined), `sysprop` (when defined), lookup map.
 Responsibility of parsing string value from environment variable or system property lies with the parser.
 
+
+### Specifying a key/value source
+
+You may specify a key/value source of a reference type when defining keys, which could be implicitly used to retrieve
+values.
+
+```clojure
+;; source must be a reference type (atom, promise, delay, ref etc.)
+(def config-holder (atom {:foo 10 :bar :something}))
+
+(defkey
+  {:source config-holder}
+  foo [:foo integer? "an int"]
+  bar [:bar keyword? "a keyword"])
+
+;; retrieve values of the key definitions
+(foo)
+(val foo) ; same as above
+```
 
 ### Defining key-path lookup
 
