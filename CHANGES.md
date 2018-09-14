@@ -26,7 +26,7 @@
 - Implement missing `java.util.Map$Entry` methods
   - `getValue()`: Invoked via `(val k)` - same as arity-0 invocation
   - `setValue(v)`: Throw `UnsupportedOperationException`
-- [Todo] Throw arity exception on bad arity
+- Throw `ArityException` on bad arity
 
 
 ## 0.7.4 / 2018-March-24

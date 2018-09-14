@@ -11,7 +11,8 @@
   (:require
     [clojure.string :as string])
   (:import
-    [java.util Collection Map]))
+    [java.util Collection Map]
+    [clojure.lang ArityException]))
 
 
 (defn illegal-arg
@@ -54,3 +55,10 @@
 (defn identity-parser
   [_ value]
   value)
+
+
+(defn bad-key-arity
+  "Throw ArityException on behalf of key definition when invoked as a function."
+  [^long n k]
+  (throw (ArityException. n (str "key definition " (pr-str k)
+                              ", allowed: [] [the-map] [the-map default-value]"))))
