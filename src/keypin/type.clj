@@ -11,17 +11,28 @@
   (:require
     [keypin.internal :as i])
   (:import
-    [java.util.concurrent TimeUnit]))
+    [java.util.concurrent TimeUnit]
+    [clojure.lang IDeref IPending]))
 
 
 (defrecord KeyAttributes
-  [the-key validator description value-parser default-value? default-value lookup-fn]
+  [the-key validator description value-parser default-value? default-value lookup-fn container]
   clojure.lang.IFn
   (applyTo [this arglist]
     (case (count arglist)
+      0 (.invoke this)
       1 (.invoke this (first arglist))
       2 (.invoke this (first arglist) (second arglist))
-      (i/expect-arg arglist #(<= 1 % 2) "Allowed arities: (the-map) (the-map default-value)")))
+      (i/expect-arg arglist #(<= 1 % 2) "Allowed arities: [] [the-map] [the-map default-value]")))
+  (invoke [this]  ; behave as arity-0 fn
+    (if (nil? container)
+      (throw (IllegalStateException. "No key/value-source was specified when creating this key"))
+      (condp instance? container
+        IPending (do
+                   (i/expected-state realized? "key/value-source to be realized" container)
+                   (lookup-fn @container the-key validator description value-parser default-value? default-value))
+        IDeref   (lookup-fn @container the-key validator description value-parser default-value? default-value)
+        (i/expected-state "clojure.lang.IDeref key/value-source to dereference" container))))
   (invoke [this the-map]  ; behave as arity-1 fn
     (lookup-fn the-map the-key validator description value-parser default-value? default-value))
   (invoke [this the-map not-found]  ; behave as arity-2 fn (2nd arg is returned when key not found)

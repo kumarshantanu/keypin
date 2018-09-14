@@ -15,7 +15,7 @@
     [keypin.type     :as t]
     [keypin.util     :as u])
   (:import
-    [clojure.lang ILookup]
+    [clojure.lang IDeref ILookup]
     [java.io OutputStream Writer]
     [java.util Map Properties]
     [keypin Config ConfigIO Logger Mapper PropertyConfigIO]))
@@ -174,8 +174,9 @@
   :parser  - The value parser function (args: key, value)
   :default - Default value to return if key is not found
   :sysprop - System property name that can override the config value (before parsing)
-  :envvar  - Environment variable that can override the config value and system property (before parsing)"
-  [the-key validator description {:keys [lookup parser default sysprop envvar]
+  :envvar  - Environment variable that can override the config value and system property (before parsing)
+  :source  - Source or container (of reference type, e.g. atom/promise etc.) of key/value pairs"
+  [the-key validator description {:keys [lookup parser default sysprop envvar source]
                                   :or {lookup lookup-key
                                        parser i/identity-parser}
                                   :as options}]
@@ -193,7 +194,12 @@
                                        (when-not envvar  (format "Environment variable '%s' is not defined. " envvar))
                                        (when-not sysprop (format "System property '%s' is not defined. " sysprop))
                                        message))
-                       identity))))))
+                       identity))))
+    (if (nil? source)
+      nil
+      (do
+        (i/expected #(instance? IDeref %) "a key/value-source of type clojure.lang.IDeref (atom/promise etc.)" source)
+        source))))
 
 
 (defmacro defkey

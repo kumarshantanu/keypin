@@ -21,8 +21,8 @@
 
 ## [WIP] 0.7.5 / 2018-September-??
 
-- [Todo] Implement lookup by specifying optional lookup source (a reference type)
-  - [Todo] Arity-0 invocation of the defined key looks up the source
+- Allow optional lookup source (a reference type) for key definitions
+  - Arity-0 invocation of the defined key looks up the source
 - [Todo] Implement `java.util.Map$Entry` missing methods
   - [Todo] `getValue()`: Lookup the optional source, throw `IllegalStateException`
   - [Todo] `setValue(v)`: Throw `UnsupportedOperationException`

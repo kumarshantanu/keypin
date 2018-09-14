@@ -40,6 +40,17 @@
       (expected expectation found))))
 
 
+(defn expected-state
+  "Throw illegal state exception citing `expectation` and what was `found` did not match. Optionally accept a predicate
+  fn to test `found` before throwing the exception."
+  ([expectation found]
+    (throw (IllegalStateException.
+             (format "Expected %s, but found (%s) %s" expectation (class found) (pr-str found)))))
+  ([pred expectation found]
+    (when-not (pred found)
+      (expected expectation found))))
+
+
 (defn identity-parser
   [_ value]
   value)
