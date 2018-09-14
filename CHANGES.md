@@ -19,6 +19,16 @@
   - (Map) `^merge`   - Merge
 
 
+## [WIP] 0.7.5 / 2018-September-??
+
+- [Todo] Implement lookup by specifying optional lookup source (a reference type)
+  - [Todo] Arity-0 invocation of the defined key looks up the source
+- [Todo] Implement `java.util.Map$Entry` missing methods
+  - [Todo] `getValue()`: Lookup the optional source, throw `IllegalStateException`
+  - [Todo] `setValue(v)`: Throw `UnsupportedOperationException`
+- [Todo] Throw arity exception on bad arity
+
+
 ## 0.7.4 / 2018-March-24
 
 - Report the config filename when access causes exception
