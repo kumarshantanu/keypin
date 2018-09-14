@@ -26,20 +26,21 @@
       (i/expect-arg arglist #(<= 1 % 2) "Allowed arities: [] [the-map] [the-map default-value]")))
   (invoke [this]  ; behave as arity-0 fn
     (if (nil? container)
-      (throw (IllegalStateException. "No key/value-source was specified when creating this key"))
+      (throw (IllegalStateException. "No key/value source was specified when creating this key"))
       (condp instance? container
         IPending (do
-                   (i/expected-state realized? "key/value-source to be realized" container)
+                   (i/expected-state realized? "key/value source to be realized" container)
                    (lookup-fn @container the-key validator description value-parser default-value? default-value))
         IDeref   (lookup-fn @container the-key validator description value-parser default-value? default-value)
-        (i/expected-state "clojure.lang.IDeref key/value-source to dereference" container))))
+        (i/expected-state "clojure.lang.IDeref key/value source to dereference" container))))
   (invoke [this the-map]  ; behave as arity-1 fn
     (lookup-fn the-map the-key validator description value-parser default-value? default-value))
   (invoke [this the-map not-found]  ; behave as arity-2 fn (2nd arg is returned when key not found)
     (lookup-fn the-map the-key validator description value-parser true not-found))
-  java.util.Map$Entry  ; key name is retrievable using clojure.core/key: (key foo)
-  (getKey [this] the-key)
-  ; not implementing methods (getValue [this] ..) and (setValue [this v] ..)
+  java.util.Map$Entry
+  (getKey   [this] the-key)        ; key name is retrievable using clojure.core/key: (key foo)
+  (getValue [this] (.invoke this)) ; value is retrievable using clojure.core/val: (val foo) or (foo)
+  (setValue [this _] (throw (UnsupportedOperationException. "Setting value is not supported.")))
   Object
   (toString [this] (str the-key)))
 
