@@ -19,7 +19,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.7.5 / 2018-September-??
+## 0.7.5 / 2018-September-15
 
 - Allow optional lookup source (a reference type) for key definitions
   - Arity-0 invocation of the defined key looks up the source
