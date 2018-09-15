@@ -18,6 +18,6 @@
                    :global-vars {*unchecked-math* :warn-on-boxed}}
              :c09 {:dependencies [[org.clojure/clojure "1.9.0"]]
                    :global-vars {*unchecked-math* :warn-on-boxed}}
-             :c10 {:dependencies [[org.clojure/clojure "1.10.0-alpha7"]]
+             :c10 {:dependencies [[org.clojure/clojure "1.10.0-alpha8"]]
                    :global-vars {*unchecked-math* :warn-on-boxed}}
              :dln {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
