@@ -250,7 +250,12 @@
                                    (i/illegal-arg ["Expected 1, 2, 3 or 4 elements as arguments for defkey, but found"
                                                    (pr-str each-vec)]))]))
                 (map (fn [[each-sym each-vec]]
-                       `(def ~each-sym (make-key ~@each-vec)))))]
+                       (let [descrip (nth each-vec 2 "No description")
+                             options (nth each-vec 3 {})  ; 4th element is option map
+                             arities (if (:source options) ''([] [config-map]) ''([config-map]))
+                             meta-fn (partial merge {:arglists arities :doc descrip})
+                             def-sym (vary-meta each-sym meta-fn)]
+                         `(def ~def-sym (make-key ~@each-vec))))))]
     `(do ~@pairs)))
 
 
