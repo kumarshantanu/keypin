@@ -17,6 +17,8 @@
 
 (defrecord KeyAttributes
   [the-key validator description value-parser default-value? default-value lookup-fn container]
+  clojure.lang.IDeref
+  (deref [this] (.invoke this))
   clojure.lang.IFn
   (applyTo [this arglist]
     (case (count arglist)

@@ -439,8 +439,10 @@
   (testing "Source is specified"
     (reset! source {:foo -99
                     :bar 100})
-    (is (= -99 (src-foo-bar)))
-    (is (= 100 (src-bar-baz))))
+    (is (= -99 (src-foo-bar) @src-foo-bar))
+    (is (= 100 (src-bar-baz) @src-bar-baz)))
   (testing "Source not specified"
     (is (thrown? IllegalStateException (nosrc-foo-bar)))
-    (is (thrown? IllegalStateException (nosrc-bar-baz)))))
+    (is (thrown? IllegalStateException @nosrc-foo-bar))
+    (is (thrown? IllegalStateException (nosrc-bar-baz)))
+    (is (thrown? IllegalStateException @nosrc-bar-baz))))

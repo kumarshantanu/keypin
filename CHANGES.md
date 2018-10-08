@@ -22,7 +22,7 @@
 ## [WIP] 0.7.6 / 2018-October-??
 
 - [Todo] Add metadata to `defkey`-generated vars as if they were created using `defn`
-- [Todo] Allow `deref`, i.e. `@keydef` to be treated as arity-0 `(keydef)` call
+- Treat `deref`, i.e. `@keydef` as arity-0 `(keydef)` call
 
 
 ## 0.7.5 / 2018-September-15
