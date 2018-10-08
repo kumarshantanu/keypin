@@ -252,7 +252,9 @@
                 (map (fn [[each-sym each-vec]]
                        (let [descrip (nth each-vec 2 "No description")
                              options (nth each-vec 3 {})  ; 4th element is option map
-                             arities (if (:source options) ''([] [config-map]) ''([config-map]))
+                             arities (if (:source options)
+                                       ''([] [config-map] [config-map not-found])
+                                       ''([config-map] [config-map not-found]))
                              meta-fn (partial merge {:arglists arities :doc descrip})
                              def-sym (vary-meta each-sym meta-fn)]
                          `(def ~def-sym (make-key ~@each-vec))))))]
