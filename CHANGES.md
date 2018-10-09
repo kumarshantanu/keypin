@@ -19,7 +19,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.7.6 / 2018-October-??
+## 0.7.6 / 2018-October-09
 
 - Add metadata to `defkey`-generated vars as if they were created using `defn`
 - Treat `deref`, i.e. `@keydef` as arity-0 `(keydef)` call

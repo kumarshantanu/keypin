@@ -126,7 +126,9 @@ values.
 
 ;; retrieve values of the key definitions
 (foo)
-(val foo) ; same as above
+(val foo)   ; same as above
+(deref foo) ; same as above
+@foo        ; same as above
 ```
 
 ### Defining key-path lookup
