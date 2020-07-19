@@ -2,7 +2,6 @@
 
 ## TODO
 
-- [TODO] Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
 - [TODO] Pre-lookup and post-lookup fallbacks for key definitions
 - [TODO] Mechanism to enforce EDN parsing on a string (possibly containing variable) in an EDN file
 - [Idea] EDN parser support for invocation
@@ -17,6 +16,27 @@
   - (Vec) `^append` or `^concat` - Insert after
   - (Any) `^replace` - Replace
   - (Map) `^merge`   - Merge
+
+
+## [WIP] 0.8.0 / 2020-July-??
+
+- [TODO - BREAKING CHANGE] Drop support for Clojure 1.5 and 1.6
+  - [TODO] Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
+- [Todo] Middleware fn for `defkey` attributes: (fn [sym attributes]) -> attributes
+- [Todo] Protocols
+  - [Todo] `CachingStore` to cache parsed/validated values (invalidate, populate)
+    - [Todo] `KeyAttributes` makes use of this protocol to cache values
+- [Todo] Namespace `keypin.store` for config-store enhancements
+  - [Todo] Function `keypin.store/make-cached-store`
+    - Function argument to fetch snapshot (Dynamic config store)
+    - Cache parsed/validated values - efficient retrieval
+    - Implement: ILookup, Associative, CachingStore
+  - [Todo] Function `keypin.store/make-dynamic-store` - dynamic/periodically refreshed config
+    - Dynamic ILookup instance (periodically modified)
+      - Invalidates cache for updated entries
+      - Fetch-function argument (connect: web URL, local file etc.)
+      - Granularity: whole config store
+      - Background auto-refresh period
 
 
 ## 0.7.6 / 2018-October-09
