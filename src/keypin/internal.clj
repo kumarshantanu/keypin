@@ -62,3 +62,19 @@
   [^long n k]
   (throw (ArityException. n (str "key definition " (pr-str k)
                               ", allowed: [] [the-map] [the-map default-value]"))))
+
+
+(defn now-millis
+  (^long []
+    (System/currentTimeMillis))
+  (^long [^long since]
+    (unchecked-subtract (now-millis) since)))
+
+
+(defn as-str
+  [x]
+  (if (instance? clojure.lang.Named x)
+    (if-let [xns (namespace x)]
+      (str xns "/" (name x))
+      (name x))
+    (str x)))

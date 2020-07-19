@@ -31,12 +31,7 @@
     - Function argument to fetch snapshot (Dynamic config store)
     - Cache parsed/validated values - efficient retrieval
     - Implement: ILookup, Associative, CachingStore
-  - [Todo] Function `keypin.store/make-dynamic-store` - dynamic/periodically refreshed config
-    - Dynamic ILookup instance (periodically modified)
-      - Invalidates cache for updated entries
-      - Fetch-function argument (connect: web URL, local file etc.)
-      - Granularity: whole config store
-      - Background auto-refresh period
+  - Function `keypin.store/make-dynamic-store` - dynamic/periodically refreshed config
 
 
 ## 0.7.6 / 2018-October-09
