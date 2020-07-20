@@ -24,6 +24,7 @@
   (testing "Fixed store, not initialized"
     (let [fetch-fixed (constantly {:foo 10})
           fixed-store (ks/make-dynamic-store fetch-fixed nil)]
+      (Thread/sleep 100)
       (is (= 10 (get fixed-store :foo)) "recovers waiting to initialize store")
       (try (Thread/sleep 1000) (catch InterruptedException _))
       (is (= 10 (get fixed-store :foo)) "timed out waiting to update stale data")))
