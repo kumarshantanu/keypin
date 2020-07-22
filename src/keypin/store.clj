@@ -10,7 +10,8 @@
 (ns keypin.store
   (:require
     [clojure.stacktrace :as cs]
-    [keypin.internal :as i])
+    [keypin.internal :as i]
+    [keypin.type     :as t])
   (:import
     [java.util Date]
     [java.text SimpleDateFormat]
@@ -133,6 +134,8 @@
       (reify
         IDeref
         (deref [_]      (update-data))
+        t/IStore
+        (lookup [_ kd]  (t/lookup (update-data) kd))
         ILookup
         (valAt [_ k]    (get (update-data) k))
         (valAt [_ k nf] (get (update-data) k nf))

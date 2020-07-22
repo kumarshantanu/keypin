@@ -15,7 +15,7 @@
     [keypin.type     :as t]
     [keypin.util     :as u])
   (:import
-    [clojure.lang IDeref ILookup]
+    [clojure.lang Associative IDeref]
     [java.io OutputStream Writer]
     [java.util Map Properties]
     [keypin Config ConfigIO Logger Mapper PropertyConfigIO]))
@@ -25,11 +25,11 @@
 
 
 (defn lookup-key
-  "Look up a key in a map or something that implements clojure.lang.ILookup."
+  "Look up a key in an associative data structure - Java map or something that implements clojure.lang.Associative."
   [the-map the-key validator description value-parser default-value? default-value not-found]
   (when-not (or (instance? Map the-map)
-              (instance? ILookup the-map))
-    (i/illegal-arg (format "Key %s looked up in a non map (or clojure.lang.ILookup) object: %s"
+              (instance? Associative the-map))
+    (i/illegal-arg (format "Key %s looked up in a non map (or clojure.lang.Associative) object: %s"
                      (pr-str the-key) the-map)))
   (let [value (if (contains? the-map the-key)
                 (->> (get the-map the-key)
@@ -43,13 +43,13 @@
 
 
 (defn lookup-keypath
-  "Look up a key path in a map or something that implements clojure.lang.ILookup."
+  "Look up a key path in an associative data structure - Java map or something that implements clojure.lang.Associative."
   [the-map ks validator description value-parser default-value? default-value not-found]
   (let [value (loop [data the-map
                      path ks]
                 (when-not (or (instance? Map data)
-                            (instance? ILookup data))
-                  (i/illegal-arg (format "Key path %s looked up in a non map (or clojure.lang.ILookup) object: %s"
+                            (instance? Associative data))
+                  (i/illegal-arg (format "Key path %s looked up in a non map (or clojure.lang.Associative) object: %s"
                                    (pr-str path) (pr-str data))))
                 (let [k (first path)]
                   (if-not (contains? data k)
@@ -165,8 +165,8 @@
 
 
 (defn make-key
-  "Create a key that can be looked up in a java.util.Map/Properties or clojure.lang.ILookup (map, vector) instance. The
-  following optional keys are supported:
+  "Create a key that can be looked up in a config store (keypin.type/IStore, java.util.Map/Properties or map/vector)
+  instance. The following optional keys are supported:
   :lookup  - The function to look the key up:
              (fn [the-map the-key validator description value-parser default-value? default-value
                   (fn not-found-fn [not-found-message])])

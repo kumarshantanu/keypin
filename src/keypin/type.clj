@@ -15,6 +15,10 @@
     [clojure.lang IDeref IPending]))
 
 
+(defprotocol IStore
+  (lookup [this keydef] "Lookup in the store using given keypin.type/KeyAttributes instance."))
+
+
 (defrecord KeyAttributes
   [the-key validator description value-parser default-value? default-value lookup-fn container]
   clojure.lang.IDeref
@@ -35,10 +39,12 @@
                    (lookup-fn @container the-key validator description value-parser default-value? default-value))
         IDeref   (lookup-fn @container the-key validator description value-parser default-value? default-value)
         (i/expected-state "clojure.lang.IDeref key/value source to dereference" container))))
-  (invoke [this the-map]  ; behave as arity-1 fn
-    (lookup-fn the-map the-key validator description value-parser default-value? default-value))
-  (invoke [this the-map not-found]  ; behave as arity-2 fn (2nd arg is returned when key not found)
-    (lookup-fn the-map the-key validator description value-parser true not-found))
+  (invoke [this store]  ; behave as arity-1 fn
+    (lookup store this))
+  (invoke [this store not-found]  ; behave as arity-2 fn (2nd arg is returned when key not found)
+    (lookup store (assoc this
+                    :default-value? true
+                    :default-value not-found)))
   (invoke [this _ _ _] (i/bad-key-arity 3 the-key))
   (invoke [this _ _ _ _] (i/bad-key-arity 4 the-key))
   (invoke [this _ _ _ _ _] (i/bad-key-arity 5 the-key))
@@ -64,6 +70,25 @@
   (setValue [this _] (throw (UnsupportedOperationException. "Setting value is not supported.")))
   Object
   (toString [this] (str the-key)))
+
+
+(defn- call-lookup-fn
+  [databag ^KeyAttributes keydef]
+  (let [lookup-fn      (.-lookup-fn      keydef)
+        the-key        (.-the-key        keydef)
+        validator      (.-validator      keydef)
+        description    (.-description    keydef)
+        value-parser   (.-value-parser   keydef)
+        default-value? (.-default-value? keydef)
+        default-value  (.-default-value  keydef)]
+    (lookup-fn databag the-key validator description value-parser default-value? default-value)))
+
+
+(extend-protocol IStore
+  java.util.Map
+  (lookup [the-map ^KeyAttributes keydef] (call-lookup-fn the-map keydef))
+  clojure.lang.Associative
+  (lookup [databag ^KeyAttributes keydef] (call-lookup-fn databag keydef)))
 
 
 (defprotocol IDuration

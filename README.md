@@ -6,8 +6,8 @@ Key lookup on steroids in Clojure.
 
 #### Why Keypin?
 
-- Key lookup on any `clojure.lang.ILookup` or `java.util.Map` type
-  - Clojure maps
+- Key lookup on any associative data structure
+  - Clojure or Java maps
   - Clojure vectors
   - `java.util.Properties` instances
   - Destructuring
@@ -28,7 +28,7 @@ Key lookup on steroids in Clojure.
 
 ## Usage
 
-Clojars coordinates: `[keypin "0.7.6"]`
+Clojars coordinates: `[keypin "0.8.0-SNAPSHOT"]`
 
 Requires Java 7 or higher.
 
@@ -71,7 +71,7 @@ Requires Java 7 or higher.
 
 ## License
 
-Copyright © 2015-2018 Shantanu Kumar (kumar.shantanu@gmail.com, shantanu.kumar@concur.com)
+Copyright © 2015-2020 Shantanu Kumar (kumar.shantanu@gmail.com)
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

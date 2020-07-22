@@ -23,9 +23,10 @@
 - [BREAKING CHANGE] Drop support for Clojure 1.5 and 1.6
   - Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
 - [Todo] Middleware fn for `defkey` attributes: (fn [sym attributes]) -> attributes
-- [Todo] Protocols
-  - [Todo] `CachingStore` to cache parsed/validated values (invalidate, populate)
-    - [Todo] `KeyAttributes` makes use of this protocol to cache values
+- Protocols
+  - New protocol `keypin.type/IStore` represents a config store
+    - Record `keypin.type/KeyAttributes` fn call accepts/looks up a store now, instead of delegating to lookup-fn
+    - Extended to `java.util.Map` and `clojure.lang.Associative` - delegates to a lookup-fn call
 - [Todo] Namespace `keypin.store` for config-store enhancements
   - [Todo] Function `keypin.store/make-cached-store`
     - Function argument to fetch snapshot (Dynamic config store)
