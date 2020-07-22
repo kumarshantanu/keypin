@@ -46,4 +46,19 @@
       (try (Thread/sleep 1000) (catch InterruptedException _))
       (is (thrown? TimeoutException
             (contains? fixed-store :foo)) "timed out waiting to update stale data")))
-  )
+  (testing "Actualy dynamically fetched config"
+    ;; TODO
+    ))
+
+
+(deftest caching-store-test
+  (testing "No regression"
+    (let [cs (ks/make-caching-store {:foo 10})]
+     (is (contains? cs :foo))
+     (is (= 10 (get cs :foo)))))
+  (testing "Lookup actually caches"
+    ;; TODO
+    )
+  (testing "Cache busts on underlying store changes"
+    ;; TODO
+    ))

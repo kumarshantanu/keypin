@@ -155,3 +155,54 @@
         (getName      [_]  (if (instance? Named name)
                              (clojure.core/name name)
                              name-string))))))
+
+
+;; ----- caching store -----
+
+
+(defn make-caching-store
+  [store]
+  (i/expected #(satisfies? t/IStore %) "an instance of keypin.type/IStore protocol" store)
+  (let [state (agent {:kvdata nil
+                      :cache  {}})
+        fetch (if (instance? IDeref store)
+                (fn []
+                  (let [store-data @store
+                        state-data @state]
+                    (if (identical? store-data (:kvdata state-data))
+                      state-data
+                      (let [new-state {:kvdata store-data
+                                       :cache {}}]
+                        (send state conj new-state)
+                        new-state))))
+                (do
+                  (send state assoc :kvdata store)
+                  (fn []
+                    @state)))
+        sdata (fn []
+                (:kvdata (fetch)))]
+    (reify
+      IDeref
+      (deref [_]      (sdata))
+      t/IStore
+      (lookup [_ kd]  (let [{:keys [kvdata cache]} (fetch)
+                            l-key (:the-key kd)]
+                        (if (contains? cache l-key)
+                          (get cache l-key)
+                          (let [v (t/lookup kvdata kd)]
+                            (send state assoc-in [:cache l-key] v)
+                            v))))
+      ILookup
+      (valAt [_ k]    (get (sdata) k))
+      (valAt [_ k nf] (get (sdata) k nf))
+      Seqable
+      (seq   [_]      (seq (sdata)))
+      IPersistentCollection
+      (count [_]      (count (sdata)))
+      (cons  [_ _]    (throw (UnsupportedOperationException. "cons is not supported on this type")))
+      (empty [_]      (make-caching-store {}))
+      (equiv [_ obj]  (.equiv ^IPersistentMap (sdata) obj))
+      Associative
+      (containsKey  [_ k]   (contains? (sdata) k))
+      (entryAt      [_ k]   (.entryAt ^IPersistentMap (sdata) k))
+      (assoc        [_ _ _] (throw (UnsupportedOperationException. "assoc is not supported on this type"))))))
