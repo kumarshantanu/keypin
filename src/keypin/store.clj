@@ -161,11 +161,16 @@
 
 
 (defn make-caching-store
+  "Wrap a given a store such that the key lookups are cached as long as the store doesn't change."
   [store]
   (i/expected #(satisfies? t/IStore %) "an instance of keypin.type/IStore protocol" store)
-  (let [state (agent {:kvdata nil
+  (let [data? (not (instance? IDeref store))
+        state (agent {:kvdata (when data?
+                                store)
                       :cache  {}})
-        fetch (if (instance? IDeref store)
+        fetch (if data?
+                (fn []
+                  @state)
                 (fn []
                   (let [store-data @store
                         state-data @state]
@@ -174,11 +179,7 @@
                       (let [new-state {:kvdata store-data
                                        :cache {}}]
                         (send state conj new-state)
-                        new-state))))
-                (do
-                  (send state assoc :kvdata store)
-                  (fn []
-                    @state)))
+                        new-state)))))
         sdata (fn []
                 (:kvdata (fetch)))]
     (reify
