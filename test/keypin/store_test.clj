@@ -49,8 +49,12 @@
       (is (thrown? TimeoutException
             (contains? fixed-store :foo)) "timed out waiting to update stale data")))
   (testing "Actualy dynamically fetched config"
-    ;; TODO
-    ))
+    (let [ds (ks/make-dynamic-store (fn [_] {:foo 10}) {:foo 20})]
+      (is (= 20 (get ds :foo)))
+      (Thread/sleep 1100)  ; wait for 1s refresh window to elapse
+      (get ds :foo)        ; trigger re-fetch
+      (Thread/sleep 100)   ; wait for fetch to happen
+      (is (= 10 (get ds :foo))))))
 
 
 (defmacro nanos
