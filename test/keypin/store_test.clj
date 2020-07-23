@@ -10,7 +10,9 @@
 (ns keypin.store-test
   (:require
     [clojure.test :refer :all]
-    [keypin.store :as ks])
+    [keypin.core  :as kc]
+    [keypin.store :as ks]
+    [keypin.util  :as ku])
   (:import
     [java.util.concurrent TimeoutException]))
 
@@ -51,14 +53,39 @@
     ))
 
 
+(defmacro nanos
+  "Evaluate body of code and return elapsed time in nanoseconds."
+  [& body]
+  `(let [start# (System/nanoTime)]
+     (try
+       ~@body
+       (unchecked-subtract (System/nanoTime) start#)
+       (catch Exception e#
+         (unchecked-subtract (System/nanoTime) start#)))))
+
+
+(kc/defkey kfoo [:foo pos? "positive integer" {:parser ku/str->long}])
+
+
 (deftest caching-store-test
   (testing "No regression"
-    (let [cs (ks/make-caching-store {:foo 10})]
+    (let [cs (ks/make-caching-store {:foo "10"})]
      (is (contains? cs :foo))
-     (is (= 10 (get cs :foo)))))
+     (is (= "10" (get cs :foo)))
+     (is (= 10 (kfoo cs)))))
   (testing "Lookup actually caches"
-    ;; TODO
-    )
+    (let [cs (ks/make-caching-store {:foo "10"})
+          t1 (nanos (kfoo cs))]
+      (Thread/sleep 50)
+      (dotimes [_ 5000] (kfoo cs))  ; warmup
+      (is (> t1 (nanos (kfoo cs))))))
   (testing "Cache busts on underlying store changes"
-    ;; TODO
-    ))
+    (let [ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:foo "20"})
+          cs (ks/make-caching-store ds)
+          t1 (System/currentTimeMillis)]
+      (is (= 20 (kfoo ds)))
+      (is (= 20 (kfoo cs)))
+      (dotimes [_ 5000] (kfoo cs))  ; warmup
+      (let [d1 (nanos (kfoo cs))]
+        (Thread/sleep (- (+ t1 1500) (System/currentTimeMillis)))  ; wait for dynamic store 1s refresh window to elapse
+        (is (< d1 (nanos (kfoo cs))) "busted cache should take longer to fetch")))))
