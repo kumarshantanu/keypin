@@ -166,7 +166,15 @@
   (let [data? (not (instance? IDeref store))
         state (agent {:kvdata (when data?
                                 store)
-                      :cache  {}})
+                      :cache  {}}
+                :error-handler (fn [state ^Throwable ex]
+                                 (let [err-ts (i/now-millis)]
+                                   (binding [*out* *err*]
+                                     (printf "Error updating caching store for %s at %s\n"
+                                       (i/as-str store)
+                                       (.format (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") (Date. err-ts)))
+                                     (cs/print-stack-trace ex)
+                                     (flush)))))
         fetch (if data?
                 (fn []
                   @state)
