@@ -87,7 +87,7 @@
 (extend-protocol IStore
   java.util.Map
   (lookup [the-map ^KeyAttributes keydef] (call-lookup-fn the-map keydef))
-  clojure.lang.Associative
+  clojure.lang.IPersistentVector
   (lookup [databag ^KeyAttributes keydef] (call-lookup-fn databag keydef)))
 
 

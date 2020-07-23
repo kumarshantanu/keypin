@@ -26,7 +26,7 @@
   - [Todo] By default make a caching store wrapper if source is supplied
 - New protocol `keypin.type/IStore` represents a config store
   - Record `keypin.type/KeyAttributes` fn call accepts/looks up a store now, instead of delegating to lookup-fn
-  - Extended to `java.util.Map` and `clojure.lang.Associative` - delegates to a lookup-fn call
+  - Extended to `java.util.Map` and `clojure.lang.IPersistentVector` - delegates to a lookup-fn call
 - Namespace `keypin.store` for config-store enhancements
   - Function `keypin.store/make-caching-store` - caching store wrapper for parsed/validated values
     - [Todo] More tests
