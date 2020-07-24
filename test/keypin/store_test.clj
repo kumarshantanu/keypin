@@ -14,7 +14,8 @@
     [keypin.store :as ks]
     [keypin.util  :as ku])
   (:import
-    [java.util.concurrent TimeoutException]))
+    [java.util.concurrent TimeoutException]
+    [keypin.type.record CachingStore]))
 
 
 (deftest dynamic-store-test
@@ -86,10 +87,14 @@
   (testing "Cache busts on underlying store changes"
     (let [ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:foo "20"})
           cs (ks/make-caching-store ds)
-          t1 (System/currentTimeMillis)]
+          gc (fn [] (:cache-data @(.-state-agent ^CachingStore cs)))]
       (is (= 20 (kfoo ds)))
+      (is (= {} (gc)) "before cache build up")
       (is (= 20 (kfoo cs)))
-      (dotimes [_ 5000] (kfoo cs))  ; warmup
-      (let [d1 (nanos (kfoo cs))]
-        (Thread/sleep (- (+ t1 1500) (System/currentTimeMillis)))  ; wait for dynamic store 1s refresh window to elapse
-        (is (< d1 (nanos (kfoo cs))) "busted cache should take longer to fetch")))))
+      (is (= {:foo 20} (gc)) "after cache populating")
+      (Thread/sleep 1000)  ; wait for dynamic store 01 second refresh window to elapse
+      (is (= 10 (kfoo cs)))
+      (is (= {} (gc)) "busted cache")
+      (Thread/sleep 100)
+      (is (= 10 (kfoo cs)))
+      (is (= {:foo 10} (gc)) "re-populated cache"))))
