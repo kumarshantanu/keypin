@@ -26,8 +26,8 @@
 
 
 (defn fetch-every?
-  "Given duration in milliseconds, return a fetch decider (fn fetch? [last-fetch-time-millis]) that returns true if
-  it is time to fetch data, false otherwise."
+  "Given duration in milliseconds, return a fetch decider (fn fetch? [last-fetch-time-millis]) that returns `true` if
+  it is time to fetch data, `false` otherwise."
   [^long duration-millis]
   (fn [^DynamicStore dynamic-store]
     (>= (i/now-millis (.-tstamp dynamic-store))
@@ -68,21 +68,23 @@
   "Given a fetch function (fn [old-data])->new-data that fetches a map instance, and initial data (`nil`: initialized
   asynchronously in another thread), create a dynamic store that refreshes itself.
 
-  ### Options
+  ## Options
 
   | Kwarg          | Type/format                   | Description                 | Default |
   |----------------|-------------------------------|-----------------------------|---------|
-  | :name          | stringable                    | Name of the config store    | Auto generated |
-  | :fetch?        | (fn [^DynamicStore ds])->bool | Return true for to re-fetch | Fetch at 1 sec interval |
-  | :verify-sanity | (fn [DynamicStore-holder])    | Verify store sanity         | Wait max 1 sec for 5+ sec old data |
-  | :error-handler | (fn [DynamicStore-holder ex]) | respond to async fetch error| Prints the error |
+  |`:name`         | stringable                    | Name of the config store    | Auto generated |
+  |`:fetch?`       |`(fn [^DynamicStore ds])->bool`| Return true for to re-fetch | Fetch at 1 sec interval |
+  |`:verify-sanity`|`(fn [DynamicStore-holder])`   | Verify store sanity         | Wait max 1 sec for 5+ sec old data |
+  |`:error-handler`|`(fn [DynamicStore-holder ex])`| respond to async fetch error| Prints the error |
 
   You may deref DynamicStore-holder to access its contents.
 
-  ### Examples
+  ## Examples
 
+  ```
   (make-dynamic-store f nil)  ; async initialization, refresh interval 1 second
-  (make-dynamic-store f (f))  ; upfront initialization, refresh interval 1 second"
+  (make-dynamic-store f (f))  ; upfront initialization, refresh interval 1 second
+  ```"
   ([f init]
     (make-dynamic-store f init {}))
   ([f init {:keys [name
