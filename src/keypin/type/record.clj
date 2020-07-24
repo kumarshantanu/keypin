@@ -13,7 +13,7 @@
     [keypin.type :as t])
   (:import
     [java.util Map]
-    [clojure.lang Associative IDeref ILookup IPersistentCollection IPersistentMap Named Seqable]
+    [clojure.lang Associative IDeref ILookup IPersistentCollection IPersistentMap Seqable]
     [keypin.type KeyAttributes]))
 
 
