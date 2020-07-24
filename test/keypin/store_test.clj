@@ -84,7 +84,7 @@
       (Thread/sleep 50)
       (dotimes [_ 5000] (kfoo cs))  ; warmup
       (is (> t1 (nanos (kfoo cs))))))
-  (testing "Cache busts on underlying store changes &&&"
+  (testing "Underlying store changes &&&"
     (let [^DynamicStore ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:foo "20"})
           ^CachingStore cs (ks/make-caching-store ds)
           dyn-data  (fn [] (:store-data @(.-state-agent ds)))
@@ -101,8 +101,7 @@
         (Thread/sleep 1000)  ; wait for dynamic store 01 second refresh window to elapse
         (kfoo cs)            ; trigger fetch
         (Thread/sleep 100)   ; wait for async fetch to be over
-        (is (= 10 (kfoo cs)))
-        (is (= {} (get-cache)) "busted cache"))
+        (is (= {:foo "10"} (dyn-data)) "data refreshed"))
       (testing "after fetch"
         (is (= 10 (kfoo cs)))
         (Thread/sleep 100)   ; wait for cache-populating to be over
