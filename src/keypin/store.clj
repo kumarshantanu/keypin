@@ -25,8 +25,15 @@
 
 
 (defn fetch-every?
-  "Given duration in milliseconds, return a fetch decider (fn fetch? [last-fetch-time-millis]) that returns `true` if
-  it is time to fetch data, `false` otherwise."
+  "Given duration in milliseconds, return a fetch decider (predicate) function
+
+  ```
+  (fn [^keypin.type.record.StoreState store-state]) -> boolean
+  ```
+
+  that returns `true` if the duration has elapsed, `false` otherwise.
+
+  See: [[make-dynamic-store]]"
   [^long duration-millis]
   (fn [^StoreState store-state]
     (>= (i/now-millis (.-updated-at store-state))
@@ -34,6 +41,22 @@
 
 
 (defn fetch-if-error?
+  "Given error-timestamp key and duration since error, return a fetch decider (predicate) function
+
+  ```
+  (fn [^keypin.type.record.StoreState store-state]) -> boolean
+  ```
+
+  that returns `true` if error happened + duration elapsed,
+  `false` if error happened + duration NOT elapsed, `true` otherwise.
+
+  |Error occured?|Duration elapsed?|Return|
+  |--------------|-----------------|------|
+  |      Yes     |       Yes       | True |
+  |              |        No       | False|
+  |       No     |                 | True |
+
+  See: [[make-dynamic-store]]"
   [err-ts-key ^long millis-since-error]
   (fn [^StoreState store-state]
     (if-let [err-ts (get store-state err-ts-key)]
@@ -43,6 +66,10 @@
 
 
 (defn wait-if-stale
+  "Given staleness duration and refresh-wait timeout in milliseconds, return a function `(fn [state-agent])` that
+  detects stale store and waits until timeout for a refresh.
+
+  See: [[make-dynamic-store]]"
   [^long stale-millis ^long timeout-millis]
   (fn [state-agent]
     (let [^StoreState store-state @state-agent
@@ -64,10 +91,10 @@
 
 
 (defn make-dynamic-store
-  "Given a fetch function (fn [old-data])->new-data that fetches a map instance, and initial data (`nil`: initialized
-  asynchronously in another thread), create a dynamic store that refreshes itself.
+  "Given a fetch function `(fn [old-data]) -> new-data` that fetches a map instance, and initial data
+  (`nil`: initialized asynchronously in another thread), create a dynamic store that refreshes itself.
 
-  ## Options
+  ### Options
 
   | Kwarg          | Type/format                 | Description                 | Default |
   |----------------|-----------------------------|-----------------------------|---------|
@@ -78,7 +105,7 @@
 
   You may deref StoreState-holder to access its contents.
 
-  ## Examples
+  ### Examples
 
   ```
   (make-dynamic-store f nil)  ; async initialization, refresh interval 1 second
