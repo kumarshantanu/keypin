@@ -15,7 +15,7 @@
     [keypin.util  :as ku])
   (:import
     [java.util.concurrent TimeoutException]
-    [keypin.type.record CachingStore]))
+    [keypin.type.record CachingStore DynamicStore]))
 
 
 (deftest dynamic-store-test
@@ -84,17 +84,26 @@
       (Thread/sleep 50)
       (dotimes [_ 5000] (kfoo cs))  ; warmup
       (is (> t1 (nanos (kfoo cs))))))
-  (testing "Cache busts on underlying store changes"
-    (let [ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:foo "20"})
-          cs (ks/make-caching-store ds)
-          gc (fn [] (:cache-data @(.-state-agent ^CachingStore cs)))]
-      (is (= 20 (kfoo ds)))
-      (is (= {} (gc)) "before cache build up")
-      (is (= 20 (kfoo cs)))
-      (is (= {:foo 20} (gc)) "after cache populating")
-      (Thread/sleep 1000)  ; wait for dynamic store 01 second refresh window to elapse
-      (is (= 10 (kfoo cs)))
-      (is (= {} (gc)) "busted cache")
-      (Thread/sleep 100)
-      (is (= 10 (kfoo cs)))
-      (is (= {:foo 10} (gc)) "re-populated cache"))))
+  (testing "Cache busts on underlying store changes &&&"
+    (let [^DynamicStore ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:foo "20"})
+          ^CachingStore cs (ks/make-caching-store ds)
+          dyn-data  (fn [] (:store-data @(.-state-agent ds)))
+          get-cache (fn [] (:cache-data @(.-state-agent cs)))]
+      (testing "dynamic store initialized"
+        (is (= {:foo "20"} (dyn-data)) "dynamic store is initialized")
+        (is (= 20 (kfoo ds)))
+        (is (= {} (get-cache)) "before cache build up"))
+      (testing "cache populating"
+        (is (= 20 (kfoo cs)))
+        (Thread/sleep 100)
+        (is (= {:foo 20} (get-cache)) "after cache populating"))
+      (testing "dynamic refresh happens"
+        (Thread/sleep 1000)  ; wait for dynamic store 01 second refresh window to elapse
+        (kfoo cs)            ; trigger fetch
+        (Thread/sleep 100)   ; wait for async fetch to be over
+        (is (= 10 (kfoo cs)))
+        (is (= {} (get-cache)) "busted cache"))
+      (testing "after fetch"
+        (is (= 10 (kfoo cs)))
+        (Thread/sleep 100)   ; wait for cache-populating to be over
+        (is (= {:foo 10} (get-cache)) "re-populated cache")))))
