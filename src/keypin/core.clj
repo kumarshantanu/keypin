@@ -106,7 +106,7 @@
 (defn realize-config
   "Realize config by applying variable substitution, if any.
 
-  ## Options
+  ### Options
 
   | Kwarg          | Type   | Description                 | Default                 |
   |----------------|--------|-----------------------------|-------------------------|
@@ -124,7 +124,7 @@
 (defn read-config
   "Read config file(s) returning a `java.util.Map` instance.
 
-  ## Options
+  ### Options
 
   | Kwarg           | Type     | Description                                  | Default                         |
   |-----------------|----------|----------------------------------------------|---------------------------------|
@@ -156,7 +156,7 @@
 (defn write-config
   "Write config to a specified file.
 
-  ## Options
+  ### Options
 
   | Kwarg           | Type     | Description                               | Default                         |
   |-----------------|----------|-------------------------------------------|---------------------------------|
@@ -189,7 +189,7 @@
   |`:envvar` |Environment variable that can override the config value and system property (before parsing) |
   |`:source` |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
 
-  ## Lookup function
+  ### Lookup function
 
   ```
   (fn [store key validator description value-parser default-value? default-value not-found-handler])->value
@@ -239,7 +239,7 @@
 
   See [[make-key]] for options. First argument to `defkey` can optionally be a base option-map for all argument vectors.
 
-  ## Examples
+  ### Examples
 
   ```
   (defkey
@@ -303,7 +303,7 @@
   "Like `let`, except in which the left hand side is a destructuring map, right hand side is the argument to key finder.
   Beside symbols, the destructuring map optionally supports `:defs` (symbols bound to key finders) and `:as` keys.
 
-  ## Example
+  ### Example
 
   ```
   (letval [{:defs [foo bar] ; foo, bar are key finders
