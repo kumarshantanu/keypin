@@ -25,7 +25,7 @@
 
 
 (defn lookup-key
-  "Look up a key in an associative data structure - Java map or something that implements clojure.lang.Associative."
+  "Look up a key in an associative data structure - a map or something that implements `clojure.lang.Associative`."
   [the-map the-key validator description value-parser default-value? default-value not-found]
   (when-not (or (instance? Map the-map)
               (instance? Associative the-map))
@@ -43,7 +43,7 @@
 
 
 (defn lookup-keypath
-  "Look up a key path in an associative data structure - Java map or something that implements clojure.lang.Associative."
+  "Look up a key path in an associative data structure - a map or something that implements `clojure.lang.Associative`."
   [the-map ks validator description value-parser default-value? default-value not-found]
   (let [value (loop [data the-map
                      path ks]
@@ -105,9 +105,13 @@
 
 (defn realize-config
   "Realize config by applying variable substitution, if any.
-  Options:
-  :logger        (object) instance of keypin.Logger, defaults to printing to *err*
-  :config-mapper (object) instance of keypin.Mapper, default: keypin.Mapper/DEFAULT"
+
+  ## Options
+
+  | Kwarg          | Type   | Description                 | Default                 |
+  |----------------|--------|-----------------------------|-------------------------|
+  |`:logger`       | object | instance of `keypin.Logger` | prints to `*err*`       |
+  |`:config-mapper`| object | instance of `keypin.Mapper` | `keypin.Mapper/DEFAULT` |"
   ([config]
     (realize-config config {}))
   ([config {:keys [logger config-mapper]
@@ -118,13 +122,17 @@
 
 
 (defn read-config
-  "Read config file(s) returning a java.util.Map instance.
-  Options:
-  :parent-key     (string)   key to identify the parent filenames having K/V pairs, default: \"parent.filenames\"
-  :logger         (object)   instance of keypin.Logger, defaults to printing to *err*
-  :config-readers (list/vec) collection of keypin.ConfigIO instances, default: for Properties and EDN files
-  :media-readers  (list/vec) collection of keypin.MediaReader instances, default: for Filesystem and Classpath
-  :realize?       (boolean)  whether realize the template variables in the string, default: true"
+  "Read config file(s) returning a `java.util.Map` instance.
+
+  ## Options
+
+  | Kwarg           | Type     | Description                                  | Default                         |
+  |-----------------|----------|----------------------------------------------|---------------------------------|
+  |`:parent-key`    | string   | key to identify the parent config filenames  | `\"parent.filenames\"`          |
+  |`:logger`        | object   | instance of `keypin.Logger`                  | prints to `*err*`               |
+  |`:config-readers`| list/vec | collection of `keypin.ConfigIO` instances    | for `.properties`, `.edn` files |
+  |`:media-readers` | list/vec | collection of `keypin.MediaReader` instances | for filesystem and classpath    |
+  |`:realize?`      | boolean  | whether realize template variables in string | `true`                          |"
   (^Map [config-filenames]
     (read-config config-filenames {}))
   (^Map [config-filenames {:keys [^String parent-key logger config-readers media-readers realize?]
@@ -147,10 +155,14 @@
 
 (defn write-config
   "Write config to a specified file.
-  Options:
-  :logger         (object)   instance of keypin.Logger, defaults to printing to *err*
-  :config-writers (list/vec) collection of keypin.ConfigIO instances, default: for Properties and EDN files
-  :escape?        (boolean)  whether escape values when writing, default: true"
+
+  ## Options
+
+  | Kwarg           | Type     | Description                               | Default                         |
+  |-----------------|----------|-------------------------------------------|---------------------------------|
+  |`:logger`        | object   | instance of `keypin.Logger`               | prints to `*err*`               |
+  |`:config-writers`| list/vec | collection of `keypin.ConfigIO` instances | for `.properties`, `.edn` files |
+  |`:escape?`       | boolean  | whether escape values when writing        | `true`                          |"
   ([config-filename config]
     (write-config config-filename config {}))
   ([config-filename config {:keys [logger config-writers escape?]
@@ -167,15 +179,26 @@
 (defn make-key
   "Create a key that can be looked up in a config store (keypin.type/IStore, java.util.Map/Properties or map/vector)
   instance. The following optional keys are supported:
-  :lookup  - The function to look the key up:
-             (fn [the-map the-key validator description value-parser default-value? default-value
-                  (fn not-found-fn [not-found-message])])
-             default: ordinary key look up
-  :parser  - The value parser function (args: key, value)
-  :default - Default value to return if key is not found
-  :sysprop - System property name that can override the config value (before parsing)
-  :envvar  - Environment variable that can override the config value and system property (before parsing)
-  :source  - Source or container (of reference type, e.g. atom/promise etc.) of key/value pairs"
+
+  | Kwarg    | Description                 |
+  |----------|-----------------------------|
+  |`:lookup` |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
+  |`:parser` |The value parser function `(fn [key value])`                                                 |
+  |`:default`|Default value to return if key is not found                                                  |
+  |`:sysprop`|System property name that can override the config value (before parsing)                     |
+  |`:envvar` |Environment variable that can override the config value and system property (before parsing) |
+  |`:source` |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
+
+  ## Lookup function
+
+  ```
+  (fn [store key validator description value-parser default-value? default-value not-found-handler])->value
+
+  ;; validator is a predicate function: (fn [parsed-value])->boolean
+  ;; not-found-handler is function (fn not-found-fn [not-found-message]) called when the store does not have the kay
+  ```
+
+  See: [[lookup-key]], [[lookup-keypath]]"
   [the-key validator description {:keys [lookup parser default sysprop envvar source]
                                   :or {lookup lookup-key
                                        parser i/identity-parser}
@@ -204,20 +227,32 @@
 
 (defmacro defkey
   "Define one or more keys as vars using argument vectors. Every argument vector must have one of the following arities:
+
+  ```
   [key]
   [key options]
   [key validator description]
   [key validator description options]
-  See `make-key` for details. First argument to `defkey` can optionally be a base option-map for all argument vectors.
-  Examples:
+  ```
+
+  The `validator` is a predicate fn `(fn [parsed-value])->boolean` that returns true for valid values, false otherwise.
+
+  See [[make-key]] for options. First argument to `defkey` can optionally be a base option-map for all argument vectors.
+
+  ## Examples
+
+  ```
   (defkey
     ip   [:ip-address]
     port [:port #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])
+
   (defkey
     {:lookup lookup-key}
     ip   [\"server.ip.address\"]
     port [\"server.port\" #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])
-  See: make-key"
+  ```
+
+  See: [[make-key]]"
   [the-sym arg-vec & more]
   (let [options (if (odd? (count more))
                   (i/expect-arg the-sym map? ["Expected an option map, found" (pr-str the-sym)])
@@ -265,14 +300,18 @@
 
 
 (defmacro letval
-  "Like let, except in which the left hand side is a destructuring map, right hand side is the argument to key finder.
-  Beside symbols, the destructuring map optionally supports :defs (symbols bound to key finders) and :as keys.
-  Example:
+  "Like `let`, except in which the left hand side is a destructuring map, right hand side is the argument to key finder.
+  Beside symbols, the destructuring map optionally supports `:defs` (symbols bound to key finders) and `:as` keys.
+
+  ## Example
+
+  ```
   (letval [{:defs [foo bar] ; foo, bar are key finders
             baz baz-key     ; baz-key is a key finder
             :as m} {:foo 10 :bar 20 :baz 30}]
     ;; foo, bar and baz are now bound to values looked up in the map
-    ...)"
+    ...)
+  ```"
   [bindings & body]
   (i/expect-arg bindings vector? ["Expected a binding vector, but found" (pr-str bindings)])
   (i/expect-arg (count bindings) even? ["Expected even number of binding forms, but found" (pr-str bindings)])
