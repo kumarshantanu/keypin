@@ -178,7 +178,9 @@
 
 (defn make-key
   "Create a key that can be looked up in a config store (keypin.type/IStore, java.util.Map/Properties or map/vector)
-  instance. The following optional keys are supported:
+  instance.
+
+  ### Options
 
   | Kwarg    | Description                 |
   |----------|-----------------------------|
