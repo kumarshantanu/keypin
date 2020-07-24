@@ -9,10 +9,42 @@
 
 (ns keypin.type.record
   (:require
+    [keypin.internal :as i]
     [keypin.type :as t])
   (:import
+    [java.util Map]
     [clojure.lang Associative IDeref ILookup IPersistentCollection IPersistentMap Named Seqable]
     [keypin.type KeyAttributes]))
+
+
+(defrecord StoreState [^Map    store-data
+                       ^String store-name
+                       ^long   updated-at
+                       ])
+
+
+(deftype DynamicStore [state-agent  ; an agent holding current state
+                       update-data  ; (fn ^StoreState []) to potentially update state
+                       ]
+  IDeref
+  (deref [_]      (update-data))
+  t/IStore
+  (lookup [_ kd]  (t/lookup (update-data) kd))
+  ILookup
+  (valAt [_ k]    (get (update-data) k))
+  (valAt [_ k nf] (get (update-data) k nf))
+  Seqable
+  (seq   [_]      (seq (update-data)))
+  IPersistentCollection
+  (count [_]      (count (update-data)))
+  (cons  [_ _]    (throw (UnsupportedOperationException. "cons is not supported on this type")))
+  (empty [_]      (let [ss (->StoreState {} "empty" (i/now-millis))]
+                    (DynamicStore. (agent ss) (constantly ss))))
+  (equiv [_ obj]  (.equiv ^IPersistentMap (update-data) obj))
+  Associative
+  (containsKey  [_ k]   (contains? (update-data) k))
+  (entryAt      [_ k]   (.entryAt ^IPersistentMap (update-data) k))
+  (assoc        [_ _ _] (throw (UnsupportedOperationException. "assoc is not supported on this type"))))
 
 
 (defrecord CacheState [store-data

@@ -17,28 +17,26 @@
     [java.util Date]
     [java.text SimpleDateFormat]
     [java.util.concurrent TimeoutException]
-    [clojure.lang Associative IDeref ILookup IPersistentCollection IPersistentMap Named Seqable]))
+    [clojure.lang IDeref]
+    [keypin.type.record StoreState]))
 
 
-(defrecord DynamicStore
-  [^IPersistentMap kvdata
-   ^String         name
-   ^long           tstamp])
+;; ----- dynamic store -----
 
 
 (defn fetch-every?
   "Given duration in milliseconds, return a fetch decider (fn fetch? [last-fetch-time-millis]) that returns `true` if
   it is time to fetch data, `false` otherwise."
   [^long duration-millis]
-  (fn [^DynamicStore dynamic-store]
-    (>= (i/now-millis (.-tstamp dynamic-store))
+  (fn [^StoreState store-state]
+    (>= (i/now-millis (.-updated-at store-state))
       duration-millis)))
 
 
 (defn fetch-if-error?
   [err-ts-key ^long millis-since-error]
-  (fn [^DynamicStore dynamic-store]
-    (if-let [err-ts (get dynamic-store err-ts-key)]
+  (fn [^StoreState store-state]
+    (if-let [err-ts (get store-state err-ts-key)]
       (>= (i/now-millis (long err-ts))
         millis-since-error)
       true)))
@@ -46,14 +44,14 @@
 
 (defn wait-if-stale
   [^long stale-millis ^long timeout-millis]
-  (fn [container]
-    (let [^DynamicStore dynamic-store @container
-          tstamp (.-tstamp dynamic-store)]
+  (fn [state-agent]
+    (let [^StoreState store-state @state-agent
+          tstamp (.-updated-at store-state)]
       (when (>= (i/now-millis tstamp) stale-millis)  ; stale data?
         (let [until-millis (unchecked-add (i/now-millis) timeout-millis)]
           (loop []
             (if (< (i/now-millis) until-millis)  ; not timed out yet waiting for stale->refresh
-              (when (= tstamp (.-tstamp ^DynamicStore @container))  ; not updated?
+              (when (= tstamp (.-updated-at ^StoreState @state-agent))  ; not updated?
                 (try (-> until-millis
                        (unchecked-subtract (i/now-millis))
                        (min 10) ; max 10ms sleep window
@@ -62,7 +60,7 @@
                   (catch InterruptedException _))
                 (recur))
               (throw (TimeoutException. (format "Timed out waiting for stale dynamic store %s to be refreshed"
-                                          (.-name dynamic-store)))))))))))
+                                          (.-store-name store-state)))))))))))
 
 
 (defn make-dynamic-store
@@ -71,14 +69,14 @@
 
   ## Options
 
-  | Kwarg          | Type/format                   | Description                 | Default |
-  |----------------|-------------------------------|-----------------------------|---------|
-  |`:name`         | stringable                    | Name of the config store    | Auto generated |
-  |`:fetch?`       |`(fn [^DynamicStore ds])->bool`| Return true for to re-fetch | Fetch at 1 sec interval |
-  |`:verify-sanity`|`(fn [DynamicStore-holder])`   | Verify store sanity         | Wait max 1 sec for 5+ sec old data |
-  |`:error-handler`|`(fn [DynamicStore-holder ex])`| respond to async fetch error| Prints the error |
+  | Kwarg          | Type/format                 | Description                 | Default |
+  |----------------|-----------------------------|-----------------------------|---------|
+  |`:name`         | stringable                  | Name of the config store    | Auto generated |
+  |`:fetch?`       |`(fn [^StoreState ss])->bool`| Return true to re-fetch now | Fetch at 1 sec interval |
+  |`:verify-sanity`|`(fn [StoreState-holder])`   | Verify store sanity         | Wait max 1 sec for 5+ sec old data |
+  |`:error-handler`|`(fn [StoreState-holder ex])`| respond to async fetch error| Prints the error |
 
-  You may deref DynamicStore-holder to access its contents.
+  You may deref StoreState-holder to access its contents.
 
   ## Examples
 
@@ -108,56 +106,36 @@
                                      (flush))
                                    (send data-holder update :err-ts (fn [old-err-ts]
                                                                       (max (long (or old-err-ts 0)) err-ts)))))}
-                              :as options}]
+            :as options}]
     (let [name-string (i/as-str name)
-          data-holder (agent (map->DynamicStore {:kvdata init
-                                                 :name   name-string
-                                                 :tstamp (if (nil? init)
-                                                           0
-                                                           (i/now-millis))})
+          data-holder (agent (r/map->StoreState {:store-data init
+                                                 :store-name name-string
+                                                 :updated-at (if (nil? init)
+                                                               0
+                                                               (i/now-millis))})
                         :error-handler error-handler)
-          start-fetch (fn [] (send-off data-holder (fn [^DynamicStore dynamic-store]
-                                                     (if (fetch? dynamic-store)
-                                                       (map->DynamicStore {:kvdata (f (.-kvdata dynamic-store))
-                                                                           :name   name-string
-                                                                           :tstamp (i/now-millis)})
-                                                       dynamic-store))))
+          start-fetch (fn [] (send-off data-holder (fn [^StoreState store-state]
+                                                     (if (fetch? store-state)
+                                                       (r/map->StoreState {:store-data (f (.-store-data store-state))
+                                                                           :store-name name-string
+                                                                           :updated-at (i/now-millis)})
+                                                       store-state))))
           update-data (fn []
-                        (let [^DynamicStore dynamic-store @data-holder
-                              kvdata (.-kvdata dynamic-store)]
-                          (when (fetch? dynamic-store)
+                        (let [^StoreState store-state @data-holder
+                              store-data (.-store-data store-state)]
+                          (when (fetch? store-state)
                             (start-fetch))
                           (verify-sanity data-holder)
-                          (when (nil? kvdata)
+                          (when (nil? store-data)
                             (throw (IllegalStateException. (format "Dynamic store %s is not yet initialized"
                                                              name-string))))
-                          kvdata))]
+                          store-data))]
       (when (nil? init)
         (start-fetch))
-      (reify
-        IDeref
-        (deref [_]      (update-data))
-        t/IStore
-        (lookup [_ kd]  (t/lookup (update-data) kd))
-        ILookup
-        (valAt [_ k]    (get (update-data) k))
-        (valAt [_ k nf] (get (update-data) k nf))
-        Seqable
-        (seq   [_]      (seq (update-data)))
-        IPersistentCollection
-        (count [_]      (count (update-data)))
-        (cons  [_ _]    (throw (UnsupportedOperationException. "cons is not supported on this type")))
-        (empty [_]      (make-dynamic-store (constantly false) {}))
-        (equiv [_ obj]  (.equiv ^IPersistentMap (update-data) obj))
-        Associative
-        (containsKey  [_ k]   (contains? (update-data) k))
-        (entryAt      [_ k]   (.entryAt ^IPersistentMap (update-data) k))
-        (assoc        [_ _ _] (throw (UnsupportedOperationException. "assoc is not supported on this type")))
-        Named
-        (getNamespace [_]  (when (instance? Named name) (namespace name)))
-        (getName      [_]  (if (instance? Named name)
-                             (clojure.core/name name)
-                             name-string))))))
+      (r/->DynamicStore data-holder update-data))))
+
+
+;; ----- caching store -----
 
 
 (defn make-caching-store
