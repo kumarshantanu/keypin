@@ -11,7 +11,8 @@
   (:require
     [clojure.stacktrace :as cs]
     [keypin.internal :as i]
-    [keypin.type     :as t])
+    [keypin.type     :as t]
+    [keypin.type.record :as r])
   (:import
     [java.util Date]
     [java.text SimpleDateFormat]
@@ -166,9 +167,8 @@
   [store]
   (i/expected #(satisfies? t/IStore %) "an instance of keypin.type/IStore protocol" store)
   (let [data? (not (instance? IDeref store))
-        state (agent {:kvdata (when data?
-                                store)
-                      :cache  {}}
+        state (agent (r/map->CacheState {:store-data (when data? store)
+                                         :cache-data {}})
                 :error-handler (fn [state ^Throwable ex]
                                  (let [err-ts (i/now-millis)]
                                    (binding [*out* *err*]
@@ -183,36 +183,10 @@
                 (fn []
                   (let [store-data @store
                         state-data @state]
-                    (if (identical? store-data (:kvdata state-data))
+                    (if (identical? store-data (:store-data state-data))
                       state-data
-                      (let [new-state {:kvdata store-data
-                                       :cache {}}]
+                      (let [new-state (r/map->CacheState {:store-data store-data
+                                                          :cache-data {}})]
                         (send state conj new-state)
-                        new-state)))))
-        sdata (fn []
-                (:kvdata (fetch)))]
-    (reify
-      IDeref
-      (deref [_]      (sdata))
-      t/IStore
-      (lookup [_ kd]  (let [{:keys [kvdata cache]} (fetch)
-                            l-key (:the-key kd)]
-                        (if (contains? cache l-key)
-                          (get cache l-key)
-                          (let [v (t/lookup kvdata kd)]
-                            (send state assoc-in [:cache l-key] v)
-                            v))))
-      ILookup
-      (valAt [_ k]    (get (sdata) k))
-      (valAt [_ k nf] (get (sdata) k nf))
-      Seqable
-      (seq   [_]      (seq (sdata)))
-      IPersistentCollection
-      (count [_]      (count (sdata)))
-      (cons  [_ _]    (throw (UnsupportedOperationException. "cons is not supported on this type")))
-      (empty [_]      (make-caching-store {}))
-      (equiv [_ obj]  (.equiv ^IPersistentMap (sdata) obj))
-      Associative
-      (containsKey  [_ k]   (contains? (sdata) k))
-      (entryAt      [_ k]   (.entryAt ^IPersistentMap (sdata) k))
-      (assoc        [_ _ _] (throw (UnsupportedOperationException. "assoc is not supported on this type"))))))
+                        new-state)))))]
+    (r/->CachingStore state fetch)))
