@@ -182,14 +182,16 @@
 
   ### Options
 
-  | Kwarg    | Description                 |
-  |----------|-----------------------------|
-  |`:lookup` |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
-  |`:parser` |The value parser function `(fn [key raw-value]) -> parsed-value`                             |
-  |`:default`|Default value to return when key is not found (unspecified implies there is no default value)|
-  |`:sysprop`|System property name that can override the config value (before parsing)                     |
-  |`:envvar` |Environment variable that can override the config value and system property (before parsing) |
-  |`:source` |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
+  | Kwarg       | Description                 |
+  |-------------|-----------------------------|
+  |`:lookup`    |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
+  |`:parser`    |The value parser function `(fn [key raw-value]) -> parsed-value`                             |
+  |`:default`   |Default value to return when key is not found (unspecified implies there is no default value)|
+  |`:sysprop`   |System property name that can override the config value (before parsing)                     |
+  |`:envvar`    |Environment variable that can override the config value and system property (before parsing) |
+  |`:source`    |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
+  |`:pre-xform` |Middleware function `(fn [option-map]) -> option-map` used before key definition is created  |
+  |`:post-xform`|Middleware function `(fn [keypin.type.KeyAttributes]) -> keypin.type.KeyAttributes`          |
 
   ### Lookup function
 
@@ -201,30 +203,41 @@
   ```
 
   See: [[lookup-key]], [[lookup-keypath]]"
-  [the-key validator description {:keys [lookup parser default sysprop envvar source]
-                                  :or {lookup lookup-key
-                                       parser i/identity-parser}
+  [the-key validator description {:keys [pre-xform]
+                                  :or {pre-xform identity}
                                   :as options}]
-  (t/->KeyAttributes
-    the-key validator description parser
-    (if   (contains? options :default) true false)
-    (when (contains? options :default) default)
-    (fn [the-map the-key validator description value-parser default-value? default-value]
-      (cond
-        (and envvar  (System/getenv envvar))       (value-parser the-key (System/getenv envvar))
-        (and sysprop (System/getProperty sysprop)) (value-parser the-key (System/getProperty sysprop))
-        :otherwise (lookup the-map the-key validator description value-parser default-value? default-value
-                     (if (or envvar sysprop)
-                       (fn [message] (str
-                                       (when-not envvar  (format "Environment variable '%s' is not defined. " envvar))
-                                       (when-not sysprop (format "System property '%s' is not defined. " sysprop))
-                                       message))
-                       identity))))
-    (if (nil? source)
-      nil
-      (do
-        (i/expected #(instance? IDeref %) "a key/value-source of type clojure.lang.IDeref (atom/promise etc.)" source)
-        source))))
+  (let [options (pre-xform options)
+        {:keys [lookup
+                parser
+                default
+                sysprop
+                envvar
+                source
+                post-xform]
+         :or {lookup lookup-key
+              parser i/identity-parser
+              post-xform identity}} options]
+    (post-xform
+      (t/->KeyAttributes
+        the-key validator description parser
+        (if   (contains? options :default) true false)
+        (when (contains? options :default) default)
+        (fn [the-map the-key validator description value-parser default-value? default-value]
+          (cond
+            (and envvar  (System/getenv envvar))       (value-parser the-key (System/getenv envvar))
+            (and sysprop (System/getProperty sysprop)) (value-parser the-key (System/getProperty sysprop))
+            :otherwise (lookup the-map the-key validator description value-parser default-value? default-value
+                         (if (or envvar sysprop)
+                           (fn [message] (str
+                                           (when-not envvar  (format "Environment variable '%s' is not defined. " envvar))
+                                           (when-not sysprop (format "System property '%s' is not defined. " sysprop))
+                                           message))
+                           identity))))
+        (if (nil? source)
+          nil
+          (do
+            (i/expected #(instance? IDeref %) "a key/value-source of type clojure.lang.IDeref (atom/promise etc.)" source)
+            source))))))
 
 
 (defmacro defkey

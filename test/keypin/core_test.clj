@@ -18,7 +18,8 @@
     [java.io File]
     [java.util Map Properties]
     [java.util.concurrent TimeUnit]
-    [keypin Config Logger Mapper]))
+    [keypin Config Logger Mapper]
+    [keypin.type KeyAttributes]))
 
 
 (deftest test-predicate
@@ -448,3 +449,16 @@
     (is (thrown? IllegalStateException (nosrc-bar-baz)))
     (is (thrown? IllegalStateException @nosrc-bar-baz))
     (is (= '([config-map] [config-map not-found]) (:arglists (meta #'nosrc-foo-bar))))))
+
+
+(defkey
+  {:pre-xform  (fn [options] (assoc options :default 100))
+   :post-xform (fn [^KeyAttributes ka]
+                 (assoc ka :description "New description"))}
+  mw-foo [:foo integer? "Value at :foo"])
+
+
+(deftest test-middleware
+  (is (= 20 (mw-foo {:foo 20})))
+  (is (= 100 (mw-foo {})))
+  (is (= "New description" (:description mw-foo))))
