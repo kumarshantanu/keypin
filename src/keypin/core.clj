@@ -185,8 +185,8 @@
   | Kwarg    | Description                 |
   |----------|-----------------------------|
   |`:lookup` |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
-  |`:parser` |The value parser function `(fn [key value])`                                                 |
-  |`:default`|Default value to return if key is not found                                                  |
+  |`:parser` |The value parser function `(fn [key raw-value]) -> parsed-value`                             |
+  |`:default`|Default value to return when key is not found (unspecified implies there is no default value)|
   |`:sysprop`|System property name that can override the config value (before parsing)                     |
   |`:envvar` |Environment variable that can override the config value and system property (before parsing) |
   |`:source` |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |

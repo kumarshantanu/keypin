@@ -167,7 +167,7 @@
 
 (defn make-caching-store
   "Wrap a given store (map, vector or keypin.type/IStore instance) such that the key-definition lookups are cached.
-  For dynamic stores (that implement clojure.lang.IDeref) the cache is valid as long as the underlying store data
+  For dynamic stores (that implement `clojure.lang.IDeref`) the cache is valid as long as the underlying store data
   doesn't change."
   [store]
   (i/expected #(satisfies? t/IStore %) "an instance of keypin.type/IStore protocol" store)
