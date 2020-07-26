@@ -6,7 +6,7 @@ Key lookup on steroids in Clojure.
 
 ## Why Keypin?
 
-_**TL;DR - Consolidate (defragment) application configuration concerns to simplify code!**_
+_**TL;DR - Simplify code by consolidating application configuration concerns!**_
 
 **Quick pitch:** Config access code is tightly coupled to config. Why let this tight coupling spread
 all over the code base? Collect config concerns in one place, so that rest of the code is cleaner.
