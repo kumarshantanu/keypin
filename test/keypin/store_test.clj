@@ -15,7 +15,7 @@
     [keypin.util  :as ku])
   (:import
     [java.util.concurrent TimeoutException]
-    [keypin.type.record CachingStore DynamicStore]))
+    [keypin.store CachingStore DynamicStore]))
 
 
 (deftest dynamic-store-test

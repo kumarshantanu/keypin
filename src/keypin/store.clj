@@ -11,17 +11,46 @@
   (:require
     [clojure.stacktrace :as cs]
     [keypin.internal :as i]
-    [keypin.type     :as t]
-    [keypin.type.record :as r])
+    [keypin.type     :as t])
   (:import
-    [java.util Date]
+    [java.util Date Map]
     [java.text SimpleDateFormat]
     [java.util.concurrent TimeoutException]
-    [clojure.lang IDeref]
-    [keypin.type.record StoreState]))
+    [clojure.lang Associative IDeref ILookup IPersistentCollection IPersistentMap Seqable]
+    [keypin.type KeyAttributes]))
 
 
 ;; ----- dynamic store -----
+
+
+(defrecord StoreState [^Map    store-data
+                       ^String store-name
+                       ^long   updated-at
+                       ])
+
+
+(deftype DynamicStore [state-agent  ; an agent holding current state
+                       update-data  ; (fn ^StoreState []) to potentially update state
+                       ]
+  IDeref
+  (deref [_]      (update-data))
+  t/IStore
+  (lookup [_ kd]  (t/lookup (update-data) kd))
+  ILookup
+  (valAt [_ k]    (get (update-data) k))
+  (valAt [_ k nf] (get (update-data) k nf))
+  Seqable
+  (seq   [_]      (seq (update-data)))
+  IPersistentCollection
+  (count [_]      (count (update-data)))
+  (cons  [_ _]    (throw (UnsupportedOperationException. "cons is not supported on this type")))
+  (empty [_]      (let [ss (->StoreState {} "empty" (i/now-millis))]
+                    (DynamicStore. (agent ss) (constantly ss))))
+  (equiv [_ obj]  (.equiv ^IPersistentMap (update-data) obj))
+  Associative
+  (containsKey  [_ k]   (contains? (update-data) k))
+  (entryAt      [_ k]   (.entryAt ^IPersistentMap (update-data) k))
+  (assoc        [_ _ _] (throw (UnsupportedOperationException. "assoc is not supported on this type"))))
 
 
 (defn fetch-every?
@@ -135,17 +164,17 @@
                                                                       (max (long (or old-err-ts 0)) err-ts)))))}
             :as options}]
     (let [name-string (i/as-str name)
-          data-holder (agent (r/map->StoreState {:store-data init
-                                                 :store-name name-string
-                                                 :updated-at (if (nil? init)
-                                                               0
-                                                               (i/now-millis))})
+          data-holder (agent (map->StoreState {:store-data init
+                                               :store-name name-string
+                                               :updated-at (if (nil? init)
+                                                             0
+                                                             (i/now-millis))})
                         :error-handler error-handler)
           start-fetch (fn [] (send-off data-holder (fn [^StoreState store-state]
                                                      (if (fetch? store-state)
-                                                       (r/map->StoreState {:store-data (f (.-store-data store-state))
-                                                                           :store-name name-string
-                                                                           :updated-at (i/now-millis)})
+                                                       (map->StoreState {:store-data (f (.-store-data store-state))
+                                                                         :store-name name-string
+                                                                         :updated-at (i/now-millis)})
                                                        store-state))))
           update-data (fn []
                         (let [^StoreState store-state @data-holder
@@ -159,10 +188,45 @@
                           store-data))]
       (when (nil? init)
         (start-fetch))
-      (r/->DynamicStore data-holder update-data))))
+      (->DynamicStore data-holder update-data))))
 
 
 ;; ----- caching store -----
+
+
+(defrecord CacheState [store-data
+                       cache-data])
+
+
+(deftype CachingStore [state-agent  ; an agent holding current state
+                       fetch-state  ; (fn ^CacheState []) to fetch state
+                       ]
+  IDeref
+  (deref [_]      (.-store-data ^CacheState (fetch-state)))
+  t/IStore
+  (lookup [_ kd]  (let [^CacheState cache-state (fetch-state)
+                        cache-data (.-cache-data cache-state)
+                        lookup-key (.-the-key ^KeyAttributes kd)]
+                    (if (contains? cache-data lookup-key)
+                      (get cache-data lookup-key)
+                      (let [v (t/lookup (.-store-data cache-state) kd)]
+                        (send state-agent assoc-in [:cache-data lookup-key] v)
+                        v))))
+  ILookup
+  (valAt [_ k]    (get (.-store-data ^CacheState (fetch-state)) k))
+  (valAt [_ k nf] (get (.-store-data ^CacheState (fetch-state)) k nf))
+  Seqable
+  (seq   [_]      (seq (.-store-data ^CacheState (fetch-state))))
+  IPersistentCollection
+  (count [_]      (count (.-store-data ^CacheState (fetch-state))))
+  (cons  [_ _]    (throw (UnsupportedOperationException. "cons is not supported on this type")))
+  (empty [_]      (let [cache-data (->CacheState {} {})]
+                    (CachingStore. (agent cache-data) (constantly {}))))
+  (equiv [_ obj]  (.equiv ^IPersistentMap (.-store-data ^CacheState (fetch-state)) obj))
+  Associative
+  (containsKey  [_ k]   (contains? (.-store-data ^CacheState (fetch-state)) k))
+  (entryAt      [_ k]   (.entryAt ^IPersistentMap (.-store-data ^CacheState (fetch-state)) k))
+  (assoc        [_ _ _] (throw (UnsupportedOperationException. "assoc is not supported on this type"))))
 
 
 (defn make-caching-store
@@ -172,8 +236,8 @@
   [store]
   (i/expected #(satisfies? t/IStore %) "an instance of keypin.type/IStore protocol" store)
   (let [data? (not (instance? IDeref store))
-        state (agent (r/map->CacheState {:store-data (when data? store)
-                                         :cache-data {}})
+        state (agent (map->CacheState {:store-data (when data? store)
+                                       :cache-data {}})
                 :error-handler (fn [state ^Throwable ex]
                                  (let [err-ts (i/now-millis)]
                                    (binding [*out* *err*]
@@ -190,8 +254,8 @@
                         state-data @state]
                     (if (identical? store-data (:store-data state-data))
                       state-data
-                      (let [new-state (r/map->CacheState {:store-data store-data
-                                                          :cache-data {}})]
+                      (let [new-state (map->CacheState {:store-data store-data
+                                                        :cache-data {}})]
                         (send state conj new-state)
                         new-state)))))]
-    (r/->CachingStore state fetch)))
+    (->CachingStore state fetch)))
