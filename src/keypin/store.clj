@@ -57,7 +57,7 @@
   "Given duration in milliseconds, return a fetch decider (predicate) function
 
   ```
-  (fn [^keypin.type.record.StoreState store-state]) -> boolean
+  (fn [^keypin.type.StoreState store-state]) -> boolean
   ```
 
   that returns `true` if the duration has elapsed, `false` otherwise.
@@ -73,7 +73,7 @@
   "Given error-timestamp key and duration since error, return a fetch decider (predicate) function
 
   ```
-  (fn [^keypin.type.record.StoreState store-state]) -> boolean
+  (fn [^keypin.type.StoreState store-state]) -> boolean
   ```
 
   that returns `true` if error happened + duration elapsed,
