@@ -184,8 +184,11 @@
 
   | Kwarg       | Description                 |
   |-------------|-----------------------------|
+  |`:the-key`   |(Required) Key to be used for looking up value                                |
+  |`:pred`      |Validator function `(fn [value]) -> boolean` - default fn returns always true |
+  |`:desc`      |Description string for the config - default: `\"No description\"`             |
   |`:lookup`    |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
-  |`:parser`    |The value parser function `(fn [key raw-value]) -> parsed-value`                             |
+  |`:parser`    |The value parser fn `(fn [key raw-value]) -> parsed-value`, e.g. [[keypin.util/str->long]]   |
   |`:default`   |Default value to return when key is not found (unspecified implies there is no default value)|
   |`:sysprop`   |System property name that can override the config value (before parsing)                     |
   |`:envvar`    |Environment variable that can override the config value and system property (before parsing) |
@@ -196,27 +199,46 @@
   ### Lookup function
 
   ```
-  (fn [store key validator description value-parser default-value? default-value not-found-handler])->value
+  (fn [store
+       key
+       validator
+       description
+       value-parser
+       default-value?
+       default-value
+       not-found-handler]) -> value
 
-  ;; validator is a predicate function: (fn [parsed-value])->boolean
-  ;; not-found-handler is function (fn not-found-fn [not-found-message]) called when the store does not have the kay
+  ;; validator is a predicate function: (fn [parsed-value]) -> boolean
+  ;; not-found-handler is (fn [not-found-message]), called when the store does not have the key
   ```
 
   See: [[lookup-key]], [[lookup-keypath]]"
-  [the-key validator description {:keys [pre-xform]
-                                  :or {pre-xform identity}
-                                  :as options}]
+  [{:keys [pre-xform]
+    :or {pre-xform identity}
+    :as options}]
   (let [options (pre-xform options)
-        {:keys [lookup
+        {:keys [the-key  ; required
+                pred     ; validator
+                desc     ; description
+                lookup
                 parser
                 default
                 sysprop
                 envvar
                 source
                 post-xform]
-         :or {lookup lookup-key
+         :or {pred   i/return-true
+              desc   "No description"
+              lookup lookup-key
               parser i/identity-parser
-              post-xform identity}} options]
+              post-xform identity}} options
+        validator   pred
+        description desc]
+    (i/expected some?   "Non-nil key for lookup (option :the-key)" the-key)
+    (i/expected fn?     "Validator function under (option :pred)"  validator)
+    (i/expected string? "Config description string (option :desc)" description)
+    (i/expected fn?     "Lookup function (option :lookup)"         lookup)
+    (i/expected fn?     "Parser function (option :parser)"         parser)
     (post-xform
       (t/->KeyAttributes
         the-key validator description parser
@@ -241,7 +263,8 @@
 
 
 (defmacro defkey
-  "Define one or more keys as vars using argument vectors. Every argument vector must have one of the following arities:
+  "Define one or more keys as `defn` vars using argument vectors, which could be invoked as `(keydef store)` to
+  fetch the value of the key. Every argument vector must have one of the following arities:
 
   ```
   [key]
@@ -250,21 +273,40 @@
   [key validator description options]
   ```
 
-  The `validator` is a predicate fn `(fn [parsed-value])->boolean` that returns true for valid values, false otherwise.
+  ### Options
 
-  See [[make-key]] for options. First argument to `defkey` can optionally be a base option-map for all argument vectors.
+  | Kwarg       | Description |
+  |-------------|-------------|
+  |`:pred`      |Validator function `(fn [value]) -> boolean` - default fn returns always `true`|
+  |`:desc`      |Description string for the config - default: `\"No description\"`              |
+  |`:lookup`    |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
+  |`:parser`    |The value parser fn `(fn [key raw-value]) -> parsed-value`, e.g. [[keypin.util/str->long]]   |
+  |`:default`   |Default value to return when key is not found (unspecified implies there is no default value)|
+  |`:sysprop`   |System property name that can override the config value (before parsing)                     |
+  |`:envvar`    |Environment variable that can override the config value and system property (before parsing) |
+  |`:source`    |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
+  |`:pre-xform` |Middleware function `(fn [option-map]) -> option-map` used before key definition is created  |
+  |`:post-xform`|Middleware function `(fn [keypin.type.KeyAttributes]) -> keypin.type.KeyAttributes`          |
+
+  The `validator` is a predicate `(fn [parsed-value]) -> boolean` that returns `true` for valid values,
+  `false` otherwise.
+
+  First argument to `defkey` can optionally be a base option-map for all argument vectors.
 
   ### Examples
 
   ```
   (defkey
     ip   [:ip-address]
-    port [:port #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])
+    port [:port #(< 1023 % 65535) \"Server port\" {:parser keypin.util/str->int :default 3000}])
+
+  (port {:port \"3009\"})  ; returns 3009
+  (port {})              ; returns 3000
 
   (defkey
     {:lookup lookup-key}
     ip   [\"server.ip.address\"]
-    port [\"server.port\" #(< 1023 % 65535) \"Server port\" {:parser str->int :default 3000}])
+    port [\"server.port\" #(< 1023 % 65535) \"Server port\" {:parser keypin.util/str->int :default 3000}])
   ```
 
   See: [[make-key]]"
@@ -280,9 +322,9 @@
                        (i/expect-arg each-sym symbol? ["Expected a symbol to define var, but found" (pr-str each-sym)])
                        (i/expect-arg each-vec vector? ["Expected a vector to create key, but found" (pr-str each-vec)])
                        [each-sym (case (count each-vec)
-                                   1 (conj each-vec (constantly true) "No description" options)
+                                   1 (conj each-vec i/return-true "No description" options)
                                    2 (let [{:keys [pred desc]
-                                            :or {pred (constantly true)
+                                            :or {pred i/return-true
                                                  desc "No description"}
                                             :as spec-opts} (let [[each-key each-opts] each-vec]
                                                              (i/expect-arg each-opts map?
@@ -299,15 +341,19 @@
                                                                (merge options each-opts)))
                                    (i/illegal-arg ["Expected 1, 2, 3 or 4 elements as arguments for defkey, but found"
                                                    (pr-str each-vec)]))]))
-                (map (fn [[each-sym each-vec]]
-                       (let [descrip (nth each-vec 2 "No description")
-                             options (nth each-vec 3 {})  ; 4th element is option map
+                (map (fn [[each-sym [the-key validator descrip options :as each-vec]]]
+                       (let [;; descrip (nth each-vec 2 "No description")
+                             ;; options (nth each-vec 3 {})  ; 4th element is option map
                              arities (if (:source options)
                                        ''([] [config-map] [config-map not-found])
                                        ''([config-map] [config-map not-found]))
                              meta-fn (partial merge {:arglists arities :doc descrip})
-                             def-sym (vary-meta each-sym meta-fn)]
-                         `(def ~def-sym (make-key ~@each-vec))))))]
+                             def-sym (vary-meta each-sym meta-fn)
+                             arg-map (conj (get each-vec 3 {})
+                                       {:the-key (get each-vec 0)
+                                        :pred    (get each-vec 1)
+                                        :desc    (get each-vec 2)})]
+                         `(def ~def-sym (make-key ~arg-map))))))]
     `(do ~@pairs)))
 
 

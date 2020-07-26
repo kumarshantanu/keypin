@@ -78,3 +78,8 @@
       (str xns "/" (name x))
       (name x))
     (str x)))
+
+
+(defn return-true
+  [& _]
+  true)

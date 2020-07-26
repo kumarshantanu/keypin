@@ -23,6 +23,7 @@
 - [BREAKING CHANGE] Drop support for Clojure 1.5 and 1.6
   - Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
 - Key definition changes
+  - [BREAKING CHANGE] Change `keypin.core/make-key` arity from 4 to 1
   - Middleware support in `keypin.core/make-key` (hence, also in `keypin.core/defkey`) via options
     - Kwarg `:pre-xform` to transform options before creating the key-definition
     - Kwarg `:post-xform` to transform key-definition after it is created
