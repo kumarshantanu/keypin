@@ -4,21 +4,32 @@
 
 Key lookup on steroids in Clojure.
 
-#### Why Keypin?
+## Why Keypin?
+
+_**TL;DR - Consolidate (defragment) application configuration concerns to simplify code!**_
+
+**Quick pitch:** Config access code is tightly coupled to config. Why let this tight coupling spread
+all over the code base? Collect config concerns in one place, so that rest of the code is cleaner.
+
+### Features
 
 - Key lookup on any associative data structure
   - Clojure or Java maps
   - Clojure vectors
   - `java.util.Properties` instances
+  - Custom (static or dynamic) config stores
   - Destructuring
 - Optional value parsing
 - Optional value validation
 - Fail-fast error reporting
 - Optional default value (when key is missing)
+- Optional caching for efficiency
+- Support for dynamic config store (e.g. periodic refresh)
 - Reading config files
   - Out of the box support for `.edn` and `.properties` files
   - Extensible design for other config file types (JSON, YAML etc.)
   - Read config file from filesystem and classpath (in that order)
+    - Freedom to have external config files, or shipped with application JAR
   - Chained config files (via parent key, child properties override parent)
   - Multi-parent chaining
   - Template value resolution in string values (environment variables override others)

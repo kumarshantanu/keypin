@@ -4,8 +4,10 @@
 ## Requiring namespace
 
 ```clojure
-(require '[keypin.core :refer [defkey letval] :as k])
-(require '[keypin.util :as u])
+(:require
+  [keypin.core :refer [defkey letval] :as k]
+  [keypin.store :as s]
+  [keypin.util :as u])
 ```
 
 
@@ -229,7 +231,7 @@ log.level=debug
 ring.error.stacktrace=true
 ```
 
-In config file `config/my-conf.properties` (see the parent key `parent`):
+In config file `config/my-conf.properties` (see the parent key `parent-config`):
 
 ```properties
 parent-config=base.properties, dev.properties
@@ -246,3 +248,41 @@ Now, read it:
 ```
 
 The files `base.properties` and `dev.properties` will  be looked up in file system first, then in classpath.
+
+
+## Dynamic config stores
+
+Keypin supports dynamic config stores, wherein a fetch function is used to fetch and re-fetch the
+config map.
+
+```
+(defn fetch-config-from-redis
+  "Fetch config from Redis and return as map."
+  [old-config]
+  ...)
+
+;; create a dynamic config store that refreshes every second
+;; (see keypin.store/make-dynamic-store for details)
+;;
+(def redis-config-store (s/make-dynamic-store
+                          fetch-config-from-redis
+                          (fetch-config-from-redis)))
+
+(k-foo redis-config-store)  ; lookup key definition on the dynamic store
+```
+
+Whenever the underlying config changes, the `k-foo` call would return the latest value.
+
+
+## Caching config stores
+
+Whenever you use a key definition to lookup a key in a confg store, it is parsed and validated every time before returning the value. This unnecessary repetition is easily avoided using caching stores.
+
+```
+(def config (k/read-config ["config/my-conf.edn"]))  ; regular (static) config store
+(def caching-config (s/make-caching-store config))   ; caching config
+
+(k-foo caching-config)  ; read always from the caching config (faster)
+```
+
+You may create a caching store out of both static and dynamic stores.
