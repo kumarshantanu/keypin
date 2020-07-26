@@ -8,6 +8,7 @@
 
 
 (ns keypin.util
+  "Common utility functions."
   (:refer-clojure :exclude [any?])
   (:require
     [clojure.edn     :as edn]

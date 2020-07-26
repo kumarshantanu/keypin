@@ -8,6 +8,9 @@
 
 
 (ns keypin.store
+  "Config store functionality and implementation.
+
+  See: [[make-dynamic-store]], [[make-caching-store]]"
   (:require
     [clojure.stacktrace :as cs]
     [keypin.internal :as i]

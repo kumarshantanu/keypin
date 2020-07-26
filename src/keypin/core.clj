@@ -8,6 +8,7 @@
 
 
 (ns keypin.core
+  "Public API for the core functionality."
   (:require
     [clojure.edn     :as edn]
     [clojure.string  :as string]
@@ -177,8 +178,8 @@
 
 
 (defn make-key
-  "Create a key that can be looked up in a config store (keypin.type/IStore, java.util.Map/Properties or map/vector)
-  instance.
+  "Create a key that can be looked up in a config store (`keypin.type/IStore`, `java.util.Map`, `java.util.Properties`
+  or map/vector) instance.
 
   ### Options
 

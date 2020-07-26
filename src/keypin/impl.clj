@@ -8,6 +8,9 @@
 
 
 (ns keypin.impl
+  "This is an internal namespace. Code here is subject to change.
+
+  Implementation details of time/duration parsing and processing."
   (:require
     [keypin.type :as t])
   (:import

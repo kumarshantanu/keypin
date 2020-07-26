@@ -8,6 +8,9 @@
 
 
 (ns keypin.internal
+  "This is an internal namespace. Code here is subject to change.
+
+  Utility functions."
   (:require
     [clojure.string :as string])
   (:import
