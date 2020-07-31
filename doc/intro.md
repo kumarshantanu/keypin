@@ -265,8 +265,7 @@ config map.
 ;; (see keypin.store/make-dynamic-store for details)
 ;;
 (def redis-config-store (s/make-dynamic-store
-                          fetch-config-from-redis
-                          (fetch-config-from-redis)))
+                          fetch-config-from-redis))
 
 (k-foo redis-config-store)  ; lookup key definition on the dynamic store
 ```

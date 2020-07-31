@@ -21,12 +21,12 @@
 (deftest dynamic-store-test
   (testing "Fixed store, initialized with fixed data"
     (let [fetch-fixed (constantly {:foo 10})
-          fixed-store (ks/make-dynamic-store fetch-fixed (fetch-fixed))]
+          fixed-store (ks/make-dynamic-store fetch-fixed {:init (fetch-fixed)})]
       (is (= 10 (get fixed-store :foo)))))
   ;;
   (testing "Fixed store, not initialized"
     (let [fetch-fixed (constantly {:foo 10})
-          fixed-store (ks/make-dynamic-store fetch-fixed nil)]
+          fixed-store (ks/make-dynamic-store fetch-fixed)]
       (Thread/sleep 100)
       (is (= 10 (get fixed-store :foo)) "recovers waiting to initialize store")
       (try (Thread/sleep 1000) (catch InterruptedException _))
@@ -34,7 +34,7 @@
   ;;
   (testing "Fixed store, not initialized, disabled `fetch?` fn"
     (let [fetch-fixed (constantly {:foo 10})
-          fixed-store (ks/make-dynamic-store fetch-fixed nil {:fetch? (constantly false)})]
+          fixed-store (ks/make-dynamic-store fetch-fixed {:fetch? (constantly false)})]
       (is (thrown? TimeoutException
             (contains? fixed-store :foo)) "timed out waiting to initialize store")
       (try (Thread/sleep 1000) (catch InterruptedException _))
@@ -43,14 +43,14 @@
   ;;
   (testing "Fixed store, not initialized, fetch fn throws"
     (let [fetch-never (fn [_] (throw (Exception. "Fetch error")))
-          fixed-store (ks/make-dynamic-store fetch-never nil)]
+          fixed-store (ks/make-dynamic-store fetch-never)]
       (is (thrown? TimeoutException
             (contains? fixed-store :foo)) "recovers waiting to initialize store")
       (try (Thread/sleep 1000) (catch InterruptedException _))
       (is (thrown? TimeoutException
             (contains? fixed-store :foo)) "timed out waiting to update stale data")))
   (testing "Actualy dynamically fetched config"
-    (let [ds (ks/make-dynamic-store (fn [_] {:foo 10}) {:foo 20})]
+    (let [ds (ks/make-dynamic-store (fn [_] {:foo 10}) {:init {:foo 20}})]
       (is (= 20 (get ds :foo)))
       (Thread/sleep 1100)  ; wait for 1s refresh window to elapse
       (get ds :foo)        ; trigger re-fetch
@@ -85,7 +85,7 @@
       (dotimes [_ 5000] (kfoo cs))  ; warmup
       (is (> t1 (nanos (kfoo cs))))))
   (testing "Underlying store changes &&&"
-    (let [^DynamicStore ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:foo "20"})
+    (let [^DynamicStore ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:init {:foo "20"}})
           ^CachingStore cs (ks/make-caching-store ds)
           dyn-data  (fn [] (:store-data @(.-state-agent ds)))
           get-cache (fn [] (:cache-data @(.-state-agent cs)))]

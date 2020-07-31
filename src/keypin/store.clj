@@ -123,14 +123,15 @@
 
 
 (defn make-dynamic-store
-  "Given a fetch function `(fn [old-data]) -> new-data` that fetches a map instance, and initial data
-  (`nil`: initialized asynchronously in another thread), create a dynamic store that refreshes itself.
+  "Given a fetch function `(fn [old-data]) -> new-data` that fetches a map instance, create a dynamic store that
+  refreshes itself.
 
   ### Options
 
   | Kwarg          | Type/format                 | Description                 | Default |
   |----------------|-----------------------------|-----------------------------|---------|
   |`:name`         | stringable                  | Name of the config store    | Auto generated |
+  |`:init`         | map                         | Initial data                | `nil`: Initialized asynchronously |
   |`:fetch?`       |`(fn [^StoreState ss])->bool`| Return true to re-fetch now | Fetch at 1 sec interval |
   |`:verify-sanity`|`(fn [StoreState-holder])`   | Verify store sanity         | Wait max 1 sec for 5+ sec old data |
   |`:error-handler`|`(fn [StoreState-holder ex])`| respond to async fetch error| Prints the error |
@@ -140,32 +141,33 @@
   ### Examples
 
   ```
-  (make-dynamic-store f nil)  ; async initialization, refresh interval 1 second
-  (make-dynamic-store f (f))  ; upfront initialization, refresh interval 1 second
+  (make-dynamic-store f)  ; async initialization, refresh interval 1 second
+  (make-dynamic-store f {:init (f)})  ; upfront initialization, refresh interval 1 second
   ```"
-  ([f init]
-    (make-dynamic-store f init {}))
-  ([f init {:keys [name
-                   fetch?
-                   verify-sanity
-                   error-handler]
-            :or {name   (gensym "dynamic-store:")
-                 fetch? (let [f? (fetch-every? 1000)  ; fetch every 1 second
-                              e? (fetch-if-error?     ; fetch after minimum 1 second if error happened
-                                   :err-ts 1000)]
-                          (fn [db] (and (f? db) (e? db))))
-                 verify-sanity (wait-if-stale 5000 1000)
-                 error-handler (fn [data-holder ^Throwable ex]
-                                 (let [err-ts (i/now-millis)]
-                                   (binding [*out* *err*]
-                                     (printf "Error refreshing dynamic store %s at %s\n"
-                                       (i/as-str name)
-                                       (.format (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") (Date. err-ts)))
-                                     (cs/print-stack-trace ex)
-                                     (flush))
-                                   (send data-holder update :err-ts (fn [old-err-ts]
-                                                                      (max (long (or old-err-ts 0)) err-ts)))))}
-            :as options}]
+  ([f]
+    (make-dynamic-store f {}))
+  ([f {:keys [name
+              init
+              fetch?
+              verify-sanity
+              error-handler]
+       :or {name   (gensym "dynamic-store:")
+            fetch? (let [f? (fetch-every? 1000)  ; fetch every 1 second
+                         e? (fetch-if-error?     ; fetch after minimum 1 second if error happened
+                              :err-ts 1000)]
+                     (fn [db] (and (f? db) (e? db))))
+            verify-sanity (wait-if-stale 5000 1000)
+            error-handler (fn [data-holder ^Throwable ex]
+                            (let [err-ts (i/now-millis)]
+                              (binding [*out* *err*]
+                                (printf "Error refreshing dynamic store %s at %s\n"
+                                  (i/as-str name)
+                                  (.format (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") (Date. err-ts)))
+                                (cs/print-stack-trace ex)
+                                (flush))
+                              (send data-holder update :err-ts (fn [old-err-ts]
+                                                                 (max (long (or old-err-ts 0)) err-ts)))))}
+       :as options}]
     (let [name-string (i/as-str name)
           data-holder (agent (map->StoreState {:store-data init
                                                :store-name name-string
