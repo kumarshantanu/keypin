@@ -1,5 +1,19 @@
 # Introduction to keypin
 
+* [Requiring namespace](#requiring-namespace)
+* [Defining keys](#defining-keys)
+   * [Simple key finder](#simple-key-finder)
+   * [Complex key finders](#complex-key-finders)
+   * [Accessing the key](#accessing-the-key)
+   * [Key finder meta data](#key-finder-meta-data)
+   * [Specifying a key/value source](#specifying-a-keyvalue-source)
+   * [Defining key-path lookup](#defining-key-path-lookup)
+* [Reading config files](#reading-config-files)
+   * [EDN config files](#edn-config-files)
+   * [Chained config files](#chained-config-files)
+* [Dynamic config stores](#dynamic-config-stores)
+* [Caching config stores](#caching-config-stores)
+
 
 ## Requiring namespace
 
