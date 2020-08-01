@@ -18,7 +18,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.8.0 / 2020-July-??
+## [WIP] 0.8.0 / 2020-August-??
 
 - [BREAKING CHANGE] Drop support for Clojure 1.5 and 1.6
   - Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
