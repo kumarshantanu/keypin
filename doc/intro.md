@@ -43,7 +43,8 @@ You define key finders with some meta data as follows:
 (port {:ip "0.0.0.0"})               ; throws IllegalArgumentException
 
 ;; key with default value
-(defkey port-optional [:port #(< 1023 % 65535) "Port number" {:parser u/str->int :default 3000}])
+(defkey port-optional [:port #(< 1023 % 65535) "Port number" {:parser u/str->int
+                                                              :default 3000}])
 
 ;; lookup
 (port-optional {:ip "0.0.0.0" :port "5000"})  ; returns 5000
@@ -59,10 +60,11 @@ Another example of multiple key finders:
 ```clojure
 (defkey
   ip-address    [:ip string? "Server IP"]
-  port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int :default 3000
-                                                        ;; port can be overridden by environment variable "PORT"
+  port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int
+                                                        :default 3000
+                                                        ;; environment variable "PORT" overrides config
                                                         :envvar "PORT"
-                                                        ;; port can be overridden by system property "server.port"
+                                                        ;; system property "server.port" overrides config
                                                         :sysprop "server.port"}]
   username      [:username string? "User name"]
   password      [:password string? "User password"])
@@ -140,7 +142,8 @@ values.
   {:lookup k/lookup-keypath}
   app-name  [[:app :name]     string?      "Expected string"]
   pool-size [[:pool :size]    #(< 0 % 100) "Thread-pool size (1-99)" {:parser u/str->int}]
-  trace?    [["enable.trace"] u/bool?      "Flag: Enable runtime tracing?" {:parser u/str->bool :default true}])
+  trace?    [["enable.trace"] u/bool?      "Flag: Enable runtime tracing?" {:parser u/str->bool
+                                                                            :default true}])
 
 ;; lookup
 (app-name config)  ; for config={:app {:name "the name"}} it returns "the name"
