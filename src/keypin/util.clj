@@ -8,6 +8,7 @@
 
 
 (ns keypin.util
+  "Common utility functions."
   (:refer-clojure :exclude [any?])
   (:require
     [clojure.edn     :as edn]
@@ -19,7 +20,7 @@
     [java.io              FileNotFoundException]
     [java.util            Collection List Map Properties RandomAccess Set]
     [java.util.concurrent TimeUnit]
-    [clojure.lang         Atom Named]
+    [clojure.lang         IAtom Named]
     [keypin               Logger]))
 
 
@@ -92,7 +93,7 @@
 (defn atom?
   "Return true if argument is a Clojure atom, false otherwise."
   [x]
-  (instance? Atom x))
+  (instance? IAtom x))
 
 
 ;; ===== parsing helpers =====

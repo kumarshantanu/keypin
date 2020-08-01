@@ -1,24 +1,37 @@
 # keypin
 
 [![Build Status](https://travis-ci.org/kumarshantanu/keypin.svg)](https://travis-ci.org/kumarshantanu/keypin)
+[![cljdoc badge](https://cljdoc.org/badge/keypin/keypin)](https://cljdoc.org/d/keypin/keypin)
 
 Key lookup on steroids in Clojure.
 
-#### Why Keypin?
+## Why Keypin?
 
-- Key lookup on any `clojure.lang.ILookup` or `java.util.Map` type
-  - Clojure maps
+_**Simplify code by consolidating application configuration concerns!**_
+
+**Quick pitch:** Config access code is tightly coupled to config. Why let this tight coupling spread
+all over the code base? Collect config concerns in one place, without repeating yourself, so that the
+rest of the code remains cleaner.
+
+### Features
+
+- Key lookup on any associative data structure
+  - Clojure or Java maps
   - Clojure vectors
   - `java.util.Properties` instances
+  - Custom (static or dynamic) config stores
   - Destructuring
 - Optional value parsing
 - Optional value validation
 - Fail-fast error reporting
 - Optional default value (when key is missing)
+- Optional caching for efficiency
+- Support for dynamic config store (e.g. periodic refresh)
 - Reading config files
   - Out of the box support for `.edn` and `.properties` files
   - Extensible design for other config file types (JSON, YAML etc.)
   - Read config file from filesystem and classpath (in that order)
+    - Freedom to have external config files, or shipped with application JAR
   - Chained config files (via parent key, child properties override parent)
   - Multi-parent chaining
   - Template value resolution in string values (environment variables override others)
@@ -28,7 +41,7 @@ Key lookup on steroids in Clojure.
 
 ## Usage
 
-Clojars coordinates: `[keypin "0.7.6"]`
+Clojars coordinates: `[keypin "0.8.0-SNAPSHOT"]`
 
 Requires Java 7 or higher.
 
@@ -71,7 +84,7 @@ Requires Java 7 or higher.
 
 ## License
 
-Copyright © 2015-2018 Shantanu Kumar (kumar.shantanu@gmail.com, shantanu.kumar@concur.com)
+Copyright © 2015-2020 Shantanu Kumar (kumar.shantanu@gmail.com)
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

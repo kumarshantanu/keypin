@@ -1,11 +1,27 @@
 # Introduction to keypin
 
+* [Requiring namespace](#requiring-namespace)
+* [Defining keys](#defining-keys)
+   * [Simple key finder](#simple-key-finder)
+   * [Complex key finders](#complex-key-finders)
+   * [Accessing the key](#accessing-the-key)
+   * [Key finder meta data](#key-finder-meta-data)
+   * [Specifying a key/value source](#specifying-a-keyvalue-source)
+   * [Defining key-path lookup](#defining-key-path-lookup)
+* [Reading config files](#reading-config-files)
+   * [EDN config files](#edn-config-files)
+   * [Chained config files](#chained-config-files)
+* [Dynamic config stores](#dynamic-config-stores)
+* [Caching config stores](#caching-config-stores)
+
 
 ## Requiring namespace
 
 ```clojure
-(require '[keypin.core :refer [defkey letval] :as k])
-(require '[keypin.util :as u])
+(:require
+  [keypin.core :refer [defkey letval] :as k]
+  [keypin.store :as s]
+  [keypin.util :as u])
 ```
 
 
@@ -41,7 +57,8 @@ You define key finders with some meta data as follows:
 (port {:ip "0.0.0.0"})               ; throws IllegalArgumentException
 
 ;; key with default value
-(defkey port-optional [:port #(< 1023 % 65535) "Port number" {:parser u/str->int :default 3000}])
+(defkey port-optional [:port #(< 1023 % 65535) "Port number" {:parser u/str->int
+                                                              :default 3000}])
 
 ;; lookup
 (port-optional {:ip "0.0.0.0" :port "5000"})  ; returns 5000
@@ -57,10 +74,11 @@ Another example of multiple key finders:
 ```clojure
 (defkey
   ip-address    [:ip string? "Server IP"]
-  port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int :default 3000
-                                                        ;; port can be overridden by environment variable "PORT"
+  port-optional [:port #(< 1023 % 65535) "Server port" {:parser u/str->int
+                                                        :default 3000
+                                                        ;; environment variable "PORT" overrides config
                                                         :envvar "PORT"
-                                                        ;; port can be overridden by system property "server.port"
+                                                        ;; system property "server.port" overrides config
                                                         :sysprop "server.port"}]
   username      [:username string? "User name"]
   password      [:password string? "User password"])
@@ -138,7 +156,8 @@ values.
   {:lookup k/lookup-keypath}
   app-name  [[:app :name]     string?      "Expected string"]
   pool-size [[:pool :size]    #(< 0 % 100) "Thread-pool size (1-99)" {:parser u/str->int}]
-  trace?    [["enable.trace"] u/bool?      "Flag: Enable runtime tracing?" {:parser u/str->bool :default true}])
+  trace?    [["enable.trace"] u/bool?      "Flag: Enable runtime tracing?" {:parser u/str->bool
+                                                                            :default true}])
 
 ;; lookup
 (app-name config)  ; for config={:app {:name "the name"}} it returns "the name"
@@ -229,7 +248,7 @@ log.level=debug
 ring.error.stacktrace=true
 ```
 
-In config file `config/my-conf.properties` (see the parent key `parent`):
+In config file `config/my-conf.properties` (see the parent key `parent-config`):
 
 ```properties
 parent-config=base.properties, dev.properties
@@ -246,3 +265,40 @@ Now, read it:
 ```
 
 The files `base.properties` and `dev.properties` will  be looked up in file system first, then in classpath.
+
+
+## Dynamic config stores
+
+Keypin supports dynamic config stores, wherein a fetch function is used to fetch and re-fetch the
+config map.
+
+```
+(defn fetch-config-from-redis
+  "Fetch config from Redis and return as map."
+  [old-config]
+  ...)
+
+;; create a dynamic config store that refreshes every second
+;; (see keypin.store/make-dynamic-store for details)
+;;
+(def redis-config-store (s/make-dynamic-store
+                          fetch-config-from-redis))
+
+(k-foo redis-config-store)  ; lookup key definition on the dynamic store
+```
+
+Whenever the underlying config changes, the `k-foo` call would return the latest value.
+
+
+## Caching config stores
+
+Whenever you use a key definition to lookup a key in a confg store, it is parsed and validated every time before returning the value. This unnecessary repetition is easily avoided using caching stores.
+
+```
+(def config (k/read-config ["config/my-conf.edn"]))  ; regular (static) config store
+(def caching-config (s/make-caching-store config))   ; caching config
+
+(k-foo caching-config)  ; read always from the caching config (faster)
+```
+
+You may create a caching store out of both static and dynamic stores.

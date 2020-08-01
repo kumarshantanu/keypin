@@ -2,7 +2,6 @@
 
 ## TODO
 
-- [TODO] Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
 - [TODO] Pre-lookup and post-lookup fallbacks for key definitions
 - [TODO] Mechanism to enforce EDN parsing on a string (possibly containing variable) in an EDN file
 - [Idea] EDN parser support for invocation
@@ -17,6 +16,23 @@
   - (Vec) `^append` or `^concat` - Insert after
   - (Any) `^replace` - Replace
   - (Map) `^merge`   - Merge
+
+
+## [WIP] 0.8.0 / 2020-August-??
+
+- [BREAKING CHANGE] Drop support for Clojure 1.5 and 1.6
+  - Base `keypin.util/atom?` on `clojure.lang.IAtom` interface (requires Clojure 1.7)
+- Key definition changes
+  - [BREAKING CHANGE] Change `keypin.core/make-key` arity from 4 to 1
+  - Middleware support in `keypin.core/make-key` (hence, also in `keypin.core/defkey`) via options
+    - Kwarg `:pre-xform` to transform options before creating the key-definition
+    - Kwarg `:post-xform` to transform key-definition after it is created
+- New protocol `keypin.type/IStore` represents a config store
+  - Record `keypin.type/KeyAttributes` fn call looks up a store now, instead of delegating to lookup-fn
+  - Extended to `java.util.Map` and `clojure.lang.IPersistentVector` - delegates to a lookup-fn call
+- New namespace `keypin.store` for config-store enhancements
+  - Function `keypin.store/make-caching-store` - caching store wrapper for parsed/validated values
+  - Function `keypin.store/make-dynamic-store` - dynamic/periodically refreshed config
 
 
 ## 0.7.6 / 2018-October-09

@@ -1,4 +1,4 @@
-(defproject keypin "0.7.6"
+(defproject keypin "0.8.0-SNAPSHOT"
   :description "Key lookup on steroids in Clojure"
   :url "https://github.com/kumarshantanu/keypin"
   :license {:name "Eclipse Public License"
@@ -6,18 +6,13 @@
   :min-lein-version "2.0.0"
   :java-source-paths ["java-src"]
   :global-vars {*warn-on-reflection* true
-                *assert* true}
+                *assert* true
+                *unchecked-math* :warn-on-boxed}
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
-  :profiles {:provided {:dependencies [[org.clojure/clojure "1.5.1"]]}
+  :profiles {:provided {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :dev {:dependencies [[org.clojure/tools.nrepl "0.2.12"]]}
-             :c05 {:dependencies [[org.clojure/clojure "1.5.1"]]}
-             :c06 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-             :c07 {:dependencies [[org.clojure/clojure "1.7.0"]]
-                   :global-vars {*unchecked-math* :warn-on-boxed}}
-             :c08 {:dependencies [[org.clojure/clojure "1.8.0"]]
-                   :global-vars {*unchecked-math* :warn-on-boxed}}
-             :c09 {:dependencies [[org.clojure/clojure "1.9.0"]]
-                   :global-vars {*unchecked-math* :warn-on-boxed}}
-             :c10 {:dependencies [[org.clojure/clojure "1.10.0-beta1"]]
-                   :global-vars {*unchecked-math* :warn-on-boxed}}
+             :c07 {:dependencies [[org.clojure/clojure "1.7.0"]]}
+             :c08 {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :c09 {:dependencies [[org.clojure/clojure "1.9.0"]]}
+             :c10 {:dependencies [[org.clojure/clojure "1.10.1"]]}
              :dln {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
