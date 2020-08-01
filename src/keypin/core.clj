@@ -186,11 +186,11 @@
   | Kwarg    | Description                 |
   |----------|-----------------------------|
   |`:the-key`|(Required) Key to be used for looking up value                                |
-  |`:pred`   |Validator function `(fn [value]) -> boolean` - default fn returns always true |
+  |`:pred`   |Validator function `(fn [value]) -> boolean` - default fn just returns true   |
   |`:desc`   |Description string for the config - default: `\"No description\"`             |
   |`:lookup` |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
   |`:parser` |The value parser fn `(fn [key raw-value]) -> parsed-value`, e.g. [[keypin.util/str->long]]   |
-  |`:default`|Default value to return when key is not found (unspecified implies there is no default value)|
+  |`:default`|Default value when key is not found (subject to validator, unspecified => no default value)  |
   |`:sysprop`|System property name that can override the config value (before parsing)                     |
   |`:envvar` |Environment variable that can override the config value and system property (before parsing) |
   |`:source` |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
@@ -270,11 +270,11 @@
 
   | Kwarg       | Description |
   |-------------|-------------|
-  |`:pred`      |Validator function `(fn [value]) -> boolean` - default fn returns always `true`|
+  |`:pred`      |Validator function `(fn [value]) -> boolean` - default fn just returns `true`  |
   |`:desc`      |Description string for the config - default: `\"No description\"`              |
   |`:lookup`    |Function to look the key up (details below) - default: [[lookup-key]] - ordinary key look up |
   |`:parser`    |The value parser fn `(fn [key raw-value]) -> parsed-value`, e.g. [[keypin.util/str->long]]   |
-  |`:default`   |Default value to return when key is not found (unspecified implies there is no default value)|
+  |`:default`   |Default value when key is not found (subject to validator, unspecified => no default value)  |
   |`:sysprop`   |System property name that can override the config value (before parsing)                     |
   |`:envvar`    |Environment variable that can override the config value and system property (before parsing) |
   |`:source`    |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
