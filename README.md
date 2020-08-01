@@ -41,7 +41,7 @@ rest of the code remains cleaner.
 
 ## Usage
 
-Clojars coordinates: `[keypin "0.8.0-SNAPSHOT"]`
+Clojars coordinates: `[keypin "0.8.0"]`
 
 Requires Java 7 or higher.
 
