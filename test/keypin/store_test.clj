@@ -79,11 +79,10 @@
      (is (= "10" (get cs :foo)))
      (is (= 10 (kfoo cs)))))
   (testing "Lookup actually caches"
-    (let [cs (ks/make-caching-store {:foo "10"})
-          t1 (nanos (kfoo cs))]
+    (let [^CachingStore cs (ks/make-caching-store {:foo "10"})]
+      (kfoo cs) ;; access triggers caching
       (Thread/sleep 50)
-      (dotimes [_ 5000] (kfoo cs))  ; warmup
-      (is (> t1 (nanos (kfoo cs))))))
+      (is (= 10 (get (:cache-data @(.-state-agent cs)) :foo)))))
   (testing "Underlying store changes &&&"
     (let [^DynamicStore ds (ks/make-dynamic-store (fn [_] {:foo "10"}) {:init {:foo "20"}})
           ^CachingStore cs (ks/make-caching-store ds)
