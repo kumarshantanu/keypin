@@ -99,27 +99,35 @@
 
 (defn wait-if-stale
   "Given staleness duration and refresh-wait timeout in milliseconds, return a function `(fn [state-agent])` that
-  detects stale store and waits until timeout for a refresh.
+  detects stale store and waits until timeout for a refresh - throws `java.util.concurrent.TimeoutException` by default
+  on timeout.
 
   See: [[make-dynamic-store]]"
-  [^long stale-millis ^long timeout-millis]
-  (fn [state-agent]
-    (let [^StoreState store-state @state-agent
-          tstamp (.-updated-at store-state)]
-      (when (>= (i/now-millis tstamp) stale-millis)  ; stale data?
-        (let [until-millis (unchecked-add (i/now-millis) timeout-millis)]
-          (loop []
-            (if (< (i/now-millis) until-millis)  ; not timed out yet waiting for stale->refresh
-              (when (= tstamp (.-updated-at ^StoreState @state-agent))  ; not updated?
-                (try (-> until-millis
-                       (unchecked-subtract (i/now-millis))
-                       (min 10) ; max 10ms sleep window
-                       (max 0)  ; guard against negative duration
-                       (Thread/sleep))
-                  (catch InterruptedException _))
-                (recur))
-              (throw (TimeoutException. (format "Timed out waiting for stale dynamic store %s to be refreshed"
-                                          (.-store-name store-state)))))))))))
+  ([^long stale-millis ^long timeout-millis]
+    (wait-if-stale stale-millis timeout-millis {}))
+  ([^long stale-millis ^long timeout-millis
+    {:keys [stale-timeout-handler]
+     :or {stale-timeout-handler (fn [^StoreState store-state]
+                                  (throw (TimeoutException.
+                                           (format "Timed out waiting for stale dynamic store %s to be refreshed"
+                                             (.-store-name store-state)))))}
+     :as options}]
+    (fn [state-agent]
+      (let [^StoreState store-state @state-agent
+            tstamp (.-updated-at store-state)]
+        (when (>= (i/now-millis tstamp) stale-millis)  ; stale data?
+          (let [until-millis (unchecked-add (i/now-millis) timeout-millis)]
+            (loop []
+              (if (< (i/now-millis) until-millis)  ; not timed out yet waiting for stale->refresh
+                (when (= tstamp (.-updated-at ^StoreState @state-agent))  ; not updated?
+                  (try (-> until-millis
+                         (unchecked-subtract (i/now-millis))
+                         (min 10) ; max 10ms sleep window
+                         (max 0)  ; guard against negative duration
+                         (Thread/sleep))
+                    (catch InterruptedException _))
+                  (recur))
+                (stale-timeout-handler store-state)))))))))
 
 
 (defn make-dynamic-store
