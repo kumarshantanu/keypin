@@ -20,6 +20,8 @@
 
 ## [WIP] 0.8.1 / 2020-August-??
 
+- Dynamic store
+  - Fixed: Stale store was not refreshed before lookup
 - [Todo] In `keypin.store/wait-if-stale` allow timeout-handler `:on-timeout` argument
   - [Todo] Stale millis for which it should simply wait and ignore if not updated
   - [Todo] Stale millis for which it should wait and timeout/throw if not updated

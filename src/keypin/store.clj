@@ -182,11 +182,11 @@
                                                                          :updated-at (i/now-millis)})
                                                        store-state))))
           update-data (fn []
+                        (when (fetch? @data-holder)
+                          (start-fetch))
+                        (verify-sanity data-holder)
                         (let [^StoreState store-state @data-holder
                               store-data (.-store-data store-state)]
-                          (when (fetch? store-state)
-                            (start-fetch))
-                          (verify-sanity data-holder)
                           (when (nil? store-data)
                             (throw (IllegalStateException. (format "Dynamic store %s is not yet initialized"
                                                              name-string))))
