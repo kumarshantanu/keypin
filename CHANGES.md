@@ -18,6 +18,22 @@
   - (Map) `^merge`   - Merge
 
 
+## [WIP] 0.8.1 / 2020-August-??
+
+- [Todo] In `keypin.store/wait-if-stale` allow timeout-handler `:on-timeout` argument
+  - [Todo] Stale millis for which it should simply wait and ignore if not updated
+  - [Todo] Stale millis for which it should wait and timeout/throw if not updated
+- [Todo] Fn `make-dynamic-store-options` with following options:
+  - err-ts-key
+  - fetch-interval
+  - post-error-interval
+  - stale-millis
+  - stale-timeout
+  - on-stale-timeout
+- [Todo] Write docs on implementing YAML and JSON readers
+- [Todo] Refactor Readme-Features to introduce `Key Lookup` sub-section
+
+
 ## 0.8.0 / 2020-August-01
 
 - [BREAKING CHANGE] Drop support for Clojure 1.5 and 1.6
