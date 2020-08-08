@@ -18,7 +18,6 @@
   (:import
     [java.util Date Map]
     [java.text SimpleDateFormat]
-    [java.util.concurrent TimeoutException]
     [clojure.lang Associative IDeref ILookup IPersistentCollection IPersistentMap Seqable]
     [keypin.type KeyAttributes]))
 
@@ -99,8 +98,7 @@
 
 (defn wait-if-stale
   "Given staleness duration and refresh-wait timeout in milliseconds, return a function `(fn [state-agent])` that
-  detects stale store and waits until timeout for a refresh - throws `java.util.concurrent.TimeoutException` by default
-  on timeout.
+  detects stale store and waits until timeout for a refresh - prints to `*err*` by default on timeout.
 
   See: [[make-dynamic-store]]"
   ([^long stale-millis ^long timeout-millis]
@@ -108,9 +106,10 @@
   ([^long stale-millis ^long timeout-millis
     {:keys [stale-timeout-handler]
      :or {stale-timeout-handler (fn [^StoreState store-state]
-                                  (throw (TimeoutException.
-                                           (format "Timed out waiting for stale dynamic store %s to be refreshed"
-                                             (.-store-name store-state)))))}
+                                  (binding [*out* *err*]
+                                    (println (format "Timed out waiting for stale dynamic store %s to be refreshed"
+                                               (.-store-name store-state)))
+                                    (flush)))}
      :as options}]
     (fn [state-agent]
       (let [^StoreState store-state @state-agent

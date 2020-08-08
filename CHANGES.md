@@ -22,7 +22,9 @@
 
 - Dynamic store
   - Fixed: Stale store was not refreshed before lookup
-  - Add arity in `keypin.store/wait-if-stale` to allow timeout-handler
+  - Update function `keypin.store/wait-if-stale`
+    - Add arity to pass timeout-handler as option
+    - Do not throw `TimeoutException` on refresh timeout - just print to *err* instead
   - Add utility fn `keypin.store/make-dynamic-store-options` to build dynamic store options
 - [Todo] Write docs on implementing YAML and JSON readers
 - [Todo] Refactor Readme-Features to introduce `Key Lookup` sub-section
