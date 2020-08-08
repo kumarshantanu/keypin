@@ -130,6 +130,53 @@
                 (stale-timeout-handler store-state)))))))))
 
 
+(defn make-dynamic-store-options
+  "Given following options, use pre-configured utility functions to build options for [[make-dynamic-store]].
+
+  | Kwarg                  | Description                                        | Default     |
+  |------------------------|----------------------------------------------------|-------------|
+  |`:fetch-interval-millis`|Milliseconds to wait since last fetch to fetch again|`1000`       |
+  |`:err-tstamp-millis-key`|Key for error timestamp (millis) in `StoreState`    |`:err-ts`    |
+  |`:fetch-backoff-millis` |Milliseconds to wait to fetch since last error      |`1000`       |
+  |`:stale-duration-millis`|Store-data older than this duration(millis) is stale|`5000`       |
+  |`:stale-timeout-millis` |Wait max this duration(millis) to refresh stale data|`1000`       |
+  |`:stale-timeout-handler`|`(fn [^StoreState store-state])` to call on timeout |STDERR output|
+
+  See: [[fetch-every?]], [[fetch-if-error?]], [[wait-if-stale]]"
+  ([]
+    (make-dynamic-store-options {}))
+  ([{:keys [name
+            fetch-interval-millis
+            err-tstamp-millis-key
+            fetch-backoff-millis
+            stale-duration-millis
+            stale-timeout-millis]
+     :or {name                  (gensym "dynamic-store:")
+          fetch-interval-millis 1000  ; fetch every 1 second
+          err-tstamp-millis-key :err-ts
+          fetch-backoff-millis  1000  ; fetch after minimum 1 second since error happened
+          stale-duration-millis 5000  ; older than 5 seconds store data is considered stale
+          stale-timeout-millis  1000  ; wait max 1 second for stale data to be refreshed
+          }
+     :as options}]
+    {:name          name
+     :fetch?        (let [f? (fetch-every? fetch-interval-millis)
+                          e? (fetch-if-error?
+                               err-tstamp-millis-key fetch-backoff-millis)]
+                      (fn [db] (and (f? db) (e? db))))
+     :verify-sanity (wait-if-stale stale-duration-millis stale-timeout-millis options)
+     :error-handler (fn [data-holder ^Throwable ex]
+                      (let [err-ts (i/now-millis)]
+                        (binding [*out* *err*]
+                          (printf "Error refreshing dynamic store %s at %s\n"
+                            (i/as-str name)
+                            (.format (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") (Date. err-ts)))
+                          (cs/print-stack-trace ex)
+                          (flush))
+                        (send data-holder update err-tstamp-millis-key (fn [old-err-ts]
+                                                                         (max (long (or old-err-ts 0)) err-ts)))))}))
+
+
 (defn make-dynamic-store
   "Given a fetch function `(fn [old-data]) -> new-data` that fetches a map instance, create a dynamic store that
   refreshes itself.
@@ -151,32 +198,18 @@
   ```
   (make-dynamic-store f)  ; async initialization, refresh interval 1 second
   (make-dynamic-store f {:init (f)})  ; upfront initialization, refresh interval 1 second
-  ```"
+  ```
+
+  See: [[make-dynamic-store-options]]"
   ([f]
     (make-dynamic-store f {}))
-  ([f {:keys [name
-              init
-              fetch?
-              verify-sanity
-              error-handler]
-       :or {name   (gensym "dynamic-store:")
-            fetch? (let [f? (fetch-every? 1000)  ; fetch every 1 second
-                         e? (fetch-if-error?     ; fetch after minimum 1 second if error happened
-                              :err-ts 1000)]
-                     (fn [db] (and (f? db) (e? db))))
-            verify-sanity (wait-if-stale 5000 1000)
-            error-handler (fn [data-holder ^Throwable ex]
-                            (let [err-ts (i/now-millis)]
-                              (binding [*out* *err*]
-                                (printf "Error refreshing dynamic store %s at %s\n"
-                                  (i/as-str name)
-                                  (.format (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") (Date. err-ts)))
-                                (cs/print-stack-trace ex)
-                                (flush))
-                              (send data-holder update :err-ts (fn [old-err-ts]
-                                                                 (max (long (or old-err-ts 0)) err-ts)))))}
-       :as options}]
-    (let [name-string (i/as-str name)
+  ([f options]
+    (let [{:keys [name
+                  init
+                  fetch?
+                  verify-sanity
+                  error-handler]} (conj (make-dynamic-store-options) options)
+          name-string (i/as-str name)
           data-holder (agent (map->StoreState {:store-data init
                                                :store-name name-string
                                                :updated-at (if (nil? init)
