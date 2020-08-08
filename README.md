@@ -15,18 +15,19 @@ rest of the code remains cleaner.
 
 ### Features
 
-- Key lookup on any associative data structure
-  - Clojure or Java maps
-  - Clojure vectors
-  - `java.util.Properties` instances
-  - Custom (static or dynamic) config stores
-  - Destructuring
-- Optional value parsing
-- Optional value validation
-- Fail-fast error reporting
-- Optional default value (when key is missing)
-- Optional caching for efficiency
-- Support for dynamic config store (e.g. periodic refresh)
+- Key lookup
+  - On any associative data structure
+    - Clojure or Java maps
+    - Clojure vectors
+    - `java.util.Properties` instances
+    - Custom (static or dynamic) config stores
+    - Destructuring
+  - Optional value parsing
+  - Optional value validation
+  - Fail-fast error reporting
+  - Optional default value (when key is missing)
+  - Optional caching for efficiency
+- Dynamic config store (e.g. periodic refresh, remote storage etc.)
 - Reading config files
   - Out of the box support for `.edn` and `.properties` files
   - Extensible design for other config file types (JSON, YAML etc.)
