@@ -277,14 +277,16 @@ JSON codec using [clojure.data.json](https://github.com/clojure/data.json):
 
 ```clojure
 (def json-codec (k/make-config-io "JSON" [".json"]
-                  clojure.data.json/read-str clojure.data.json/write-str))
+                  clojure.data.json/read-str
+                  clojure.data.json/write-str))
 ```
 
 JSON codec using [Cheshire](https://github.com/dakrone/cheshire):
 
 ```clojure
 (def json-codec (k/make-config-io "JSON" [".json"]
-                  cheshire.core/parse-string cheshire.core/generate-string))
+                  cheshire.core/parse-string
+                  cheshire.core/generate-string))
 ```
 
 YAML codec using [clj-yaml](https://github.com/clj-commons/clj-yaml):

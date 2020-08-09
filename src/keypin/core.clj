@@ -124,7 +124,7 @@
 
 
 (def default-config-io-codecs
-  "Default collection of ConfigIO codecs. You may update this with [[clojure.core/alter-var-root]].
+  "Default collection of `keypin.ConfigIO` codecs.
 
   See: [[read-config]], [[write-config]]"
   [property-file-io edn-file-io])
