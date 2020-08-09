@@ -29,7 +29,6 @@
 - Config I/O
   - Add `keypin.core/make-config-io` as a generic read/write utility for config files
   - Add `keypin.core/default-config-io-codecs` that users can update for other file types
-  - [Todo] Write docs on implementing YAML and JSON readers
 
 
 ## 0.8.0 / 2020-August-01
