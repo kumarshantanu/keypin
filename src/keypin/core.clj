@@ -69,30 +69,39 @@
 ;; ===== reading config files =====
 
 
-(def property-file-io
-  "Reader/writer for properties files."
-  (PropertyConfigIO.))
+(defn make-config-io
+  "Given the following arguments, create a config I/O codec.
 
+  | Argument       | Description |
+  |----------------|-------------|
+  |`name`          |A string name for the codec, e.g. \"EDN\", \"YAML\" etc.               |
+  |`file-extns`    |A vector of file extensions, e.g. [\".edn\"], [\".yaml\" \".yml\"] etc.|
+  |`string-decoder`|A `(fn [string-payload]) -> map` to decode a string payload into a map |
+  |`string-encoder`|A `(fn [map-data]) -> string-payload` to encode map data as a string   |
 
-(def edn-file-io
-  "Reader/writer for EDN files."
+  See: [[edn-file-io]]"
+  [name file-extns string-decoder string-encoder]
   (let [config-str (fn [config escape?] (->> config
                                           pr-str
                                           (u/clojurize-data (if escape?
                                                               (fn [x] (if (string? x)
                                                                         (Config/escape (Config/escape x))
                                                                         x))
-                                                              identity))))]
+                                                              identity))))
+        low-fextns (mapv string/lower-case file-extns)
+        ext-match? (fn [filename]
+                     (let [lcase-filename (string/lower-case filename)]
+                       (some #(.endsWith lcase-filename %) low-fextns)))]
     (reify ConfigIO
-      (getName     [this]             "EDN")
-      (canRead     [this filename]    (.endsWith (string/lower-case filename) ".edn"))
-      (readConfig  [this in]          (let [m (edn/read-string (slurp in))]
+      (getName     [this]             name)
+      (canRead     [this filename]    (ext-match? filename))
+      (readConfig  [this in]          (let [m (string-decoder (slurp in))]
                                         (if (map? m)
                                           m
                                           (throw (->> (pr-str (class m))
-                                                   (str "Expected EDN content to be a map, but found ")
+                                                   (format "Expected %s content to be a map, but found %s" name)
                                                    IllegalArgumentException.)))))
-      (canWrite    [this filename]    (.endsWith (string/lower-case filename) ".edn"))
+      (canWrite    [this filename]    (ext-match? filename))
       (^void
        writeConfig [this
                     ^OutputStream out
@@ -102,6 +111,23 @@
        writeConfig [this ^Writer out
                     ^Map config
                     ^boolean escape?] (spit out (config-str config escape?))))))
+
+
+(def property-file-io
+  "Reader/writer for properties files."
+  (PropertyConfigIO.))
+
+
+(def edn-file-io
+  "Reader/writer for EDN files."
+  (make-config-io "EDN" [".edn"] edn/read-string pr-str))
+
+
+(def default-config-io-codecs
+  "Default collection of ConfigIO codecs. You may update this with [[clojure.core/alter-var-root]].
+
+  See: [[read-config]], [[write-config]]"
+  [property-file-io edn-file-io])
 
 
 (defn realize-config
@@ -139,7 +165,7 @@
   (^Map [config-filenames {:keys [^String parent-key logger config-readers media-readers realize?]
                            :or {parent-key     "parent.filenames"
                                 logger         u/default-logger
-                                config-readers [property-file-io edn-file-io]
+                                config-readers default-config-io-codecs
                                 realize?       true}
                            :as options}]
     (let [mediar (or media-readers [(Config/createFilesystemReader logger)
@@ -168,7 +194,7 @@
     (write-config config-filename config {}))
   ([config-filename config {:keys [logger config-writers escape?]
                             :or {logger         u/default-logger
-                                 config-writers [property-file-io edn-file-io]
+                                 config-writers default-config-io-codecs
                                  escape?        true}
                             :as options}]
     (Config/writeConfig config-writers config-filename config escape? logger)))

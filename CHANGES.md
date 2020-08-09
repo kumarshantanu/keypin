@@ -26,7 +26,10 @@
     - Add arity to pass timeout-handler as option
     - Do not throw `TimeoutException` on refresh timeout - just print to *err* instead
   - Add utility fn `keypin.store/make-dynamic-store-options` to build dynamic store options
-- [Todo] Write docs on implementing YAML and JSON readers
+- Config I/O
+  - Add `keypin.core/make-config-io` as a generic read/write utility for config files
+  - Add `keypin.core/default-config-io-codecs` that users can update for other file types
+  - [Todo] Write docs on implementing YAML and JSON readers
 
 
 ## 0.8.0 / 2020-August-01
