@@ -9,9 +9,9 @@ Key lookup on steroids in Clojure.
 
 _**Simplify code by consolidating application configuration concerns!**_
 
-**Quick pitch:** Config access code is tightly coupled to config. Why let this tight coupling spread
-all over the code base? Collect config concerns in one place, without repeating yourself, so that the
-rest of the code remains cleaner.
+Config access code is tightly coupled to config. Why let this tight coupling spread all
+over the code base? Collect config concerns in one place, without repeating yourself,
+so that the rest of the code remains cleaner.
 
 ### Features
 
@@ -42,7 +42,7 @@ rest of the code remains cleaner.
 
 ## Usage
 
-Clojars coordinates: `[keypin "0.8.1-SNAPSHOT"]`
+Clojars coordinates: `[keypin "0.8.1"]`
 
 Requires Java 7 or higher.
 

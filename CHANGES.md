@@ -18,7 +18,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.8.1 / 2020-August-??
+## 0.8.1 / 2020-August-10
 
 - Dynamic store
   - Fix issue: Stale store was not refreshed before lookup
