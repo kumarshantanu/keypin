@@ -14,7 +14,6 @@
     [keypin.store :as ks]
     [keypin.util  :as ku])
   (:import
-    [java.util.concurrent TimeoutException]
     [keypin.store CachingStore DynamicStore]))
 
 
@@ -35,19 +34,19 @@
   (testing "Fixed store, not initialized, disabled `fetch?` fn"
     (let [fetch-fixed (constantly {:foo 10})
           fixed-store (ks/make-dynamic-store fetch-fixed {:fetch? (constantly false)})]
-      (is (thrown? TimeoutException
+      (is (thrown-with-msg? IllegalStateException #"Dynamic store .+ is not yet initialized"
             (contains? fixed-store :foo)) "timed out waiting to initialize store")
       (try (Thread/sleep 1000) (catch InterruptedException _))
-      (is (thrown? TimeoutException
+      (is (thrown-with-msg? IllegalStateException #"Dynamic store .+ is not yet initialized"
             (contains? fixed-store :foo)) "timed out waiting to update stale data")))
   ;;
   (testing "Fixed store, not initialized, fetch fn throws"
     (let [fetch-never (fn [_] (throw (Exception. "Fetch error")))
           fixed-store (ks/make-dynamic-store fetch-never)]
-      (is (thrown? TimeoutException
+      (is (thrown-with-msg? IllegalStateException #"Dynamic store .+ is not yet initialized"
             (contains? fixed-store :foo)) "recovers waiting to initialize store")
       (try (Thread/sleep 1000) (catch InterruptedException _))
-      (is (thrown? TimeoutException
+      (is (thrown-with-msg? IllegalStateException #"Dynamic store .+ is not yet initialized"
             (contains? fixed-store :foo)) "timed out waiting to update stale data")))
   (testing "Actualy dynamically fetched config"
     (let [ds (ks/make-dynamic-store (fn [_] {:foo 10}) {:init {:foo 20}})]

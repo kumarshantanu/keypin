@@ -18,6 +18,19 @@
   - (Map) `^merge`   - Merge
 
 
+## [WIP] 0.8.1 / 2020-August-??
+
+- Dynamic store
+  - Fix issue: Stale store was not refreshed before lookup
+  - Update function `keypin.store/wait-if-stale`
+    - Add arity to pass timeout-handler as option
+    - Do not throw `TimeoutException` on refresh timeout - just print to *err* instead
+  - Add utility fn `keypin.store/make-dynamic-store-options` to build dynamic store options
+- Config I/O
+  - Add `keypin.core/make-config-io` as a generic read/write utility for config files
+  - Add `keypin.core/default-config-io-codecs` that users can update for other file types
+
+
 ## 0.8.0 / 2020-August-01
 
 - [BREAKING CHANGE] Drop support for Clojure 1.5 and 1.6

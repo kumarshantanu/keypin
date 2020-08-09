@@ -11,6 +11,7 @@
 * [Reading config files](#reading-config-files)
    * [EDN config files](#edn-config-files)
    * [Chained config files](#chained-config-files)
+   * [Other file types](#other-file-types)
 * [Dynamic config stores](#dynamic-config-stores)
 * [Caching config stores](#caching-config-stores)
 
@@ -265,6 +266,42 @@ Now, read it:
 ```
 
 The files `base.properties` and `dev.properties` will  be looked up in file system first, then in classpath.
+
+
+### Other file types
+
+The `read-config` function may be used with other file types, e.g. JSON or YAML. To read other
+file types you need to create a suitable codec first.
+
+JSON codec using [clojure.data.json](https://github.com/clojure/data.json):
+
+```clojure
+(def json-codec (k/make-config-io "JSON" [".json"]
+                  clojure.data.json/read-str
+                  clojure.data.json/write-str))
+```
+
+JSON codec using [Cheshire](https://github.com/dakrone/cheshire):
+
+```clojure
+(def json-codec (k/make-config-io "JSON" [".json"]
+                  cheshire.core/parse-string
+                  cheshire.core/generate-string))
+```
+
+YAML codec using [clj-yaml](https://github.com/clj-commons/clj-yaml):
+
+```clojure
+(def yaml-codec (k/make-config-io "YAML" [".yaml" ".yml"]
+                  clj-yaml.core/parse-string
+                  clj-yaml.core/generate-string))
+```
+
+Using the codec:
+
+```clojure
+(k/read-config ["config.json"] {:config-readers [json-codec]})
+```
 
 
 ## Dynamic config stores

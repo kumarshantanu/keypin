@@ -18,7 +18,6 @@
   (:import
     [java.util Date Map]
     [java.text SimpleDateFormat]
-    [java.util.concurrent TimeoutException]
     [clojure.lang Associative IDeref ILookup IPersistentCollection IPersistentMap Seqable]
     [keypin.type KeyAttributes]))
 
@@ -99,27 +98,82 @@
 
 (defn wait-if-stale
   "Given staleness duration and refresh-wait timeout in milliseconds, return a function `(fn [state-agent])` that
-  detects stale store and waits until timeout for a refresh.
+  detects stale store and waits until timeout for a refresh - prints to `*err*` by default on timeout.
 
   See: [[make-dynamic-store]]"
-  [^long stale-millis ^long timeout-millis]
-  (fn [state-agent]
-    (let [^StoreState store-state @state-agent
-          tstamp (.-updated-at store-state)]
-      (when (>= (i/now-millis tstamp) stale-millis)  ; stale data?
-        (let [until-millis (unchecked-add (i/now-millis) timeout-millis)]
-          (loop []
-            (if (< (i/now-millis) until-millis)  ; not timed out yet waiting for stale->refresh
-              (when (= tstamp (.-updated-at ^StoreState @state-agent))  ; not updated?
-                (try (-> until-millis
-                       (unchecked-subtract (i/now-millis))
-                       (min 10) ; max 10ms sleep window
-                       (max 0)  ; guard against negative duration
-                       (Thread/sleep))
-                  (catch InterruptedException _))
-                (recur))
-              (throw (TimeoutException. (format "Timed out waiting for stale dynamic store %s to be refreshed"
-                                          (.-store-name store-state)))))))))))
+  ([^long stale-millis ^long timeout-millis]
+    (wait-if-stale stale-millis timeout-millis {}))
+  ([^long stale-millis ^long timeout-millis
+    {:keys [stale-timeout-handler]
+     :or {stale-timeout-handler (fn [^StoreState store-state]
+                                  (binding [*out* *err*]
+                                    (println (format "Timed out waiting for stale dynamic store %s to be refreshed"
+                                               (.-store-name store-state)))
+                                    (flush)))}
+     :as options}]
+    (fn [state-agent]
+      (let [^StoreState store-state @state-agent
+            tstamp (.-updated-at store-state)]
+        (when (>= (i/now-millis tstamp) stale-millis)  ; stale data?
+          (let [until-millis (unchecked-add (i/now-millis) timeout-millis)]
+            (loop []
+              (if (< (i/now-millis) until-millis)  ; not timed out yet waiting for stale->refresh
+                (when (= tstamp (.-updated-at ^StoreState @state-agent))  ; not updated?
+                  (try (-> until-millis
+                         (unchecked-subtract (i/now-millis))
+                         (min 10) ; max 10ms sleep window
+                         (max 0)  ; guard against negative duration
+                         (Thread/sleep))
+                    (catch InterruptedException _))
+                  (recur))
+                (stale-timeout-handler store-state)))))))))
+
+
+(defn make-dynamic-store-options
+  "Given following options, use pre-configured utility functions to build options for [[make-dynamic-store]].
+
+  | Kwarg                  | Description                                        | Default     |
+  |------------------------|----------------------------------------------------|-------------|
+  |`:fetch-interval-millis`|Milliseconds to wait since last fetch to fetch again|`1000`       |
+  |`:err-tstamp-millis-key`|Key for error timestamp (millis) in `StoreState`    |`:err-ts`    |
+  |`:fetch-backoff-millis` |Milliseconds to wait to fetch since last error      |`1000`       |
+  |`:stale-duration-millis`|Store-data older than this duration(millis) is stale|`5000`       |
+  |`:stale-timeout-millis` |Wait max this duration(millis) to refresh stale data|`1000`       |
+  |`:stale-timeout-handler`|`(fn [^StoreState store-state])` to call on timeout |STDERR output|
+
+  See: [[fetch-every?]], [[fetch-if-error?]], [[wait-if-stale]]"
+  ([]
+    (make-dynamic-store-options {}))
+  ([{:keys [name
+            fetch-interval-millis
+            err-tstamp-millis-key
+            fetch-backoff-millis
+            stale-duration-millis
+            stale-timeout-millis]
+     :or {name                  (gensym "dynamic-store:")
+          fetch-interval-millis 1000  ; fetch every 1 second
+          err-tstamp-millis-key :err-ts
+          fetch-backoff-millis  1000  ; fetch after minimum 1 second since error happened
+          stale-duration-millis 5000  ; older than 5 seconds store data is considered stale
+          stale-timeout-millis  1000  ; wait max 1 second for stale data to be refreshed
+          }
+     :as options}]
+    {:name          name
+     :fetch?        (let [f? (fetch-every? fetch-interval-millis)
+                          e? (fetch-if-error?
+                               err-tstamp-millis-key fetch-backoff-millis)]
+                      (fn [db] (and (f? db) (e? db))))
+     :verify-sanity (wait-if-stale stale-duration-millis stale-timeout-millis options)
+     :error-handler (fn [data-holder ^Throwable ex]
+                      (let [err-ts (i/now-millis)]
+                        (binding [*out* *err*]
+                          (printf "Error refreshing dynamic store %s at %s\n"
+                            (i/as-str name)
+                            (.format (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") (Date. err-ts)))
+                          (cs/print-stack-trace ex)
+                          (flush))
+                        (send data-holder update err-tstamp-millis-key (fn [old-err-ts]
+                                                                         (max (long (or old-err-ts 0)) err-ts)))))}))
 
 
 (defn make-dynamic-store
@@ -143,32 +197,18 @@
   ```
   (make-dynamic-store f)  ; async initialization, refresh interval 1 second
   (make-dynamic-store f {:init (f)})  ; upfront initialization, refresh interval 1 second
-  ```"
+  ```
+
+  See: [[make-dynamic-store-options]]"
   ([f]
     (make-dynamic-store f {}))
-  ([f {:keys [name
-              init
-              fetch?
-              verify-sanity
-              error-handler]
-       :or {name   (gensym "dynamic-store:")
-            fetch? (let [f? (fetch-every? 1000)  ; fetch every 1 second
-                         e? (fetch-if-error?     ; fetch after minimum 1 second if error happened
-                              :err-ts 1000)]
-                     (fn [db] (and (f? db) (e? db))))
-            verify-sanity (wait-if-stale 5000 1000)
-            error-handler (fn [data-holder ^Throwable ex]
-                            (let [err-ts (i/now-millis)]
-                              (binding [*out* *err*]
-                                (printf "Error refreshing dynamic store %s at %s\n"
-                                  (i/as-str name)
-                                  (.format (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") (Date. err-ts)))
-                                (cs/print-stack-trace ex)
-                                (flush))
-                              (send data-holder update :err-ts (fn [old-err-ts]
-                                                                 (max (long (or old-err-ts 0)) err-ts)))))}
-       :as options}]
-    (let [name-string (i/as-str name)
+  ([f options]
+    (let [{:keys [name
+                  init
+                  fetch?
+                  verify-sanity
+                  error-handler]} (conj (make-dynamic-store-options) options)
+          name-string (i/as-str name)
           data-holder (agent (map->StoreState {:store-data init
                                                :store-name name-string
                                                :updated-at (if (nil? init)
@@ -182,11 +222,11 @@
                                                                          :updated-at (i/now-millis)})
                                                        store-state))))
           update-data (fn []
+                        (when (fetch? @data-holder)
+                          (start-fetch))
+                        (verify-sanity data-holder)
                         (let [^StoreState store-state @data-holder
                               store-data (.-store-data store-state)]
-                          (when (fetch? store-state)
-                            (start-fetch))
-                          (verify-sanity data-holder)
                           (when (nil? store-data)
                             (throw (IllegalStateException. (format "Dynamic store %s is not yet initialized"
                                                              name-string))))
