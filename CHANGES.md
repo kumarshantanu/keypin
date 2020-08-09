@@ -21,7 +21,7 @@
 ## [WIP] 0.8.1 / 2020-August-??
 
 - Dynamic store
-  - Fixed: Stale store was not refreshed before lookup
+  - Fix issue: Stale store was not refreshed before lookup
   - Update function `keypin.store/wait-if-stale`
     - Add arity to pass timeout-handler as option
     - Do not throw `TimeoutException` on refresh timeout - just print to *err* instead
