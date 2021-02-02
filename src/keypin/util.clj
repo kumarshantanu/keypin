@@ -96,6 +96,12 @@
   (instance? IAtom x))
 
 
+(defn network-port?
+  "Return true if argument is an integer in valid network port number range, false otherwise."
+  [n]
+  (and (integer? n) (<= 0 n 65535)))
+
+
 ;; ===== parsing helpers =====
 
 

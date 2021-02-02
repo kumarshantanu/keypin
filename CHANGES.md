@@ -21,7 +21,7 @@
 ## [WIP] 0.8.2 / 2021-February-??
 
 - [Todo] Default metadata in `keypin.core/*vary-defkey-meta*` for use by `keypin.core/defkey`
-- [Todo] Add predicate `network-port?` for ports 0 through 65535
+- Add predicate `network-port?` for network port 0 through 65535
 
 
 ## 0.8.1 / 2020-August-10
