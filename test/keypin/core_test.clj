@@ -454,10 +454,11 @@
 (defkey
  {:cmsym-meta {:inject :app-config}
   :nfsym-meta {:foo :bar}
+  :dkvar-meta {:baz 1000}
   :pre-xform  (fn [options] (assoc options :default 100))
   :post-xform (fn [^KeyAttributes ka]
                 (assoc ka :description "New description"))}
- mw-foo [:foo integer? "Value at :foo"])
+ ^{:qux 20} mw-foo [:foo integer? "Value at :foo"])
 
 
 (deftest test-middleware
@@ -472,4 +473,8 @@
   (is (= 'not-found
         (second (fnext (:arglists (meta #'mw-foo))))) "not-found is a symbol")
   (is (= {:foo :bar}
-        (meta (second (fnext (:arglists (meta #'mw-foo)))))) "not-found meta works"))
+        (meta (second (fnext (:arglists (meta #'mw-foo)))))) "not-found meta works")
+  (is (= 1000
+        (:baz (meta #'mw-foo))) "specified defkey var meta works - added")
+  (is (= 20
+        (:qux (meta #'mw-foo))) "normal defkey var meta works - not displaced"))

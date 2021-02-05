@@ -308,6 +308,7 @@
   |`:post-xform`|Middleware function `(fn [keypin.type.KeyAttributes]) -> keypin.type.KeyAttributes`          |
   |`:cmsym-meta`|Metadata to apply to `config-map` argument symbol in the function definition, default none   |
   |`:nfsym-meta`|Metadata to apply to `not-found` argument symbol in the function definition, default none    |
+  |`:dkvar-meta`|Metadata (additive) map to apply to all key-definition var symbols, default none             |
 
   The `validator` is a predicate `(fn [parsed-value]) -> boolean` that returns `true` for valid values,
   `false` otherwise.
@@ -371,7 +372,7 @@
                                        `'([] [~cm-sym] [~cm-sym ~nf-sym]) ; ''([] [config-map] [config-map not-found])
                                        `'([~cm-sym] [~cm-sym ~nf-sym])    ; ''([config-map] [config-map not-found])
                                        )
-                             meta-fn (partial merge {:arglists arities :doc descrip})
+                             meta-fn (partial merge {:arglists arities :doc descrip} (:dkvar-meta options))
                              def-sym (vary-meta each-sym meta-fn)
                              arg-map (conj (get each-vec 3 {})
                                        {:the-key (get each-vec 0)
