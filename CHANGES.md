@@ -26,7 +26,10 @@
   - `:dkvar-meta` for key-definition var
 - Add predicate `network-port?` for network port 0 through 65535
 - Docstring formatting for Cljdoc
-- [Todo] Deprecate utility fns having equivalent in Clojure 1.9
+- Deprecate utility fns having equivalent in Clojure 1.9
+  - `keypin.util/any?`  - use `clojure.core/any?`
+  - `keypin.util/bool?` - use `clojure.core/boolean?`
+  - `keypin.util/fqvn?` - use `clojure.core/qualified-symbol?`
 
 
 ## 0.8.1 / 2020-August-10

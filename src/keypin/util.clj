@@ -43,20 +43,23 @@
 ;; ===== validators =====
 
 
-(defn any?
+(defn ^{:deprecated "0.8.2"
+        :superseded-by "clojure.core/any?"} any?
   "Dummy validator. Always return `true`. Same as `clojure.core/any?` in Clojure 1.9+."
   [_]
   true)
 
 
-(defn bool?
+(defn ^{:deprecated "0.8.2"
+        :superseded-by "clojure.core/boolean?"} bool?
   "Return `true` if the argument is of boolean type, `false` otherwise.
   Same as `clojure.core/boolean?` in Clojure 1.9+."
   [x]
   (instance? Boolean x))
 
 
-(defn fqvn?
+(defn ^{:deprecated "0.8.2"
+        :superseded-by "clojure.core/qualified-symbol?"} fqvn?
   "Return `true` if the argument has the 'syntax' of a fully qualified var name, `false` otherwise.
   Similar (except string) to `clojure.core/qualified-symbol?` in Clojure 1.9+."
   [x]

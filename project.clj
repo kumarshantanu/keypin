@@ -15,4 +15,5 @@
              :c08 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :c09 {:dependencies [[org.clojure/clojure "1.9.0"]]}
              :c10 {:dependencies [[org.clojure/clojure "1.10.2"]]}
-             :dln {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+             :dln {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}
+  :aliases {"clj-test" ["with-profile" "c07:c08:c09:c10" "test"]})
