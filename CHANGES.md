@@ -21,8 +21,8 @@
 ## [WIP] 0.8.2 / 2021-February-??
 
 - Add `keypin.core/defkey` option kwargs to attach metadata
-  - `:cmsym-meta` for argument `config-map`
-  - `:nfsym-meta` for argument `not-found`
+  - `:cmarg-meta` for argument `config-map`
+  - `:nfarg-meta` for argument `not-found`
   - `:dkvar-meta` for key-definition var
 - Add predicate `network-port?` for network port 0 through 65535
 - [Todo] Docstring formatting for Cljdoc

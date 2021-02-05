@@ -306,8 +306,8 @@
   |`:source`    |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
   |`:pre-xform` |Middleware function `(fn [option-map]) -> option-map` used before key definition is created  |
   |`:post-xform`|Middleware function `(fn [keypin.type.KeyAttributes]) -> keypin.type.KeyAttributes`          |
-  |`:cmsym-meta`|Metadata to apply to `config-map` argument symbol in the function definition, default none   |
-  |`:nfsym-meta`|Metadata to apply to `not-found` argument symbol in the function definition, default none    |
+  |`:cmarg-meta`|Metadata map to apply to `config-map` argument in the function definition, default none      |
+  |`:nfarg-meta`|Metadata map to apply to `not-found` argument in the function definition, default none       |
   |`:dkvar-meta`|Metadata (additive) map to apply to all key-definition var symbols, default none             |
 
   The `validator` is a predicate `(fn [parsed-value]) -> boolean` that returns `true` for valid values,
@@ -366,8 +366,8 @@
                 (map (fn [[each-sym [the-key validator descrip options :as each-vec]]]
                        (let [;; descrip (nth each-vec 2 "No description")
                              ;; options (nth each-vec 3 {})  ; 4th element is option map
-                             cm-sym  (with-meta 'config-map (:cmsym-meta options))
-                             nf-sym  (with-meta 'not-found (:nfsym-meta options))
+                             cm-sym  (with-meta 'config-map (:cmarg-meta options))
+                             nf-sym  (with-meta 'not-found (:nfarg-meta options))
                              arities (if (:source options)
                                        `'([] [~cm-sym] [~cm-sym ~nf-sym]) ; ''([] [config-map] [config-map not-found])
                                        `'([~cm-sym] [~cm-sym ~nf-sym])    ; ''([config-map] [config-map not-found])

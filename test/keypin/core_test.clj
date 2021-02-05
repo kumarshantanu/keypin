@@ -452,8 +452,8 @@
 
 
 (defkey
- {:cmsym-meta {:inject :app-config}
-  :nfsym-meta {:foo :bar}
+ {:cmarg-meta {:inject :app-config}
+  :nfarg-meta {:foo :bar}
   :dkvar-meta {:baz 1000}
   :pre-xform  (fn [options] (assoc options :default 100))
   :post-xform (fn [^KeyAttributes ka]
