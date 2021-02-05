@@ -25,7 +25,8 @@
   - `:nfarg-meta` for argument `not-found`
   - `:dkvar-meta` for key-definition var
 - Add predicate `network-port?` for network port 0 through 65535
-- [Todo] Docstring formatting for Cljdoc
+- Docstring formatting for Cljdoc
+- [Todo] Deprecate utility fns having equivalent in Clojure 1.9
 
 
 ## 0.8.1 / 2020-August-10
