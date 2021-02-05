@@ -452,13 +452,24 @@
 
 
 (defkey
-  {:pre-xform  (fn [options] (assoc options :default 100))
-   :post-xform (fn [^KeyAttributes ka]
-                 (assoc ka :description "New description"))}
-  mw-foo [:foo integer? "Value at :foo"])
+ {:cmsym-meta {:inject :app-config}
+  :nfsym-meta {:foo :bar}
+  :pre-xform  (fn [options] (assoc options :default 100))
+  :post-xform (fn [^KeyAttributes ka]
+                (assoc ka :description "New description"))}
+ mw-foo [:foo integer? "Value at :foo"])
 
 
 (deftest test-middleware
-  (is (= 20 (mw-foo {:foo 20})))
-  (is (= 100 (mw-foo {})))
-  (is (= "New description" (:description mw-foo))))
+  (is (= 20 (mw-foo {:foo 20})) "normal case, i.e. no impact by pre/post processors")
+  (is (= 100 (mw-foo {}))       "default is added by pre-processor")
+  (is (= "New description"
+        (:description mw-foo))  "description added by post-processor")
+  (is (= 'config-map
+        (ffirst (:arglists (meta #'mw-foo)))) "config-map is a symbol")
+  (is (= {:inject :app-config}
+        (meta (ffirst (:arglists (meta #'mw-foo))))) "config-map meta works")
+  (is (= 'not-found
+        (second (fnext (:arglists (meta #'mw-foo))))) "not-found is a symbol")
+  (is (= {:foo :bar}
+        (meta (second (fnext (:arglists (meta #'mw-foo)))))) "not-found meta works"))
