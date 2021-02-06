@@ -18,6 +18,20 @@
   - (Map) `^merge`   - Merge
 
 
+## [WIP] 0.8.2 / 2021-February-??
+
+- Add `keypin.core/defkey` option kwargs to attach metadata
+  - `:cmarg-meta` for argument `config-map`
+  - `:nfarg-meta` for argument `not-found`
+  - `:dkvar-meta` for key-definition var
+- Add predicate `network-port?` for network port 0 through 65535
+- Docstring formatting for Cljdoc
+- Deprecate utility fns having equivalent in Clojure 1.9
+  - `keypin.util/any?`  - use `clojure.core/any?`
+  - `keypin.util/bool?` - use `clojure.core/boolean?`
+  - `keypin.util/fqvn?` - use `clojure.core/qualified-symbol?`
+
+
 ## 0.8.1 / 2020-August-10
 
 - Dynamic store

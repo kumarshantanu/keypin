@@ -452,13 +452,29 @@
 
 
 (defkey
-  {:pre-xform  (fn [options] (assoc options :default 100))
-   :post-xform (fn [^KeyAttributes ka]
-                 (assoc ka :description "New description"))}
-  mw-foo [:foo integer? "Value at :foo"])
+ {:cmarg-meta {:inject :app-config}
+  :nfarg-meta {:foo :bar}
+  :dkvar-meta {:baz 1000}
+  :pre-xform  (fn [options] (assoc options :default 100))
+  :post-xform (fn [^KeyAttributes ka]
+                (assoc ka :description "New description"))}
+ ^{:qux 20} mw-foo [:foo integer? "Value at :foo"])
 
 
 (deftest test-middleware
-  (is (= 20 (mw-foo {:foo 20})))
-  (is (= 100 (mw-foo {})))
-  (is (= "New description" (:description mw-foo))))
+  (is (= 20 (mw-foo {:foo 20})) "normal case, i.e. no impact by pre/post processors")
+  (is (= 100 (mw-foo {}))       "default is added by pre-processor")
+  (is (= "New description"
+        (:description mw-foo))  "description added by post-processor")
+  (is (= 'config-map
+        (ffirst (:arglists (meta #'mw-foo)))) "ensure config-map argument")
+  (is (= {:inject :app-config}
+        (meta (ffirst (:arglists (meta #'mw-foo))))) "config-map meta works")
+  (is (= 'not-found
+        (second (fnext (:arglists (meta #'mw-foo))))) "ensure not-found argument")
+  (is (= {:foo :bar}
+        (meta (second (fnext (:arglists (meta #'mw-foo)))))) "not-found meta works")
+  (is (= 1000
+        (:baz (meta #'mw-foo))) "specified defkey var meta works - added")
+  (is (= 20
+        (:qux (meta #'mw-foo))) "normal defkey var meta works - not displaced"))

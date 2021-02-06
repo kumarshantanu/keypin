@@ -42,9 +42,9 @@ so that the rest of the code remains cleaner.
 
 ## Usage
 
-Clojars coordinates: `[keypin "0.8.1"]`
+Clojars coordinates: `[keypin "0.8.2-SNAPSHOT"]`
 
-Requires Java 7 or higher.
+Requires Java 7 or higher, Clojure 1.7 or higher.
 
 
 ### Quick start
@@ -85,7 +85,7 @@ Requires Java 7 or higher.
 
 ## License
 
-Copyright © 2015-2020 Shantanu Kumar (kumar.shantanu@gmail.com)
+Copyright © 2015-2021 Shantanu Kumar
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

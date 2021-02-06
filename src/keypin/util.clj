@@ -28,7 +28,7 @@
 
 
 (defn make-logger
-  "Make a logger instance from info-logger (fn [info-msg]) and error-logger (fn [error-msg])."
+  "Make a logger instance from info-logger `(fn [info-msg])` and error-logger `(fn [error-msg])`."
   [info-logger error-logger]
   (reify Logger
     (info [this msg] (info-logger msg))
@@ -43,20 +43,25 @@
 ;; ===== validators =====
 
 
-(defn any?
-  "Dummy validator. Always return true. Same as clojure.core/any? in Clojure 1.9+."
+(defn ^{:deprecated "0.8.2"
+        :superseded-by "clojure.core/any?"} any?
+  "Dummy validator. Always return `true`. Same as `clojure.core/any?` in Clojure 1.9+."
   [_]
   true)
 
 
-(defn bool?
-  "Return true if the argument is of boolean type, false otherwise."
+(defn ^{:deprecated "0.8.2"
+        :superseded-by "clojure.core/boolean?"} bool?
+  "Return `true` if the argument is of boolean type, `false` otherwise.
+  Same as `clojure.core/boolean?` in Clojure 1.9+."
   [x]
   (instance? Boolean x))
 
 
-(defn fqvn?
-  "Return true if the argument has the 'syntax' of a fully qualified var name, false otherwise."
+(defn ^{:deprecated "0.8.2"
+        :superseded-by "clojure.core/qualified-symbol?"} fqvn?
+  "Return `true` if the argument has the 'syntax' of a fully qualified var name, `false` otherwise.
+  Similar (except string) to `clojure.core/qualified-symbol?` in Clojure 1.9+."
   [x]
   (and (or (symbol? x)
          (string? x))
@@ -84,16 +89,22 @@
 
 
 (defn duration?
-  "Return true if the argument is a duration, false otherwise."
+  "Return `true` if the argument is a duration, `false` otherwise."
   [x]
   (and (satisfies? t/IDuration x)
     (t/duration? x)))
 
 
 (defn atom?
-  "Return true if argument is a Clojure atom, false otherwise."
+  "Return `true` if argument is a Clojure atom, false otherwise."
   [x]
   (instance? IAtom x))
+
+
+(defn network-port?
+  "Return `true` if argument is an integer in valid network port number range, `false` otherwise."
+  [n]
+  (and (integer? n) (<= 0 n 65535)))
 
 
 ;; ===== parsing helpers =====
@@ -125,19 +136,20 @@
 
 
 (defn clojurize-subst
-  "Variable substitution for EDN data. Symbols and keywords starting with '$' (e.g. $foo.bar or :$foo.bar) are
+  "Variable substitution for EDN data. Symbols and keywords starting with `$` (e.g. `$foo.bar` or `:$foo.bar`) are
   looked up and substituted by their respective values as follows:
-  Variable   Description       Lookup as
-  --------   -----------       ---------
-  $foo.bar   Symbol variable   \"foo.bar\"
-  $:foo.bar  Keyword variable  :foo.bar
-  :$foo.bar  Keyword variable  :foo.bar
-  $$foo.bar  Escaped variable  -- (not substituted)
-  :$$foo.bar Escaped variable  -- (not substituted)
+
+  |Variable    |Description     | Lookup as          |
+  |------------|----------------|--------------------|
+  |`$foo.bar`  |Symbol variable |`\"foo.bar\"`       |
+  |`$:foo.bar` |Keyword variable|`:foo.bar`          |
+  |`:$foo.bar` |Keyword variable|`:foo.bar`          |
+  |`$$foo.bar` |Escaped variable|-- (not substituted)|
+  |`:$$foo.bar`|Escaped variable|-- (not substituted)|
 
   Note:
-  1. Missing variables cause IllegalArgumentException to be thrown.
-  2. You can escape the variable marker '$' using '$$' (interpreted as '$') to avoid substitution."
+  1. Missing variables cause `IllegalArgumentException` to be thrown.
+  2. You can escape the variable marker `$` using `$$` (interpreted as `$`) to avoid substitution."
   ([data]
     (clojurize-subst data data))
   ([lookup data]
@@ -193,7 +205,7 @@
 
 
 (defn comp-parser
-  "Compose multiple parsers (where parser is arity-2 fn accepting key and parseable value) into one. Composition is
+  "Compose multiple parsers (where parser is `(fn [key parseable-value]) -> parsed-value`) into one. Composition is
   applied right-to-left, as in `clojure.core/comp`."
   [& parsers]
   (if (seq parsers)
@@ -258,7 +270,7 @@
 
 
 (defn str->var
-  "Given a fully qualified var name (eg. 'com.example.foo/bar'), resolve the var and return it."
+  "Given a fully qualified var name (eg. `com.example.foo/bar`), resolve the var and return it."
   [the-key fq-var-name]
   (if (var? fq-var-name)
     fq-var-name
@@ -283,13 +295,13 @@
 
 
 (defn str->var->deref
-  "Given a fully qualified var name (eg. 'com.example.foo/bar'), resolve the var, deref it and return the value."
+  "Given a fully qualified var name (eg. `com.example.foo/bar`), resolve the var, deref it and return the value."
   [the-key fq-var-name]
   (deref (str->var the-key fq-var-name)))
 
 
 (defn str->fn
-  "Given a fully qualified var name (eg. 'com.example.foo/add-item'), resolve the var, deref it and return the value
+  "Given a fully qualified var name (eg. `com.example.foo/add-item`), resolve the var, deref it and return the value
   assuming it is a function."
   [the-key fq-var-name]
   (cond
@@ -299,7 +311,7 @@
 
 
 (defn str->time-unit
-  "Given a time unit string, resolve it as java.util.concurrent.TimeUnit instance."
+  "Given a time unit string, resolve it as `java.util.concurrent.TimeUnit` instance."
   ^TimeUnit [the-key unit-str]
   (or (impl/resolve-time-unit unit-str)
     (i/expected
@@ -312,7 +324,7 @@
 
 
 (defn str->duration
-  "Given a duration string, parse it as a vector [long java.util.concurrent.TimeUnit] and return it."
+  "Given a duration string, parse it as a vector `[long java.util.concurrent.TimeUnit]` and return it."
   [the-key duration-str]
   (if-let [[_ strnum unit] (re-matches #"([0-9]+)\s*([a-zA-Z]+)" duration-str)]
     (try
@@ -323,8 +335,8 @@
 
 
 (defn regex->tokenizer
-  "Given a regex, return a fn that tokenizes a text. Each token can be processed using an optional arity-1 fn, which
-  by default trims the tokens."
+  "Given a regex, return a `(fn [text]) -> tokens` that tokenizes a text. Each token can be processed using an optional
+  `(fn [token])`, which by default trims the tokens."
   ([token-processor regex]
     (fn [text]
       (let [tokens (string/split text regex)]
@@ -347,8 +359,10 @@
 (defn str->vec
   "Given a delimited text, tokenize it and return a vector of tokens. By default, the delimiter is a comma.
   Example:
+  ```
   => (str->vec :foo \"a, b, c\")
-  [\"a\" \"b\" \"c\"]"
+  [\"a\" \"b\" \"c\"]
+  ```"
   ([tokenizer the-key text]
     (str->coll tokenizer identity the-key text))
   ([the-key text]
@@ -359,8 +373,10 @@
   "Given a delimted text, where each token is a delimited pair text, tokenize it and return a map of tokens. By default,
   the pair delimiter is a comma and the key-value delimiter is a colon.
   Example:
+  ```
   => (str->map :foo \"a: 10, b: 20, c: 30\")
-  {\"a\" \"10\" \"b\" \"20\" \"c\" \"30\"}"
+  {\"a\" \"10\" \"b\" \"20\" \"c\" \"30\"}
+  ```"
   ([pair-tokenizer kv-tokenizer the-key text]
     (str->coll
       pair-tokenizer
@@ -386,10 +402,12 @@
   "Given a delimited text, where each token is again a delimited text, tokenize it and return a vector of nested
   vectors of tokens. By default, the outer delimiter is a comma and the inner delimiter is a colon.
   Example:
+  ```
   => (str->nested :foo \"joe: 30: male, sue: 35: female, max: 40: male\")
   [[\"joe\" \"30\" \"male\"]
    [\"sue\" \"35\" \"female\"]
-   [\"max\" \"40\" \"male\"]]"
+   [\"max\" \"40\" \"male\"]]
+  ```"
   ([outer-tokenizer inner-tokenizer the-key text]
     (str->coll
       outer-tokenizer
@@ -404,10 +422,12 @@
   "Given a delimited text, where each token is again a delimited text, tokenize it and return a vector of maps. By
   default, the outer delimiter is a comma and the inner delimiter is a colon.
   Example:
+  ```
   => (str->tuples [:name :age :gender] :foo \"joe: 30: male, sue: 35: female, max: 40: male\")
   [{:name \"joe\" :age \"30\" :gender \"male\"}
    {:name \"sue\" :age \"35\" :gender \"female\"}
-   {:name \"max\" :age \"40\" :gender \"male\"}]"
+   {:name \"max\" :age \"40\" :gender \"male\"}]
+  ```"
   ([outer-tokenizer inner-tokenizer ks the-key text]
     (->> (str->nested outer-tokenizer inner-tokenizer the-key text)
       (mapv #(zipmap ks %))))
@@ -436,7 +456,7 @@
 
 (defn str->any
   "Given a predicate fn and a string parser fn, return a parser fn that parses the value only when the predicate fn
-  return false and the value is a string."
+  returns `false` and the value is a string."
   [pred str-parser expected-msg]
   (fn [the-key x]
     (cond
@@ -448,7 +468,7 @@
 
 (defn symstr->any
   "Given a predicate fn and a string parser fn, return a parser fn that parses the value only when the predicate fn
-  return false and the value is a string or symbol."
+  returns `false` and the value is a string or symbol."
   [pred str-parser expected-msg]
   (fn [the-key x]
     (cond
@@ -460,42 +480,42 @@
 
 
 (def any->bool
-  "Like str->bool, except parsing is avoided if value is already a boolean."
+  "Like [[str->bool]], except parsing is avoided if value is already a boolean."
   (str->any bool?    str->bool   "a boolean or a parseable string (as boolean)"))
 
 
 (def any->int
-  "Like str->int, except parsing is avoided if value is already an integer."
+  "Like [[str->int]], except parsing is avoided if value is already an integer."
   (str->any integer? str->int    "an integer or a parseable string (as integer)"))
 
 
 (def any->long
-  "Like str->long, except parsing is avoided if value is already a long integer."
+  "Like [[str->long]], except parsing is avoided if value is already a long integer."
   (str->any integer? str->long   "a long int or a parseable string (as long int)"))
 
 
 (def any->float
-  "Like str->float, except parsing is avoided if value is already a floating point number."
+  "Like [[str->float]], except parsing is avoided if value is already a floating point number."
   (str->any float?   str->float  "a float or a parseable string (as float)"))
 
 
 (def any->double
-  "Like str->double, except parsing is avoided if value is already a double precision number."
+  "Like [[str->double]], except parsing is avoided if value is already a double precision number."
   (str->any float?   str->double "a double precision or a parseable string (as double precision)"))
 
 
 (def any->var
-  "Like str->var, except parsing is avoided if value is already a var."
+  "Like [[str->var]], except parsing is avoided if value is already a var."
   (symstr->any var?  str->var    "a var or a fully qualified var name in format foo.bar/baz"))
 
 
 (def any->var->deref
-  "Like str->var->deref, except parsing is avoided if value is already a var (which is deref'ed before returning)."
+  "Like [[str->var->deref]], except parsing is avoided if value is already a var (which is deref'ed before returning)."
   (comp deref (symstr->any var? str->var "a var or a fully qualified var name in format foo.bar/baz")))
 
 
 (defn any->time-unit
-  "Like str->time-unit, except it accepts java.util.concurrent.TimeUnit/string/keyword as time-unit."
+  "Like [[str->time-unit]], except it accepts `java.util.concurrent.TimeUnit`/string/keyword as time-unit."
   [the-key time-unit]
   (cond
     (instance? TimeUnit
@@ -509,7 +529,7 @@
 
 
 (defn any->duration
-  "Like str->duration, except it accepts [long-int java.util.concurrent.TimeUnit/string/keyword] too."
+  "Like [[str->duration]], except it accepts `[long-int java.util.concurrent.TimeUnit/string/keyword]` too."
   [the-key duration]
   (if (string? duration)
     (str->duration the-key duration)
@@ -524,23 +544,23 @@
 
 
 (def any->vec
-  "Like str->vec, except parsing is avoided if value is already a vector."
+  "Like [[str->vec]], except parsing is avoided if value is already a vector."
   (str->any vector?  str->vec    "a vector or a comma delimited string"))
 
 
 (def any->map
-  "Like str->map, except parsing is avoided if value is already a map."
+  "Like [[str->map]], except parsing is avoided if value is already a map."
   (str->any map?     str->map "a map or a comma delimited string (each token colon-delimited pair)"))
 
 
 (def any->nested
-  "Like str->nested, except parsing is avoided if value is already a vector of nested vectors."
+  "Like [[str->nested]], except parsing is avoided if value is already a vector of nested vectors."
   (str->any #(and (vector? %) (every? vector? %))
     str->nested "a vector of vectors, or comma delimited string (each token colon-delimited text)"))
 
 
 (defn any->tuples
-  "Like str->tuples, except parsing is avoided if value is already tuples."
+  "Like [[str->tuples]], except parsing is avoided if value is already tuples."
   [ks the-key value]
   (cond
     (and (vector? value)
@@ -551,7 +571,7 @@
 
 
 (defn any->edn
-  "Like str->edn, except parsing is avoided if value is already non-string."
+  "Like [[str->edn]], except parsing is avoided if value is already non-string."
   ([the-key value]
     (if (string? value)
       (str->edn the-key value)

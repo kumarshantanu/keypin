@@ -306,6 +306,9 @@
   |`:source`    |Source or container (of reference type, e.g. atom/agent/promise etc.) of key/value pairs     |
   |`:pre-xform` |Middleware function `(fn [option-map]) -> option-map` used before key definition is created  |
   |`:post-xform`|Middleware function `(fn [keypin.type.KeyAttributes]) -> keypin.type.KeyAttributes`          |
+  |`:cmarg-meta`|Metadata map to apply to `config-map` argument in the function definition, default none      |
+  |`:nfarg-meta`|Metadata map to apply to `not-found` argument in the function definition, default none       |
+  |`:dkvar-meta`|Metadata (additive) map to apply to all key-definition var symbols, default none             |
 
   The `validator` is a predicate `(fn [parsed-value]) -> boolean` that returns `true` for valid values,
   `false` otherwise.
@@ -363,10 +366,12 @@
                 (map (fn [[each-sym [the-key validator descrip options :as each-vec]]]
                        (let [;; descrip (nth each-vec 2 "No description")
                              ;; options (nth each-vec 3 {})  ; 4th element is option map
+                             cm-sym  (with-meta 'config-map (:cmarg-meta options))
+                             nf-sym  (with-meta 'not-found (:nfarg-meta options))
                              arities (if (:source options)
-                                       ''([] [config-map] [config-map not-found])
-                                       ''([config-map] [config-map not-found]))
-                             meta-fn (partial merge {:arglists arities :doc descrip})
+                                       `'([] [~cm-sym] [~cm-sym ~nf-sym])
+                                       `'([~cm-sym] [~cm-sym ~nf-sym]))
+                             meta-fn (partial merge {:arglists arities :doc descrip} (:dkvar-meta options))
                              def-sym (vary-meta each-sym meta-fn)
                              arg-map (conj (get each-vec 3 {})
                                        {:the-key (get each-vec 0)
