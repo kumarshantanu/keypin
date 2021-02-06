@@ -467,11 +467,11 @@
   (is (= "New description"
         (:description mw-foo))  "description added by post-processor")
   (is (= 'config-map
-        (ffirst (:arglists (meta #'mw-foo)))) "config-map is a symbol")
+        (ffirst (:arglists (meta #'mw-foo)))) "ensure config-map argument")
   (is (= {:inject :app-config}
         (meta (ffirst (:arglists (meta #'mw-foo))))) "config-map meta works")
   (is (= 'not-found
-        (second (fnext (:arglists (meta #'mw-foo))))) "not-found is a symbol")
+        (second (fnext (:arglists (meta #'mw-foo))))) "ensure not-found argument")
   (is (= {:foo :bar}
         (meta (second (fnext (:arglists (meta #'mw-foo)))))) "not-found meta works")
   (is (= 1000
