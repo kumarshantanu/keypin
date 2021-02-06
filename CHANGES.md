@@ -18,7 +18,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.8.2 / 2021-February-??
+## 0.8.2 / 2021-February-06
 
 - Add `keypin.core/defkey` option kwargs to attach metadata
   - `:cmarg-meta` for argument `config-map`
