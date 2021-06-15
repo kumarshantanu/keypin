@@ -18,6 +18,18 @@
   - (Map) `^merge`   - Merge
 
 
+## [WIP] 0.8.3 / 2021-June-??
+
+- [Todo] Support for EDN data readers
+- [Todo] Keypin data readers
+  - `env`
+  - `var`
+  - `var-deref`
+  - `time-unit`
+  - `duration`
+  - `or`
+
+
 ## 0.8.2 / 2021-February-06
 
 - Add `keypin.core/defkey` option kwargs to attach metadata

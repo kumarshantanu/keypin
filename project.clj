@@ -1,4 +1,4 @@
-(defproject keypin "0.8.2"
+(defproject keypin "0.8.3-SNAPSHOT"
   :description "Key lookup on steroids in Clojure"
   :url "https://github.com/kumarshantanu/keypin"
   :license {:name "Eclipse Public License"
@@ -14,6 +14,6 @@
              :c07 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :c08 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :c09 {:dependencies [[org.clojure/clojure "1.9.0"]]}
-             :c10 {:dependencies [[org.clojure/clojure "1.10.2"]]}
+             :c10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
              :dln {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}
   :aliases {"clj-test" ["with-profile" "c07:c08:c09:c10" "test"]})
