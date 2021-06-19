@@ -591,20 +591,24 @@
   exception as a side effect.
   Caution: The data readers are applied when the EDN file is first read,
   disallowing any notion of late binding."
-  {'env  (fn [env-var] (System/getenv (str env-var)))
+  {;; --- environment variable lookup ---
+   ;; e.g. #env APP_VERSION
+   'env  (fn [env-var] (System/getenv (str env-var)))
    'env! (fn [env-var] (let [^String str-var (str env-var)]
                          (-> (System/getenv str-var)
                            (or (throw (-> "Environment variable `%s` is not set"
                                         (format str-var)
                                         (ex-info {:env-var str-var})))))))
+   ;; --- string concatenation ---
    'join (fn [vs]
            (i/expected vector? "a vector of arguments (for `join` data-reader)" vs)
            (string/join vs))
+   ;; --- first non-nil element ---
    'some (fn [vs]
            (i/expected vector? "a vector of arguments (for `some` data-reader)" vs)
            (some identity vs))
-   ;; --- lookup ---
-   ;; ref    ; #ref :foo/bar
-   ;;        ; #ref [:foo/bar :db :threads]
-   ;; ref!   ; throws on not found
+   ;; --- reference lookup ---
+   ;; e.g. #ref :foo/bar, #ref [:foo/bar :db :threads]
+   'ref  (fn [vs] (t/->Ref (if (coll? vs) vs [vs]) false))
+   'ref! (fn [vs] (t/->Ref (if (coll? vs) vs [vs]) true)) ; throws on not found
    })

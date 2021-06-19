@@ -10,6 +10,7 @@
 (ns keypin.util-test
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is testing]]
+            [keypin.type :as kt]
             [keypin.util :as ku])
   (:import (clojure.lang ExceptionInfo)))
 
@@ -49,4 +50,22 @@
     (is (string?
           (-> {:readers ku/data-readers}
             (edn/read-string "{:foo #some [#env foo #env LEIN_VERSION]}")
+            (get :foo)))))
+  (testing "ref"
+    (is (= (kt/->Ref [:bar] false)
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #ref :bar}")
+            (get :foo))))
+    (is (= (kt/->Ref [:bar :baz] false)
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #ref [:bar :baz]}")
+            (get :foo)))))
+  (testing "ref!"
+    (is (= (kt/->Ref [:bar] true)
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #ref! :bar}")
+            (get :foo))))
+    (is (= (kt/->Ref [:bar :baz] true)
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #ref! [:bar :baz]}")
             (get :foo))))))

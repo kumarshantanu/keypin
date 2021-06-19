@@ -27,8 +27,8 @@
 
   - Use data readers by default in `keypin.core/edn-file-io`
 - [Todo] Add support for lazy (late binding) references
-  - [Todo] New type `keypin.type.Ref`
-  - [Todo] Data readers `ref`, `ref!` - define key/path references
+  - New type `keypin.type.Ref`
+  - Data readers `ref`, `ref!` - define key/path references
   - [Todo] Augment `:parser` kwarg in `keypin.core/make-key`
     - Auto-resolve key/path references
     - Impacts `keypin.core/defkey`
