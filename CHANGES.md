@@ -20,14 +20,15 @@
 
 ## [WIP] 0.8.3 / 2021-June-??
 
-- [Todo] Support for EDN data readers
-- [Todo] Keypin data readers
-  - `env`
-  - `var`
-  - `var-deref`
-  - `time-unit`
-  - `duration`
-  - `or`
+- Add Keypin EDN data readers at `keypin.util/data-readers`
+  - `env`, `env!` - to read environment variables
+  - `join` - concatenate string tokens together
+  - `some` - fallback on alternate non-nil values
+  - [Todo] `ref`, `ref!`
+- [Todo] Use data readers by default
+- [Todo] Add `keypin.core/defkey` option kwarg to specify pre-parser
+  - `:pre-parser`
+- [Todo] Add `pre-parser` kwarg to `defkey` and `make-key`
 
 
 ## 0.8.2 / 2021-February-06

@@ -581,3 +581,30 @@
       (when-not (pred v)
         (i/expected pred (str expectation " for key " (pr-str the-key)) v))
       v)))
+
+
+;; --- data readers ---
+
+
+(def data-readers
+  "Default data readers for EDN files. Reader-names ending in `!` may throw
+  exception as a side effect.
+  Caution: The data readers are applied when the EDN file is first read,
+  disallowing any notion of late binding."
+  {'env  (fn [env-var] (System/getenv (str env-var)))
+   'env! (fn [env-var] (let [^String str-var (str env-var)]
+                         (-> (System/getenv str-var)
+                           (or (throw (-> "Environment variable `%s` is not set"
+                                        (format str-var)
+                                        (ex-info {:env-var str-var})))))))
+   'join (fn [vs]
+           (i/expected vector? "a vector of arguments (for `join` data-reader)" vs)
+           (string/join vs))
+   'some (fn [vs]
+           (i/expected vector? "a vector of arguments (for `some` data-reader)" vs)
+           (some identity vs))
+   ;; --- lookup ---
+   ;; ref    ; #ref :foo/bar
+   ;;        ; #ref [:foo/bar :db :threads]
+   ;; ref!   ; throws on not found
+   })
