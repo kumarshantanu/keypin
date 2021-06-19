@@ -24,11 +24,18 @@
   - `env`, `env!` - to read environment variables
   - `join` - concatenate string tokens together
   - `some` - fallback on alternate non-nil values
-  - [Todo] `ref`, `ref!`
-- [Todo] Use data readers by default
-- [Todo] Add `keypin.core/defkey` option kwarg to specify pre-parser
-  - `:pre-parser`
-- [Todo] Add `pre-parser` kwarg to `defkey` and `make-key`
+
+  - Use data readers by default in `keypin.core/edn-file-io`
+- [Todo] Add support for lazy (late binding) references
+  - [Todo] New type `keypin.type.Ref`
+  - [Todo] Data readers `ref`, `ref!` - define key/path references
+  - [Todo] Augment `:parser` kwarg in `keypin.core/make-key`
+    - Auto-resolve key/path references
+    - Impacts `keypin.core/defkey`
+  - [Todo - Breaking] Lookup fns now invoke parser as `(fn [data key value])->value`
+  - [Todo] New fn `keypin.util/resolve-ref`
+- [Todo] Deprecate `keypin.util/clojurize-subst` in favour of `keypin.util/resolve-ref`
+- [Todo] Reduce verbosity of config source lookup
 
 
 ## 0.8.2 / 2021-February-06

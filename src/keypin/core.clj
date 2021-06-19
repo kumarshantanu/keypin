@@ -120,7 +120,9 @@
 
 (def edn-file-io
   "Reader/writer for EDN files."
-  (make-config-io "EDN" [".edn"] edn/read-string pr-str))
+  (let [reader (partial edn/read-string u/data-readers)
+        writer pr-str]
+    (make-config-io "EDN" [".edn"] reader writer)))
 
 
 (def default-config-io-codecs
