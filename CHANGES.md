@@ -24,7 +24,7 @@
   - `env`, `env!` - to read environment variables
   - `join` - concatenate string tokens together
   - `some` - fallback on alternate non-nil values
-
+  - `ref`, `ref!` - references to other key/path
   - Use data readers by default in `keypin.core/edn-file-io`
 - Add support for lazy (late binding) references
   - New type `keypin.type.Ref`
@@ -34,7 +34,7 @@
     - Impacts `keypin.core/defkey`
     - [BREAKING] Lookup fns now invoke parser as `(fn [data key value])->value`
   - New fn `keypin.util/resolve-ref` for resolving references
-- [Todo] Deprecate `keypin.util/clojurize-subst` in favour of `keypin.util/resolve-ref`
+- Deprecate `keypin.util/clojurize-subst` in favour of `keypin.util/resolve-ref`
 - [Todo] Reduce verbosity of config source lookup
 
 

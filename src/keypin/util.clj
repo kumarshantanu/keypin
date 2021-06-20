@@ -135,7 +135,8 @@
         :otherwise                       (f data)))))
 
 
-(defn clojurize-subst
+(defn ^{:deprecated "0.8.3"
+        :superseded-by "keypin.util/resolve-ref"} clojurize-subst
   "Variable substitution for EDN data. Symbols and keywords starting with `$` (e.g. `$foo.bar` or `:$foo.bar`) are
   looked up and substituted by their respective values as follows:
 

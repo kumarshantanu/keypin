@@ -1,7 +1,9 @@
-{"parent-config" ["base.properties" "web.properties" "test-config/dev.properties"] 
+{"parent-config" ["base.properties" "web.properties" "test-config/dev.properties"]
  "service.version" "new-version"
 
  "defined_var" "unicorn"
+
+ "derived.var" [#ref! "defined_var" "with a tail"]
 
  "default.app.id" "not-mentioned"
  "app.identity" "identity-${app.id|default.app.id}"
