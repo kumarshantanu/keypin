@@ -35,7 +35,7 @@
     - [BREAKING] Lookup fns now invoke parser as `(fn [data key value])->value`
   - New fn `keypin.util/resolve-ref` for resolving references
 - Deprecate `keypin.util/clojurize-subst` in favour of `keypin.util/resolve-ref`
-- [Todo] Reduce verbosity of config source lookup
+- Reduce verbosity of config source lookup
 
 
 ## 0.8.2 / 2021-February-06

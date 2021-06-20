@@ -38,10 +38,9 @@ public class Config {
             @Override
             public Map<?, ?> readConfig(ConfigIO configReader, String filename) throws Exception {
                 final File file = new File(filename);
-                info(logger, "Searching in filesystem: %s", file.getAbsolutePath());
                 if (file.isFile()) {
                     if (!file.canRead()) {
-                        exit(logger, "File is not readable: %s", file.getAbsolutePath());
+                        exit(logger, "Found in filesystem,, but file is not readable: %s", file.getAbsolutePath());
                     }
                     info(logger, "Found in filesystem, now reading config from: " + file.getAbsolutePath());
                     try {
@@ -67,7 +66,6 @@ public class Config {
             }
             @Override
             public Map<?, ?> readConfig(ConfigIO configReader, String classpathResource) throws Exception {
-                info(logger, "Searching in classpath: %s", classpathResource);
                 final InputStream resource =
                         Thread.currentThread().getContextClassLoader().getResourceAsStream(classpathResource);
                 if (resource != null) {
