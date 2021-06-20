@@ -30,6 +30,7 @@ so that the rest of the code remains cleaner.
 - Dynamic config store (e.g. periodic refresh, remote storage etc.)
 - Reading config files
   - Out of the box support for `.edn` and `.properties` files
+    - EDN tagged literals for environment variables, references etc.
   - Extensible design for other config file types (JSON, YAML etc.)
   - Read config file from filesystem and classpath (in that order)
     - Freedom to have external config files, or shipped with application JAR
@@ -42,7 +43,7 @@ so that the rest of the code remains cleaner.
 
 ## Usage
 
-[Clojars](https://clojars.org/keypin) coordinates: `[keypin "0.8.2"]`
+[Clojars](https://clojars.org/keypin) coordinates: `[keypin "0.8.3-beta1"]`
 
 Requires Java 7 or higher, Clojure 1.7 or higher.
 
