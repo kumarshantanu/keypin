@@ -15,6 +15,25 @@
   (:import (clojure.lang ExceptionInfo)))
 
 
+(deftest test-resolve-ref
+  (is (= {:foo 10
+          :bar 10}
+        (ku/resolve-ref {:foo 10
+                         :bar (kt/->Ref [:foo] true)})))
+  (is (= 10
+        (ku/resolve-ref {:foo 10
+                         :bar (kt/->Ref [:foo] true)} (kt/->Ref [:foo] true))))
+  (is (= {:foo 10
+          :bar [10 20]}
+        (ku/resolve-ref {:foo 10
+                         :bar [(kt/->Ref [:foo] true) 20]})))
+  (is (thrown-with-msg?
+        ExceptionInfo
+        #"\QExpected path [:foo :bar] to exist, but found only [:foo]\E"
+        (ku/resolve-ref {:foo 10
+                         :bar (kt/->Ref [:foo :bar] true)}))))
+
+
 (deftest test-data-readers
   (testing "env"
     (is (= {:foo nil}

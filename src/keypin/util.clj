@@ -195,6 +195,40 @@
         :otherwise      data))))
 
 
+(defn resolve-ref
+  "Resolve references of type `keypin.type.Ref` in specified data."
+  ([data]
+   (resolve-ref data data))
+  ([haystack data]
+   (let [nf-err (fn [path nav]
+                  (-> "Expected path %s to exist, but found only %s"
+                    (format (pr-str path) (pr-str nav))
+                    (ex-info {:path path
+                              :navigated nav})
+                    throw))
+         nf-nil (fn [path nav] nil)
+         lookup (fn [path not-found-fn]
+                  (->> path
+                    (reduce (fn [[coll nav] each]
+                              (let [v (get coll each ::not-found)]
+                                (if (identical? v ::not-found)
+                                  (reduced
+                                    (not-found-fn path nav))
+                                  [v (conj nav each)])))
+                      [haystack []])
+                    first))]
+     (cond
+       (t/ref?  data) (lookup (:path data) (if (:required? data) nf-err nf-nil))
+       (map?    data) (reduce-kv (fn [m k v] (assoc m
+                                               (resolve-ref haystack k)
+                                               (resolve-ref haystack v)))
+                        (empty data) data)
+       (vector? data) (mapv #(resolve-ref haystack %) data)
+       (set?    data) (set   (map #(resolve-ref haystack %) data))
+       (coll?   data) (list* (map #(resolve-ref haystack %) data))
+       :otherwise     data))))
+
+
 ;; ===== value parsers =====
 
 

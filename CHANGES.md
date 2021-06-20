@@ -33,7 +33,7 @@
     - Auto-resolve key/path references
     - Impacts `keypin.core/defkey`
   - [Todo - Breaking] Lookup fns now invoke parser as `(fn [data key value])->value`
-  - [Todo] New fn `keypin.util/resolve-ref`
+  - New fn `keypin.util/resolve-ref` for resolving references
 - [Todo] Deprecate `keypin.util/clojurize-subst` in favour of `keypin.util/resolve-ref`
 - [Todo] Reduce verbosity of config source lookup
 
