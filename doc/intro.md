@@ -204,6 +204,10 @@ The config values read from the EDN files may not be Clojure data structures
               u/clojurize-data))
 ```
 
+#### Variable substitution
+
+(This feature is *DEPRECATED* - see alternative in tagged literals section below.)
+
 Keypin also supports variable substitution for EDN config files, which must be
 explicitly used. Consider the following config file:
 
@@ -224,6 +228,37 @@ This config file may be read as follows to utilize variable substitution:
 
 Here, the value of `"baz"` becomes `[10 20]` by substituting the values of `$foo`
 (looks up key `"foo"`) and `:$bar` (looks up key `:bar`).
+
+
+#### Tagged literals
+
+The included EDN reader supports the following tagged literals in the EDN files:
+
+| Tag  | Example                         | Description                             |
+|------|------------------------------|--------------------------------------|
+|`env` |`#env SERVER_PORT`             |Read environment variable               |
+|`env!`|`#env! SERVER_PORT`            |Throws exception if env var not defined|
+|`join`|`#join [#env HOME "/foo.xml"]`|Concatenate string tokens               |
+|`some`|`#some [#env HTTP_PORT 8888]` |Find first non-nil token                |
+|`ref` |`#ref [:config :db :host]`     |Reference to another key/path value   |
+|`ref!`|`ref! [:config :db :host]`     |Throws exception if key/path absent   |
+
+The reference types are auto-resolved only when invoked by a `defkey` key definition.
+Example:
+
+```edn
+{:foo 10
+ :bar [#ref :foo 20]}
+```
+
+Assuming the above EDN file is read as `config`, see below for reference resolution:
+
+```clojure
+(defkey k-bar [:bar])
+
+(k-bar config)  ; auto-resolves reference
+;; => [10 20]
+```
 
 
 ### Chained config files
