@@ -51,7 +51,25 @@
             "{:foo #env! foo}")))
     (is (string?
           (-> {:readers ku/data-readers}
-            (edn/read-string "{:foo #env LEIN_VERSION}")
+            (edn/read-string "{:foo #env! LEIN_VERSION}")
+            (get :foo)))))
+  (testing "sys"
+    (is (= {:foo nil}
+          (edn/read-string {:readers ku/data-readers}
+            "{:foo #sys foo}")))
+    (is (string?
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #sys java.version}")
+            (get :foo)))))
+  (testing "sys!"
+    (is (thrown-with-msg?
+          ExceptionInfo
+          #"System property `foo` is not set"
+          (edn/read-string {:readers ku/data-readers}
+            "{:foo #sys! foo}")))
+    (is (string?
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #sys! java.version}")
             (get :foo)))))
   (testing "join"
     (is (= {:foo ":foo45"}

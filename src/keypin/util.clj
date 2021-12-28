@@ -634,6 +634,13 @@
                            (or (throw (-> "Environment variable `%s` is not set"
                                         (format str-var)
                                         (ex-info {:env-var str-var})))))))
+   ;; --- system property lookup ---
+   'sys  (fn [sys-prop] (System/getProperty (str sys-prop)))
+   'sys! (fn [sys-prop] (let [^String str-prop (str sys-prop)]
+                          (-> (System/getProperty str-prop)
+                            (or (throw (-> "System property `%s` is not set"
+                                         (format str-prop)
+                                         (ex-info {:sys-prop str-prop})))))))
    ;; --- string concatenation ---
    'join (fn [vs]
            (i/expected vector? "a vector of arguments (for `join` data-reader)" vs)

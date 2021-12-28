@@ -21,7 +21,7 @@
 ## [WIP] 0.8.3-beta2 / 2021-December-??
 
 - EDN data readers at at `keypin.util/data-readers`
-  - [Todo] `sys`, `sys!` - to read system property
+  - `sys`, `sys!` - to read system property
   - [Todo] `!` - to allow only non-nil values
 
 
