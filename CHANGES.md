@@ -18,6 +18,13 @@
   - (Map) `^merge`   - Merge
 
 
+## [WIP] 0.8.3-beta2 / 2021-December-??
+
+- EDN data readers at at `keypin.util/data-readers`
+  - [Todo] `sys`, `sys!` - to read system property
+  - [Todo] `!` - to allow only non-nil values
+
+
 ## 0.8.3-beta1 / 2021-June-20
 
 - Add Keypin EDN data readers at `keypin.util/data-readers`

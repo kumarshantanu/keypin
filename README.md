@@ -43,7 +43,7 @@ so that the rest of the code remains cleaner.
 
 ## Usage
 
-[Clojars](https://clojars.org/keypin) coordinates: `[keypin "0.8.3-beta1"]`
+[Clojars](https://clojars.org/keypin) coordinates: `[keypin "0.8.3-SNAPSHOT"]`
 
 Requires Java 7 or higher, Clojure 1.7 or higher.
 
