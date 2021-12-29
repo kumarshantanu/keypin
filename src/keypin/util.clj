@@ -621,6 +621,49 @@
 ;; --- data readers ---
 
 
+(defn- reader-env  [env-var]
+  (System/getenv (str env-var)))
+
+
+(defn- reader-env! [env-var]
+  (let [^String str-var (str env-var)]
+    (-> (System/getenv str-var)
+      (or (throw (-> "Environment variable `%s` is not set"
+                   (format str-var)
+                   (ex-info {:env-var str-var})))))))
+
+
+(defn- reader-sys  [sys-prop]
+  (System/getProperty (str sys-prop)))
+
+
+(defn- reader-sys! [sys-prop]
+  (let [^String str-prop (str sys-prop)]
+    (-> (System/getProperty str-prop)
+      (or (throw (-> "System property `%s` is not set"
+                   (format str-prop)
+                   (ex-info {:sys-prop str-prop})))))))
+
+
+(defn- reader-join [vs]
+  (i/expected vector? "a vector of arguments (for `join` data-reader)" vs)
+  (string/join vs))
+
+
+(defn- reader-some [vs]
+  (i/expected vector? "a vector of arguments (for `some` data-reader)" vs)
+  (some identity vs))
+
+
+(defn- reader-ref [vs]
+  (t/->Ref (if (coll? vs) vs [vs]) false))
+
+
+(defn- reader-ref! [vs]
+  ; throws on not found in `resolve-ref`
+  (t/->Ref (if (coll? vs) vs [vs]) true))
+
+
 (def data-readers
   "Default data readers for EDN files. Reader-names ending in `!` may throw
   exception as a side effect.
@@ -628,29 +671,16 @@
   disallowing any notion of late binding."
   {;; --- environment variable lookup ---
    ;; e.g. #env APP_VERSION
-   'env  (fn [env-var] (System/getenv (str env-var)))
-   'env! (fn [env-var] (let [^String str-var (str env-var)]
-                         (-> (System/getenv str-var)
-                           (or (throw (-> "Environment variable `%s` is not set"
-                                        (format str-var)
-                                        (ex-info {:env-var str-var})))))))
+   'env  reader-env
+   'env! reader-env!
    ;; --- system property lookup ---
-   'sys  (fn [sys-prop] (System/getProperty (str sys-prop)))
-   'sys! (fn [sys-prop] (let [^String str-prop (str sys-prop)]
-                          (-> (System/getProperty str-prop)
-                            (or (throw (-> "System property `%s` is not set"
-                                         (format str-prop)
-                                         (ex-info {:sys-prop str-prop})))))))
+   'sys  reader-sys
+   'sys! reader-sys!
    ;; --- string concatenation ---
-   'join (fn [vs]
-           (i/expected vector? "a vector of arguments (for `join` data-reader)" vs)
-           (string/join vs))
+   'join reader-join
    ;; --- first non-nil element ---
-   'some (fn [vs]
-           (i/expected vector? "a vector of arguments (for `some` data-reader)" vs)
-           (some identity vs))
+   'some reader-some
    ;; --- reference lookup ---
    ;; e.g. #ref :foo/bar, #ref [:foo/bar :db :threads]
-   'ref  (fn [vs] (t/->Ref (if (coll? vs) vs [vs]) false))
-   'ref! (fn [vs] (t/->Ref (if (coll? vs) vs [vs]) true)) ; throws on not found
-   })
+   'ref  reader-ref
+   'ref! reader-ref!})
