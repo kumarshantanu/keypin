@@ -18,7 +18,7 @@
   - (Map) `^merge`   - Merge
 
 
-## [WIP] 0.8.3-beta2 / 2021-December-??
+## 0.8.3-beta2 / 2021-December-30
 
 - EDN data readers at at `keypin.util/data-readers`
   - `sys`, `sys!` - to read system property
