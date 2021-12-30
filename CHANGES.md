@@ -18,6 +18,33 @@
   - (Map) `^merge`   - Merge
 
 
+## 0.8.3-beta2 / 2021-December-30
+
+- EDN data readers at at `keypin.util/data-readers`
+  - `sys`, `sys!` - to read system property
+  - `some!` - variant of `some` that allows only non-nil values
+
+
+## 0.8.3-beta1 / 2021-June-20
+
+- Add Keypin EDN data readers at `keypin.util/data-readers`
+  - `env`, `env!` - to read environment variables
+  - `join` - concatenate string tokens together
+  - `some` - fallback on alternate non-nil values
+  - `ref`, `ref!` - references to other key/path
+  - Use data readers by default in `keypin.core/edn-file-io`
+- Add support for lazy (late binding) references
+  - New type `keypin.type.Ref`
+  - Data readers `ref`, `ref!` - define key/path references
+  - Augment `:parser` kwarg in `keypin.core/make-key` and lookup functions
+    - Auto-resolve key/path references
+    - Impacts `keypin.core/defkey`
+    - [BREAKING] Lookup fns now invoke parser as `(fn [data key value])->value`
+  - New fn `keypin.util/resolve-ref` for resolving references
+- Deprecate `keypin.util/clojurize-subst` in favour of `keypin.util/resolve-ref`
+- Reduce verbosity of config source lookup
+
+
 ## 0.8.2 / 2021-February-06
 
 - Add `keypin.core/defkey` option kwargs to attach metadata

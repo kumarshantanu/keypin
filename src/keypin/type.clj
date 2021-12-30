@@ -117,3 +117,12 @@
   (millis    [this] (.toMillis  unit time))
   (micros    [this] (.toMicros  unit time))
   (nanos     [this] (.toNanos   unit time)))
+
+
+(defrecord Ref [path required?])
+
+
+(defn ref?
+  "Return `true` if argument is of `keypin.type/Ref` type, `false` otherwise."
+  [x]
+  (instance? Ref x))

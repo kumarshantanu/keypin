@@ -34,7 +34,7 @@
                      (pr-str the-key) the-map)))
   (let [value (if (contains? the-map the-key)
                 (->> (get the-map the-key)
-                  (value-parser the-key))
+                  (value-parser the-map the-key))
                 (if default-value?
                   default-value
                   (i/illegal-arg (not-found
@@ -60,7 +60,7 @@
                                        (str "No default value is defined for non-existent key path " (pr-str ks)))))
                     (if-not (next path)  ; last key in key path?
                       (->> (get data k)
-                        (value-parser ks))
+                        (value-parser the-map ks))
                       (recur (get data k) (rest path))))))]
     (i/expect-arg value validator (format "Invalid value for key path %s (description: '%s'): %s"
                                     (pr-str ks) description (pr-str value)))))
@@ -120,7 +120,9 @@
 
 (def edn-file-io
   "Reader/writer for EDN files."
-  (make-config-io "EDN" [".edn"] edn/read-string pr-str))
+  (let [reader (partial edn/read-string {:readers u/data-readers})
+        writer pr-str]
+    (make-config-io "EDN" [".edn"] reader writer)))
 
 
 (def default-config-io-codecs
@@ -253,6 +255,10 @@
          parser i/identity-parser}
     :as options}]
   (let [validator   pred
+        parser      (fn [data k v]
+                      (->> v
+                        (u/resolve-ref data)
+                        (parser k)))
         description desc]
     (i/expected some?   "Non-nil key for lookup (option :the-key)" the-key)
     (i/expected fn?     "Validator function under (option :pred)"  validator)
@@ -265,8 +271,8 @@
       (when (contains? options :default) default)
       (fn [the-map the-key validator description value-parser default-value? default-value]
         (cond
-          (and envvar  (System/getenv envvar))       (value-parser the-key (System/getenv envvar))
-          (and sysprop (System/getProperty sysprop)) (value-parser the-key (System/getProperty sysprop))
+          (and envvar  (System/getenv envvar))       (value-parser the-map the-key (System/getenv envvar))
+          (and sysprop (System/getProperty sysprop)) (value-parser the-map the-key (System/getProperty sysprop))
           :otherwise (lookup the-map the-key validator description value-parser default-value? default-value
                        (if (or envvar sysprop)
                          (fn [message] (str

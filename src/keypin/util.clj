@@ -135,7 +135,8 @@
         :otherwise                       (f data)))))
 
 
-(defn clojurize-subst
+(defn ^{:deprecated "0.8.3"
+        :superseded-by "keypin.util/resolve-ref"} clojurize-subst
   "Variable substitution for EDN data. Symbols and keywords starting with `$` (e.g. `$foo.bar` or `:$foo.bar`) are
   looked up and substituted by their respective values as follows:
 
@@ -193,6 +194,40 @@
         (symbol?  data) (subst data)
         (keyword? data) (subst data)
         :otherwise      data))))
+
+
+(defn resolve-ref
+  "Resolve references of type `keypin.type.Ref` in specified data."
+  ([data]
+   (resolve-ref data data))
+  ([haystack data]
+   (let [nf-err (fn [path nav]
+                  (-> "Expected path %s to exist, but found only %s"
+                    (format (pr-str path) (pr-str nav))
+                    (ex-info {:path path
+                              :navigated nav})
+                    throw))
+         nf-nil (fn [path nav] nil)
+         lookup (fn [path not-found-fn]
+                  (->> path
+                    (reduce (fn [[coll nav] each]
+                              (let [v (get coll each ::not-found)]
+                                (if (identical? v ::not-found)
+                                  (reduced
+                                    (not-found-fn path nav))
+                                  [v (conj nav each)])))
+                      [haystack []])
+                    first))]
+     (cond
+       (t/ref?  data) (lookup (:path data) (if (:required? data) nf-err nf-nil))
+       (map?    data) (reduce-kv (fn [m k v] (assoc m
+                                               (resolve-ref haystack k)
+                                               (resolve-ref haystack v)))
+                        (empty data) data)
+       (vector? data) (mapv #(resolve-ref haystack %) data)
+       (set?    data) (set   (map #(resolve-ref haystack %) data))
+       (coll?   data) (list* (map #(resolve-ref haystack %) data))
+       :otherwise     data))))
 
 
 ;; ===== value parsers =====
@@ -581,3 +616,80 @@
       (when-not (pred v)
         (i/expected pred (str expectation " for key " (pr-str the-key)) v))
       v)))
+
+
+;; --- data readers ---
+
+
+(defn- reader-env  [env-var]
+  (System/getenv (str env-var)))
+
+
+(defn- reader-env! [env-var]
+  (let [^String str-var (str env-var)]
+    (-> (System/getenv str-var)
+      (or (throw (-> "#env! data reader: Environment variable `%s` is not set"
+                   (format str-var)
+                   (ex-info {:env-var str-var})))))))
+
+
+(defn- reader-sys  [sys-prop]
+  (System/getProperty (str sys-prop)))
+
+
+(defn- reader-sys! [sys-prop]
+  (let [^String str-prop (str sys-prop)]
+    (-> (System/getProperty str-prop)
+      (or (throw (-> "#sys! data reader: System property `%s` is not set"
+                   (format str-prop)
+                   (ex-info {:sys-prop str-prop})))))))
+
+
+(defn- reader-join [vs]
+  (i/expected vector? "a vector of arguments (in `#join` data-reader)" vs)
+  (string/join vs))
+
+
+(defn- reader-some [vs]
+  (i/expected vector? "a vector of arguments (in `#some` data-reader)" vs)
+  (some identity vs))
+
+
+(defn- reader-some! [vs]
+  (i/expected vector? "a vector of arguments (in `#some!` data-reader)" vs)
+  (if-some [result (some identity vs)]
+    result
+    (throw (-> "Cannot find a non-nil value in #some! data reader"
+             (ex-info {:values vs})))))
+
+
+(defn- reader-ref [vs]
+  (t/->Ref (if (coll? vs) vs [vs]) false))
+
+
+(defn- reader-ref! [vs]
+  ; throws on not found in `resolve-ref`
+  (t/->Ref (if (coll? vs) vs [vs]) true))
+
+
+(def data-readers
+  "Default data readers for EDN files. Reader-names ending in `!` may throw
+  exception as a side effect.
+  Caution: The data readers are applied when the EDN file is first read,
+  disallowing any notion of late binding."
+  {;; --- environment variable lookup ---
+   ;; e.g. #env APP_VERSION
+   'env  reader-env
+   'env! reader-env!
+   ;; --- system property lookup ---
+   'sys  reader-sys
+   'sys! reader-sys!
+   ;; --- string concatenation ---
+   'join reader-join
+   ;; --- first non-nil element ---
+   'some  reader-some
+   'some! reader-some!
+   ;; --- reference lookup ---
+   ;; e.g. #ref :foo/bar, #ref [:foo/bar :db :threads]
+   'ref  reader-ref
+   'ref! reader-ref!})
