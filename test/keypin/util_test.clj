@@ -46,7 +46,7 @@
   (testing "env!"
     (is (thrown-with-msg?
           ExceptionInfo
-          #"Environment variable `foo` is not set"
+          #"#env! data reader: Environment variable `foo` is not set"
           (edn/read-string {:readers ku/data-readers}
             "{:foo #env! foo}")))
     (is (string?
@@ -64,7 +64,7 @@
   (testing "sys!"
     (is (thrown-with-msg?
           ExceptionInfo
-          #"System property `foo` is not set"
+          #"#sys! data reader: System property `foo` is not set"
           (edn/read-string {:readers ku/data-readers}
             "{:foo #sys! foo}")))
     (is (string?
@@ -91,7 +91,7 @@
   (testing "some!"
     (is (thrown-with-msg?
           ExceptionInfo
-          #"Cannot find a non-nil value in \[nil nil\]"
+          #"Cannot find a non-nil value in #some! data reader"
           (-> {:readers ku/data-readers}
             (edn/read-string "{:foo #some! [#env foo #env bar]}")
             (get :foo))))

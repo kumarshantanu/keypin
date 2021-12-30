@@ -628,7 +628,7 @@
 (defn- reader-env! [env-var]
   (let [^String str-var (str env-var)]
     (-> (System/getenv str-var)
-      (or (throw (-> "Environment variable `%s` is not set"
+      (or (throw (-> "#env! data reader: Environment variable `%s` is not set"
                    (format str-var)
                    (ex-info {:env-var str-var})))))))
 
@@ -640,27 +640,26 @@
 (defn- reader-sys! [sys-prop]
   (let [^String str-prop (str sys-prop)]
     (-> (System/getProperty str-prop)
-      (or (throw (-> "System property `%s` is not set"
+      (or (throw (-> "#sys! data reader: System property `%s` is not set"
                    (format str-prop)
                    (ex-info {:sys-prop str-prop})))))))
 
 
 (defn- reader-join [vs]
-  (i/expected vector? "a vector of arguments (for `join` data-reader)" vs)
+  (i/expected vector? "a vector of arguments (in `#join` data-reader)" vs)
   (string/join vs))
 
 
 (defn- reader-some [vs]
-  (i/expected vector? "a vector of arguments (for `some` data-reader)" vs)
+  (i/expected vector? "a vector of arguments (in `#some` data-reader)" vs)
   (some identity vs))
 
 
 (defn- reader-some! [vs]
-  (i/expected vector? "a vector of arguments (for `some` data-reader)" vs)
+  (i/expected vector? "a vector of arguments (in `#some!` data-reader)" vs)
   (if-some [result (some identity vs)]
     result
-    (throw (-> "Cannot find a non-nil value in "
-             (str (pr-str vs))
+    (throw (-> "Cannot find a non-nil value in #some! data reader"
              (ex-info {:values vs})))))
 
 
