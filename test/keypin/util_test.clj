@@ -88,6 +88,21 @@
           (-> {:readers ku/data-readers}
             (edn/read-string "{:foo #some [#env foo #env LEIN_VERSION]}")
             (get :foo)))))
+  (testing "some!"
+    (is (thrown-with-msg?
+          ExceptionInfo
+          #"Cannot find a non-nil value in \[nil nil\]"
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #some! [#env foo #env bar]}")
+            (get :foo))))
+    (is (= :bar
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #some! [#env foo :bar]}")
+            (get :foo))))
+    (is (string?
+          (-> {:readers ku/data-readers}
+            (edn/read-string "{:foo #some! [#env foo #env LEIN_VERSION]}")
+            (get :foo)))))
   (testing "ref"
     (is (= (kt/->Ref [:bar] false)
           (-> {:readers ku/data-readers}

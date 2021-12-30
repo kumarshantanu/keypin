@@ -655,6 +655,15 @@
   (some identity vs))
 
 
+(defn- reader-some! [vs]
+  (i/expected vector? "a vector of arguments (for `some` data-reader)" vs)
+  (if-some [result (some identity vs)]
+    result
+    (throw (-> "Cannot find a non-nil value in "
+             (str (pr-str vs))
+             (ex-info {:values vs})))))
+
+
 (defn- reader-ref [vs]
   (t/->Ref (if (coll? vs) vs [vs]) false))
 
@@ -679,7 +688,8 @@
    ;; --- string concatenation ---
    'join reader-join
    ;; --- first non-nil element ---
-   'some reader-some
+   'some  reader-some
+   'some! reader-some!
    ;; --- reference lookup ---
    ;; e.g. #ref :foo/bar, #ref [:foo/bar :db :threads]
    'ref  reader-ref
